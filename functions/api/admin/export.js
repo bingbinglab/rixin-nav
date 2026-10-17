@@ -1,6 +1,7 @@
 // GET /api/admin/export?format=json|html — 导出全量书签（含私密）。需会话。
 // html 为浏览器书签格式，可直接导回任何浏览器 / floccus 体系外的备份用途。
 import { json, requireAuth } from "../../_lib/util.js";
+import { getSiteConfig } from "../../_lib/config.js";
 
 const esc = (s) => String(s ?? "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
 
@@ -48,7 +49,8 @@ export async function onRequestGet(context) {
       else orphanSites.push(s);
     }
 
-    let out = `<!DOCTYPE NETSCAPE-Bookmark-file-1>\n<META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=UTF-8">\n<TITLE>日新辑览导出</TITLE>\n<H1>日新辑览导出</H1>\n<DL><p>\n`;
+    const { site_title } = await getSiteConfig(env);
+    let out = `<!DOCTYPE NETSCAPE-Bookmark-file-1>\n<META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=UTF-8">\n<TITLE>${esc(site_title)}导出</TITLE>\n<H1>${esc(site_title)}导出</H1>\n<DL><p>\n`;
 
     const renderCat = (cat, depth = 1) => {
       const indent = "  ".repeat(depth);

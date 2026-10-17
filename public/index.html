@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>日新辑览 - 个人自用书签工作台</title>
+<title>书签导航</title>
 <link rel="icon" type="image/svg+xml" href="/favicon-2.svg">
 <link rel="icon" type="image/png" sizes="192x192" href="/icon-192-2.png">
 <link rel="apple-touch-icon" href="/icon-180-2.png">
@@ -29,7 +29,7 @@
         <p class="eyebrow">收 集 · 整 理 · 每 日 常 用</p>
         <span class="mast-stamp">典藏版</span>
       </div>
-      <h1 class="mast-title">日新辑览<span class="mast-dot">。</span><span class="mast-seal" title="典藏便览">常览</span></h1>
+      <h1 class="mast-title"><span id="mastTitleText">书签导航</span><span class="mast-dot">。</span><span class="mast-seal" title="典藏便览">常览</span></h1>
     </div>
     <div class="masthead-side">
       <div class="masthead-side-top">
@@ -134,10 +134,10 @@
   <!-- 页脚 -->
   <footer class="footer">
     <div class="footer-row">
-      <span>© 2026 日新辑览 · 我的互联网门牌</span>
+      <span>© 2026 <span id="footerSiteTitle">书签导航</span> · 我的互联网门牌</span>
       <span class="footer-right">深灰 · 赭石 · 墨香</span>
     </div>
-    <div class="footer-colophon">本辑已毕 · 下辑随缘</div>
+    <div class="footer-colophon" id="footerColophon" style="display: none;"></div>
   </footer>
 
   <!-- 移动端悬浮回到顶部按钮 -->
@@ -151,7 +151,7 @@
 <div class="modal-overlay" id="loginModalOverlay" hidden>
   <div class="modal login-modal">
     <div class="modal-head">
-      <span class="serif">日新辑览 · 站长验身</span>
+      <span class="serif"><span id="loginModalSiteTitle">书签导航</span> · 站长验身</span>
       <button class="modal-close" id="loginModalClose">✕</button>
     </div>
     <form class="modal-body" id="loginForm">
@@ -194,6 +194,6 @@
 
 <script src="data.js"></script>
 <script src="/assets/icon.js?v=20261017a"></script>
-<script src="/assets/app.js?v=20261017h"></script>
+<script src="/assets/app.js?v=20261018a"></script>
 </body>
 </html>

@@ -978,6 +978,30 @@ function calcDataFingerprint(sites, cats, authed) {
   return `${authed ? 1 : 0}_${sites.length}_${(cats || []).length}_${catStr}_${siteStr}`;
 }
 
+// ---------- 11.5 站点品牌与页脚文案动态同步 ----------
+function applySiteConfig(siteTitle, siteFooter) {
+  const title = (siteTitle && typeof siteTitle === 'string' && siteTitle.trim()) ? siteTitle.trim() : '书签导航';
+  document.title = title;
+  const mastText = document.getElementById('mastTitleText');
+  if (mastText) mastText.textContent = title;
+  const footerTitle = document.getElementById('footerSiteTitle');
+  if (footerTitle) footerTitle.textContent = title;
+  const loginTitle = document.getElementById('loginModalSiteTitle');
+  if (loginTitle) loginTitle.textContent = title;
+
+  const colophon = document.getElementById('footerColophon');
+  if (colophon) {
+    const footer = (siteFooter && typeof siteFooter === 'string') ? siteFooter.trim() : '';
+    if (footer) {
+      colophon.textContent = footer;
+      colophon.style.display = '';
+    } else {
+      colophon.textContent = '';
+      colophon.style.display = 'none';
+    }
+  }
+}
+
 // 核心拉取函数：拉全量站点＋私密（带 Cookie 鉴权时生效）
 async function refreshSitesData() {
   try {
@@ -987,7 +1011,19 @@ async function refreshSitesData() {
     });
     if (!r.ok) return;
     const data = await r.json();
-    if (!data || !Array.isArray(data.sites) || data.sites.length === 0) return;
+    if (!data) return;
+
+    if (data.site_title !== undefined || data.site_footer !== undefined) {
+      applySiteConfig(data.site_title, data.site_footer);
+      try {
+        if (data.site_title) localStorage.setItem('myNavSiteTitle', data.site_title);
+        else localStorage.removeItem('myNavSiteTitle');
+        if (data.site_footer) localStorage.setItem('myNavSiteFooter', data.site_footer);
+        else localStorage.removeItem('myNavSiteFooter');
+      } catch (e) {}
+    }
+
+    if (!Array.isArray(data.sites) || data.sites.length === 0) return;
 
     updateAuthUI(data.authed);
 
@@ -1012,6 +1048,14 @@ async function refreshSitesData() {
 }
 
 // ---------- 12. 首次渲染与双阶段数据刷新 ----------
+try {
+  const cachedTitle = localStorage.getItem('myNavSiteTitle');
+  const cachedFooter = localStorage.getItem('myNavSiteFooter');
+  if (cachedTitle !== null || cachedFooter !== null) {
+    applySiteConfig(cachedTitle, cachedFooter);
+  }
+} catch (e) {}
+
 // 第一阶段：同步渲染静态 data.js 垫底，网站绝对零白屏
 currentDataFingerprint = calcDataFingerprint(window.NAV_DATA, window.NAV_CATEGORIES, false);
 render();

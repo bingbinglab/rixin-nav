@@ -2,6 +2,7 @@
 // 私密条目（站点级/分类级）默认不下发；带有效后台会话时才下发，前台仍按本地开关显隐。
 // D1 未绑定时返回 503，前台据此回退到 data.js 静态数据，网站永不白屏。
 import { json, dbMissing, hasSession } from "../_lib/util.js";
+import { getSiteConfig } from "../_lib/config.js";
 
 export async function onRequestGet(context) {
   const { request, env } = context;
@@ -77,8 +78,9 @@ export async function onRequestGet(context) {
     }
   }
 
+  const { site_title, site_footer } = await getSiteConfig(env);
   const cacheHeaders = authed
     ? { "Cache-Control": "private, no-store" }
     : { "Cache-Control": "public, max-age=30, stale-while-revalidate=120" };
-  return json({ categories, sites, authed }, 200, cacheHeaders);
+  return json({ categories, sites, authed, site_title, site_footer }, 200, cacheHeaders);
 }

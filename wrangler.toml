@@ -1,12 +1,12 @@
 # 本文件仅供 wrangler CLI 本地/手动部署时参考；Cloudflare Pages 连 Git 部署时，
 # D1/KV 绑定在控制台设置（绑定名 NAV_DB / NAV_KV），不读本文件。
 # 使用前请把下面两个 ID 换成你自己账号里创建的 D1 数据库与 KV 命名空间的 ID。
-name = "rixin-jilan"
+name = "rixin-nav"
 compatibility_date = "2024-11-01"
 
 [[d1_databases]]
 binding = "NAV_DB"
-database_name = "rixin-jilan-db"
+database_name = "rixin-nav-db"
 database_id = "YOUR_D1_DATABASE_ID"
 
 [[kv_namespaces]]

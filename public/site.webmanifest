@@ -1,7 +1,7 @@
 {
-  "name": "日新辑览",
-  "short_name": "辑览",
-  "description": "个人自用书签导航 · 每日导航，我的书签",
+  "name": "书签导航",
+  "short_name": "导航",
+  "description": "个人自用书签导航 · 打开即达",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#f8f5ee",

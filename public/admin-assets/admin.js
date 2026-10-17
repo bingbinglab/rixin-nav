@@ -2074,9 +2074,42 @@ async function loadConfig() {
     if ($("floccusPath")) {
       $("floccusPath").value = (cfg.floccus && cfg.floccus.xbel_path) || "bookmarks.xbel";
     }
+
+    if ($("siteTitleInput")) {
+      $("siteTitleInput").value = cfg.site_title || "";
+    }
+    if ($("siteFooterInput")) {
+      $("siteFooterInput").value = cfg.site_footer || "";
+    }
   } catch (e) {
     console.warn("加载配置失败：", e);
   }
+}
+
+if ($("siteSaveBtn")) {
+  $("siteSaveBtn").onclick = async () => {
+    $("siteMsg").textContent = "保存中…";
+    const site_title = $("siteTitleInput").value.trim();
+    const site_footer = $("siteFooterInput").value.trim();
+    try {
+      const res = await api("/api/admin/config", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ site_title, site_footer }),
+      });
+      if (res.error) {
+        $("siteMsg").textContent = res.error;
+        toast(res.error, true);
+      } else {
+        $("siteMsg").textContent = "站点设置已保存";
+        toast("站点设置已保存");
+      }
+      await loadConfig();
+    } catch (e) {
+      $("siteMsg").textContent = "保存失败：" + e.message;
+      toast("保存失败：" + e.message, true);
+    }
+  };
 }
 
 $("wdSaveBtn").onclick = async () => {

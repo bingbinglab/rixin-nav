@@ -112,8 +112,29 @@ export async function onRequestPut(context) {
     }
   }
 
+  // 4. 处理站点品牌文案配置（site_title / site_footer，明文存储与回显）
+  let updatedSite = false;
+  if (typeof body.site_title === "string") {
+    kv.site_title = body.site_title.trim();
+    updatedSite = true;
+  }
+  if (typeof body.site_footer === "string") {
+    kv.site_footer = body.site_footer.trim();
+    updatedSite = true;
+  }
+  if (body.site && typeof body.site === "object") {
+    if (typeof body.site.title === "string") {
+      kv.site_title = body.site.title.trim();
+      updatedSite = true;
+    }
+    if (typeof body.site.footer === "string") {
+      kv.site_footer = body.site.footer.trim();
+      updatedSite = true;
+    }
+  }
+
   // 若存在有效修改则落库
-  if (updatedWd || updatedAi || updatedFl) {
+  if (updatedWd || updatedAi || updatedFl || updatedSite) {
     try {
       await saveKvConfig(env, kv);
     } catch (err) {
@@ -125,7 +146,7 @@ export async function onRequestPut(context) {
   if (errList.length > 0) {
     const errMsg = errList.join("；");
     // 若同时提交多组且其中一组保存成功，则返回 200 并附带 error 提示
-    if (updatedWd || updatedAi || updatedFl) {
+    if (updatedWd || updatedAi || updatedFl || updatedSite) {
       const updatedSummary = await getConfigSummary(env);
       return json({ ok: true, partial: true, error: errMsg, ...updatedSummary });
     }

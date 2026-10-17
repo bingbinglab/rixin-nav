@@ -1,11 +1,14 @@
-// GET /admin — 后台。未登录出登录页；登录后出管理页骨架（引用 /admin-assets/admin.css 与 admin.js）。
-// 数据全部走 /api/admin/* 接口。本页负责服务端会话守门，未登录拿不到应用骨架。
 import { hasSession } from "../_lib/util.js";
+import { getSiteConfig } from "../_lib/config.js";
 
-const LOGIN_HTML = `<!DOCTYPE html>
+const esc = (s) => String(s ?? "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+
+function getLoginHtml(siteTitle) {
+  const title = esc(siteTitle || "书签导航");
+  return `<!DOCTYPE html>
 <html lang="zh-CN"><head><meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>日新辑览 · 后台登录</title><link rel="icon" type="image/svg+xml" href="/favicon-2.svg"><link rel="icon" type="image/png" sizes="192x192" href="/icon-192-2.png">
+<title>${title} · 后台登录</title><link rel="icon" type="image/svg+xml" href="/favicon-2.svg"><link rel="icon" type="image/png" sizes="192x192" href="/icon-192-2.png">
 <link rel="stylesheet" href="/admin-assets/admin.css?v=20261018a">
 <style>
 body{display:flex;min-height:100vh;align-items:center;justify-content:center;padding:16px}
@@ -17,7 +20,7 @@ button{width:100%}
 <script>(function(){try{var t=localStorage.getItem('myNavTheme');if(!t&&window.matchMedia&&window.matchMedia('(prefers-color-scheme:dark)').matches)t='dark';if(t==='dark')document.documentElement.classList.add('dark-theme');}catch(e){}})();</script>
 </head>
 <body><form method="POST" action="/admin/login">
-<h1>日新辑览</h1>
+<h1>${title}</h1>
 <div style="display:flex;justify-content:space-between;align-items:center;margin:0 0 10px"><p class="sub">后台 · 请出示口令</p><button id="loginThemeBtn" type="button" class="mini ghost" style="width:auto;margin:0;padding:2px 8px" title="切换白天/夜间模式">🌙</button></div>
 <div id="loginErr" style="display:none;background:rgba(158,71,42,.12);border:1.5px solid var(--ochre);color:var(--ochre);padding:8px 12px;font-size:13px;font-weight:700;margin-bottom:12px"></div>
 <label>口令</label><input type="password" name="password" autocomplete="current-password" required>
@@ -39,16 +42,19 @@ try{
 }catch(e){}
 </script>
 </body></html>`;
+}
 
-const ADMIN_HTML = `<!DOCTYPE html>
+function getAdminHtml(siteTitle) {
+  const title = esc(siteTitle || "书签导航");
+  return `<!DOCTYPE html>
 <html lang="zh-CN"><head><meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>日新辑览 · 后台管理</title><link rel="icon" type="image/svg+xml" href="/favicon-2.svg"><link rel="icon" type="image/png" sizes="192x192" href="/icon-192-2.png">
+<title>${title} · 后台管理</title><link rel="icon" type="image/svg+xml" href="/favicon-2.svg"><link rel="icon" type="image/png" sizes="192x192" href="/icon-192-2.png">
 <link rel="stylesheet" href="/admin-assets/admin.css?v=20261018a">
 <script>(function(){try{var t=localStorage.getItem('myNavTheme');if(!t&&window.matchMedia&&window.matchMedia('(prefers-color-scheme:dark)').matches)t='dark';if(t==='dark')document.documentElement.classList.add('dark-theme');}catch(e){}})();</script>
 </head>
 <body><div class="wrap">
-<header class="top"><div><h1>日新辑览 · 后台</h1><div class="sub">辑 录 万 站 · 井 井 有 条</div></div>
+<header class="top"><div><h1>${title} · 后台</h1><div class="sub">辑 录 万 站 · 井 井 有 条</div></div>
 <div style="text-align:right"><div style="display:flex;align-items:center;justify-content:flex-end;gap:10px"><button class="ghost mini" id="themeBtn" type="button" title="切换白天/夜间模式" style="margin:0;padding:4px 9px;font-size:13px">🌙 夜间</button><div class="stamp">辑览</div></div><div class="muted" style="margin-top:8px"><a href="/" target="_blank">看前台</a> · <a href="/admin/logout">退出</a></div></div></header>
 
 <!-- P15: 移动端药丸 Tab 导航 (桌面隐藏) -->
@@ -95,8 +101,16 @@ const ADMIN_HTML = `<!DOCTYPE html>
 <p class="msg" id="toolMsg"></p>
 <p class="muted">说明：WebDAV 备份与 AI 补简介优先读取环境变量；若未配置环境变量，则可在下方卡片中配置，即时生效。</p></div>
 
-<!-- Card 4: WebDAV 备份设置 -->
-<div class="card" data-tab-pane="tab-tools"><h2><span class="chap">肆</span>WebDAV 备份设置 <span id="wdBadge" class="badge none">未配置</span></h2>
+<!-- Card 4: 站点与品牌设置 -->
+<div class="card" data-tab-pane="tab-tools"><h2><span class="chap">肆</span>站点与品牌设置</h2>
+<label>站名（留空则默认「书签导航」）</label><input id="siteTitleInput" placeholder="书签导航">
+<label>页脚文案（留空则不显示该行）</label><input id="siteFooterInput" placeholder="如：本辑已毕 · 下辑随缘">
+<button class="primary" id="siteSaveBtn" type="button">保存站点设置</button>
+<p class="msg" id="siteMsg"></p>
+<p class="muted">说明：站名与页脚文案保存后前台与后台将实时同步生效；若未设置站名则显示默认「书签导航」，页脚文案留空则不展示刊底文案行。</p></div>
+
+<!-- Card 5: WebDAV 备份设置 -->
+<div class="card" data-tab-pane="tab-tools"><h2><span class="chap">伍</span>WebDAV 备份设置 <span id="wdBadge" class="badge none">未配置</span></h2>
 <div class="preset-btns"><span class="muted" style="font-size:12px">快捷预设：</span>
 <button class="ghost mini" type="button" id="wdPresetJianGuo">坚果云</button>
 <button class="ghost mini" type="button" id="wdPresetNextcloud">Nextcloud</button>
@@ -116,8 +130,8 @@ const ADMIN_HTML = `<!DOCTYPE html>
 <p class="msg" id="floccusMsg"></p>
 </div></div>
 
-<!-- Card 5: AI 补简介设置 -->
-<div class="card" data-tab-pane="tab-tools"><h2><span class="chap">伍</span>AI 补简介设置 <span id="aiBadge" class="badge none">未配置</span></h2>
+<!-- Card 6: AI 补简介设置 -->
+<div class="card" data-tab-pane="tab-tools"><h2><span class="chap">陆</span>AI 补简介设置 <span id="aiBadge" class="badge none">未配置</span></h2>
 <label>AI 服务商</label>
 <select id="aiProvider">
   <option value="cloudflare">Cloudflare Workers AI（原生）</option>
@@ -141,8 +155,8 @@ const ADMIN_HTML = `<!DOCTYPE html>
 <div id="aiTestResult" class="test-res-box" style="display:none"></div>
 <p class="muted" id="aiTip">提示：Google Gemini 亦原生支持 OpenAI 兼容端点；测生成将使用斗鱼直播作为样本网站跑一次实际生成。</p></div>
 
-<!-- Card 6: 导入 / 导出 -->
-<div class="card" data-tab-pane="tab-tools"><h2><span class="chap">陆</span>导入 / 导出</h2>
+<!-- Card 7: 导入 / 导出 -->
+<div class="card" data-tab-pane="tab-tools"><h2><span class="chap">柒</span>导入 / 导出</h2>
 <input type="file" id="importFile" accept=".html,.htm,.json">
 <button class="ghost" id="importBtn" type="button">导入书签 (HTML / JSON)</button>
 <a href="/api/admin/export?format=json" class="btn ghost">导出 JSON</a>
@@ -150,9 +164,9 @@ const ADMIN_HTML = `<!DOCTYPE html>
 <p class="muted">导入按网址去重；支持浏览器书签 HTML 与本站备份 JSON（文件夹/父级自动还原分类）。</p></div>
 </div>
 
-<!-- Card 7: 全部书签 (右栏) -->
+<!-- Card 8: 全部书签 (右栏) -->
 <div class="col-right" data-tab-pane="tab-sites">
-<div class="card"><div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px"><h2><span class="chap">柒</span>全部书签</h2><div class="fold-controls" style="display:flex;gap:6px"><button class="ghost mini" type="button" id="foldAllBtn" title="全部折叠分类">全部折叠</button><button class="ghost mini" type="button" id="unfoldAllBtn" title="全部展开分类">全部展开</button></div></div><div class="searchbar"><input id="siteSearch" placeholder="过滤：打站名、网址或分类…"></div><div id="list">加载中…</div></div>
+<div class="card"><div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px"><h2><span class="chap">捌</span>全部书签</h2><div class="fold-controls" style="display:flex;gap:6px"><button class="ghost mini" type="button" id="foldAllBtn" title="全部折叠分类">全部折叠</button><button class="ghost mini" type="button" id="unfoldAllBtn" title="全部展开分类">全部展开</button></div></div><div class="searchbar"><input id="siteSearch" placeholder="过滤：打站名、网址或分类…"></div><div id="list">加载中…</div></div>
 </div>
 </div>
 
@@ -172,8 +186,9 @@ const ADMIN_HTML = `<!DOCTYPE html>
 
 <!-- 外置客户端逻辑 -->
 <script src="/assets/icon.js?v=20261017a" defer></script>
-<script src="/admin-assets/admin.js?v=20261018a" defer></script>
+<script src="/admin-assets/admin.js?v=20261018b" defer></script>
 </body></html>`;
+}
 
 export async function onRequestGet(context) {
   const { request, env } = context;
@@ -183,7 +198,9 @@ export async function onRequestGet(context) {
     });
   }
   const authed = await hasSession(request, env);
-  return new Response(authed ? ADMIN_HTML : LOGIN_HTML, {
+  const { site_title } = await getSiteConfig(env);
+  const siteTitle = site_title || "书签导航";
+  return new Response(authed ? getAdminHtml(siteTitle) : getLoginHtml(siteTitle), {
     headers: { "Content-Type": "text/html; charset=utf-8", "Cache-Control": "no-store" },
   });
 }

@@ -1,62 +1,65 @@
-# 日新辑览
+# rixin-nav
 
-个人自用书签导航站。米纸底、墨线条、报头式排版：白天是纸，夜间是暖黑书房。
+米纸墨线风、全套运行在 Cloudflare 免费层上的个人自用轻量现代化书签导航系统。
 
-名字出自《大学》「苟日新，日日新，又日新」——辑录常看常新的网站，打开即达。
+> 名字出自《大学》「苟日新，日日新，又日新」——纸本雅致，辑录常看常新之站，打开即达。
 
-## 现在能用什么
+---
 
-- **拼音首字母搜索**：输 `db` 找豆包、`tb` 找淘宝、`fs` 找飞书，回车直达第一个
-- **A–Z 字母索引条**＋ ↑↓ 键盘选卡，找站不用滚
-- **左侧分类索引**：编号＋计数，滚动跟随高亮；手机上变成顶部横向胶囊条
-- **常用常顾**：最常用的站置顶成专区
-- **夜间模式**：报头阴阳钮切换，暖黑暗色，记住选择；首次打开跟随系统
-- **紧凑 / 舒适**两种密度一键切换
-- **导入书签**：工具栏「导入书签」，吃浏览器导出的书签 HTML，文件夹自动变分类、按网址去重
-- **私密标记**：标了私密的站默认隐藏，工具栏「显示私密」临时打开
-- **添加网站**：页面上直接加，存本机浏览器；也能写进 `data.js` 长期管理
-- 日期带农历与节气；图标全部本地真实 favicon，离线不裂图
+## 核心功能清单
 
-## 项目结构
+- **二级分类**：支持一级分类与二级子分类树形排布，侧边索引与分区画卷清晰明了；
+- **私密体系（站点级＋分类级继承）**：支持单站标记私密，亦支持整分类标记私密；父级私密自动向下继承，未通过站长验身时接口绝不下发私密数据；
+- **拼音首字母搜索**：内置轻量汉字拼音首字母计算引擎，支持输入拼音首字母（如 `fs` 飞书、`zh` 知乎、`ssp` 少数派）及英文简称随手检索，回车直达首站；
+- **AI 智能补简介**：一键调用大模型为缺简介的书签批量生成精准简炼的一句话说明。原生支持 Cloudflare Workers AI，并深度兼容 OpenAI / Google Gemini / DeepSeek 等主流服务商；
+- **WebDAV 备份双轨**：内置坚果云、Nextcloud 及自定义 WebDAV 一键双向备份与快照还原，并支持标准浏览器书签 HTML 与全量备份 JSON 双向导入导出；
+- **Floccus 双向同步（可选组件）**：深度支持与跨平台浏览器书签插件 Floccus 进行 XBEL 双向同步联动；更提供独立定时同步 Worker，实现全天候无感自动同步（详见 [workers/floccus-sync/README.md](workers/floccus-sync/README.md)）；
+- **站内设置中心**：站长后台内置可视化设置中心，WebDAV 账号密钥、AI 服务商与令牌、Floccus 相对路径、站点自定义名称（`site_title`）与页脚文案（`site_footer`）均可直接在界面保存并即时生效；
+- **夜间沉墨主题**：报头右侧阴阳太极印钮一键流转日间「澄怀素笺」与夜间「深夜沉墨」主题，记住偏好并支持系统深色模式自适应。
 
-```
-public/            网站本体（Cloudflare Pages 的发布目录）
-  index.html       页面与全部逻辑
-  style.css        样式（白天 / 夜间双主题）
-  data.js          站点数据（第一阶段：静态数据，第二阶段改由 D1 提供）
-  icons/           本地 favicon
-functions/         Pages Functions（第二阶段接口与后台，代码已备好，待绑定上线）
-schema.sql         D1 建表
-schema-seed.sql    D1 初始数据（由 data.js 的 49 站生成）
-wrangler.toml      部署配置（D1 / KV 绑定在第二阶段启用）
-docs/              说明文档
-```
+> **免费额度**：全套架构与数据存储完全运行在 **Cloudflare 免费层（Free Tier）** 之内，零服务器成本开销，享有全球 CDN 加速与毫秒级冷启动。
 
-## 部署（Cloudflare Pages）
+---
 
-1. 把这个仓库推到 GitHub（私有仓库即可）。
-2. Cloudflare 控制台 → Workers 和 Pages → 创建 → Pages → 连接 GitHub，选这个仓库。
-3. 构建设置：框架预设选「无」，构建命令留空，**输出目录填 `public`**，保存并部署。
-4. 部署完得到一个 `*.pages.dev` 地址，能打开就是第一阶段上线完成；想用自己的域名，在 Pages 项目里「自定义域」绑定。
+## 三步快速部署
 
-## 第二阶段（D1 + KV + 后台，代码已备好，只差绑定）
+### 第一步：创建 D1 与 KV，执行建表脚本
 
-接口、后台页与前台接口接入均已写好并通过本地冒烟测试（见 `functions/README.md`），剩下的是 Cloudflare 控制台点按：
+1. 登录 [Cloudflare 控制台](https://dash.cloudflare.com/)；
+2. 进入 **Storage & Databases** → **D1**，创建一个 D1 数据库（例如命名为 `rixin-db`）；
+3. 打开该 D1 数据库控制台的 **Console** 标签页，复制本仓库根目录的 [`schema.sql`](schema.sql) 内容粘贴并执行建表；
+   - *（可选演示数据）*：若需要灌入 49 个精选站点演示数据，可继续执行 [`schema-seed.sql`](schema-seed.sql)；
+4. 进入 **Storage & Databases** → **KV**，创建一个 KV 命名空间（例如命名为 `rixin-kv`），用于存储登录会话凭据及后台设置中心配置。
 
-1. 控制台建一个 D1 数据库，把 `schema.sql` 整段粘进 D1 控制台执行建表，再执行 `schema-seed.sql` 灌入初始书签。
-2. 建一个 KV 命名空间（存后台登录会话）。
-3. 在 Pages 项目设置里绑定：D1 绑成 `NAV_DB`、KV 绑成 `NAV_KV`（Pages 绑定为准；`wrangler.toml` 里两段是本地开发用的，回填真实 ID 后取消注释即可）。
-4. 设环境变量 `ADMIN_PASSWORD`（后台口令由站长自定，只存在 CF 里，不要写进代码仓库）。
+### 第二步：Pages 关联仓库、绑定资源与唯一环境变量（路线 A 口径）
 
-> **配置口径（2026-10-17 实测定版）**：必需的环境变量只有 `ADMIN_PASSWORD` 一个；`ADMIN_API_TOKEN` 可选（供机器调用与 floccus 同步 Worker 使用）。WebDAV 备份、AI 补简介、floccus 路径等其余配置一律在后台「设置中心」里填写、存站内 KV，不需要再设环境变量（已在隔离环境实测：仅设 ADMIN_PASSWORD 时，设置中心 KV 配置全部生效）。注意鉴权只认环境变量：完全不设 `ADMIN_PASSWORD` 时后台登录不可用，这是预期行为，不是故障。
-5. 把这批代码推上 GitHub 重新部署后，`/admin` 就是管理后台：增删改书签、分类、导入导出，手机电脑同步；前台自动改吃 `/api/sites`，接口不可用时回退 `data.js`。
+1. 在 Cloudflare 控制台进入 **Compute (Workers & Pages)** → **Create application** → **Pages** → **Connect to Git**，选择本仓库；
+2. 构建与部署配置：
+   - **Framework preset（框架预设）**：无（None）；
+   - **Build command（构建命令）**：留空；
+   - **Build output directory（输出目录）**：填 `public`；
+3. 点击保存并部署；首次部署完成后，进入该 Pages 项目的 **Settings（设置）**：
+   - **Bindings（函数绑定）**：
+     - 添加 **D1 database binding**：变量名必须填写 `NAV_DB`，绑定刚才创建的 D1 数据库；
+     - 添加 **KV namespace binding**：变量名必须填写 `NAV_KV`，绑定刚才创建的 KV 命名空间；
+   - **Environment variables（环境变量）**：
+     - 添加环境变量 `ADMIN_PASSWORD`（站长后台口令，**仅此一个必填**）；其余所有配置（WebDAV、AI、站名等）均在后台设置中心直接填写，无需配置环境变量；
+4. 进入 **Deployments（部署）** 重新重试或触发一次部署，使绑定与环境变量生效。
 
-## 本地预览
+### 第三步：打开站点，使用口令进入后台
 
-直接用浏览器打开 `public/index.html` 就能看；或在 `public/` 目录起个静态服务器。数据改 `public/data.js`，刷新即生效。
+1. 打开 Cloudflare 为你生成的 `*.pages.dev` 访问地址（亦可在 Custom domains 中绑定自己的个性域名）；
+2. 点击报头右上角「门牌」印章（或直接访问 `/admin`），输入刚才在环境变量中设定的 `ADMIN_PASSWORD` 口令，即可原地验身或进入管理后台；
+3. 进入管理后台「设置与工具」区域，可在「站点与品牌设置」中按需设置个性站名与页脚文案，并在 WebDAV 与 AI 设置区绑定个人服务。
 
-## 数据说明
+---
 
-- `data.js` 每条：站名 / 网址 / 一行简介 / 分类 / 图标文件名 / `pinned` 置顶 / `private` 私密。
-- 新增分类：把 `category` 写成新名字，并同步加进文件末尾的 `NAV_CATEGORIES`。
-- 图标放 `public/icons/`，命名用域名（如 `github.com.png`）；缺图标时页面会自动用站点首字兜底。
+## 可选组件：Floccus 自动定时同步 Worker
+
+若希望将 Chrome / Edge / Firefox 浏览器的书签与本站长期保持全自动后台无感定时双向同步，可参考 [`workers/floccus-sync/README.md`](workers/floccus-sync/README.md) 将独立的 Cron Trigger Worker 部署至 Cloudflare Workers。
+
+---
+
+## 开源协议
+
+本项目基于 [MIT License](LICENSE) 开源。

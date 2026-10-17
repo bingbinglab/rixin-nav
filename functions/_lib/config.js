@@ -175,7 +175,13 @@ export async function getConfigSummary(env) {
   const fl = kv.floccus || {};
   const floccusPath = String(fl.xbel_path || DEFAULT_FLOCCUS_PATH);
 
+  // 判定站点品牌配置（明文回显）
+  const siteTitle = typeof kv.site_title === "string" ? kv.site_title : "";
+  const siteFooter = typeof kv.site_footer === "string" ? kv.site_footer : "";
+
   return {
+    site_title: siteTitle,
+    site_footer: siteFooter,
     webdav: {
       url: wdUrl,
       user: wdUser,
@@ -198,6 +204,14 @@ export async function getConfigSummary(env) {
       ai: aiSource,
     },
   };
+}
+
+// 获取生效的站点品牌文案（未配置或为空时回退至中性默认值）
+export async function getSiteConfig(env) {
+  const kv = await getKvConfig(env);
+  const site_title = typeof kv.site_title === "string" && kv.site_title.trim() ? kv.site_title.trim() : "书签导航";
+  const site_footer = typeof kv.site_footer === "string" ? kv.site_footer.trim() : "";
+  return { site_title, site_footer };
 }
 
 export async function getFloccusConfig(env) {
