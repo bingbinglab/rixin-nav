@@ -1,65 +1,78 @@
 # rixin-nav
 
-米纸墨线风、全套运行在 Cloudflare 免费层上的个人自用轻量现代化书签导航系统。
+一个自托管的书签导航站。界面是报刊式的纸墨排版，白天米纸底、夜间暖黑。数据存在自己的 Cloudflare 账号里，整套跑在免费额度内，不用买服务器。
 
-> 名字出自《大学》「苟日新，日日新，又日新」——纸本雅致，辑录常看常新之站，打开即达。
+![前台·白天](docs/screenshots/front-day.png)
 
----
+![前台·夜间](docs/screenshots/front-night.png)
 
-## 核心功能清单
+名字出自《大学》「苟日新，日日新，又日新」。站名和页脚文案都能在后台改，默认显示「书签导航」。
 
-- **二级分类**：支持一级分类与二级子分类树形排布，侧边索引与分区画卷清晰明了；
-- **私密体系（站点级＋分类级继承）**：支持单站标记私密，亦支持整分类标记私密；父级私密自动向下继承，未通过站长验身时接口绝不下发私密数据；
-- **拼音首字母搜索**：内置轻量汉字拼音首字母计算引擎，支持输入拼音首字母（如 `fs` 飞书、`zh` 知乎、`ssp` 少数派）及英文简称随手检索，回车直达首站；
-- **AI 智能补简介**：一键调用大模型为缺简介的书签批量生成精准简炼的一句话说明。原生支持 Cloudflare Workers AI，并深度兼容 OpenAI / Google Gemini / DeepSeek 等主流服务商；
-- **WebDAV 备份双轨**：内置坚果云、Nextcloud 及自定义 WebDAV 一键双向备份与快照还原，并支持标准浏览器书签 HTML 与全量备份 JSON 双向导入导出；
-- **Floccus 双向同步（可选组件）**：深度支持与跨平台浏览器书签插件 Floccus 进行 XBEL 双向同步联动；更提供独立定时同步 Worker，实现全天候无感自动同步（详见 [workers/floccus-sync/README.md](workers/floccus-sync/README.md)）；
-- **站内设置中心**：站长后台内置可视化设置中心，WebDAV 账号密钥、AI 服务商与令牌、Floccus 相对路径、站点自定义名称（`site_title`）与页脚文案（`site_footer`）均可直接在界面保存并即时生效；
-- **夜间沉墨主题**：报头右侧阴阳太极印钮一键流转日间「澄怀素笺」与夜间「深夜沉墨」主题，记住偏好并支持系统深色模式自适应。
+## 功能
 
-> **免费额度**：全套架构与数据存储完全运行在 **Cloudflare 免费层（Free Tier）** 之内，零服务器成本开销，享有全球 CDN 加速与毫秒级冷启动。
+### 浏览
 
----
+- 搜索认拼音首字母：输 `fs` 找飞书、`zh` 找知乎，回车直达第一个结果
+- A–Z 字母索引，键盘 ↑↓ 选卡
+- 二级分类，左侧索引滚动跟随高亮；手机上换成顶部横排
+- 夜间主题「沉墨」，报头按钮切换，记住选择；紧凑、舒适两种密度
+- 接口不可用时用本地快照渲染，页面不会白屏
 
-## 三步快速部署
+### 策展
 
-### 第一步：创建 D1 与 KV，执行建表脚本
+- 私密：单个站点或整个分类可以标私密，未登录时服务器不下发这些数据，不是前端遮一下就算数
+- 置顶区「常用常顾」，拖拽或按钮排序，批量多选操作
+- AI 补简介：缺简介的站一键生成一句说明，内置 5 家服务商预设（Cloudflare Workers AI、OpenAI、Gemini、DeepSeek、自定义）
+- 导入导出：浏览器书签 HTML 和本站 JSON 两种格式互通，导出文件带简介
+- 设置中心：站名、页脚、WebDAV、AI、同步路径都在后台页面里配，保存即生效
 
-1. 登录 [Cloudflare 控制台](https://dash.cloudflare.com/)；
-2. 进入 **Storage & Databases** → **D1**，创建一个 D1 数据库（例如命名为 `rixin-db`）；
-3. 打开该 D1 数据库控制台的 **Console** 标签页，复制本仓库根目录的 [`schema.sql`](schema.sql) 内容粘贴并执行建表；
-   - *（可选演示数据）*：若需要灌入 49 个精选站点演示数据，可继续执行 [`schema-seed.sql`](schema-seed.sql)；
-4. 进入 **Storage & Databases** → **KV**，创建一个 KV 命名空间（例如命名为 `rixin-kv`），用于存储登录会话凭据及后台设置中心配置。
+### 同步与备份
 
-### 第二步：Pages 关联仓库、绑定资源与唯一环境变量（路线 A 口径）
+- Floccus 双向同步（可选）：浏览器装了 Floccus 插件后，书签和本站互通——哪边加站，另一边出现；哪边删站，另一边跟着删。防误删有三道：来源标记（手工加的站永不被同步删）、删除墓碑、单次变动过多自动熔断
+- WebDAV 备份：后台一键备份和恢复；备份主文件之外另有 4 个按周轮换的槽位，主文件损坏时从槽位恢复
 
-1. 在 Cloudflare 控制台进入 **Compute (Workers & Pages)** → **Create application** → **Pages** → **Connect to Git**，选择本仓库；
-2. 构建与部署配置：
-   - **Framework preset（框架预设）**：无（None）；
-   - **Build command（构建命令）**：留空；
-   - **Build output directory（输出目录）**：填 `public`；
-3. 点击保存并部署；首次部署完成后，进入该 Pages 项目的 **Settings（设置）**：
-   - **Bindings（函数绑定）**：
-     - 添加 **D1 database binding**：变量名必须填写 `NAV_DB`，绑定刚才创建的 D1 数据库；
-     - 添加 **KV namespace binding**：变量名必须填写 `NAV_KV`，绑定刚才创建的 KV 命名空间；
-   - **Environment variables（环境变量）**：
-     - 添加环境变量 `ADMIN_PASSWORD`（站长后台口令，**仅此一个必填**）；其余所有配置（WebDAV、AI、站名等）均在后台设置中心直接填写，无需配置环境变量；
-4. 进入 **Deployments（部署）** 重新重试或触发一次部署，使绑定与环境变量生效。
+![管理后台](docs/screenshots/admin.png)
 
-### 第三步：打开站点，使用口令进入后台
+## 快速开始
 
-1. 打开 Cloudflare 为你生成的 `*.pages.dev` 访问地址（亦可在 Custom domains 中绑定自己的个性域名）；
-2. 点击报头右上角「门牌」印章（或直接访问 `/admin`），输入刚才在环境变量中设定的 `ADMIN_PASSWORD` 口令，即可原地验身或进入管理后台；
-3. 进入管理后台「设置与工具」区域，可在「站点与品牌设置」中按需设置个性站名与页脚文案，并在 WebDAV 与 AI 设置区绑定个人服务。
+需要一个 Cloudflare 账号，免费版即可。三步：
 
----
+**1. 建数据库**
 
-## 可选组件：Floccus 自动定时同步 Worker
+在 D1 里新建一个数据库，打开它的 Console，把仓库根目录的 `schema.sql` 粘贴执行。想先看效果，再执行 `schema-seed.sql`，会灌入 49 个演示站点。然后在 KV 里新建一个命名空间。
 
-若希望将 Chrome / Edge / Firefox 浏览器的书签与本站长期保持全自动后台无感定时双向同步，可参考 [`workers/floccus-sync/README.md`](workers/floccus-sync/README.md) 将独立的 Cron Trigger Worker 部署至 Cloudflare Workers。
+**2. 部署**
 
----
+Pages 里选 Connect to Git 连接这个仓库：构建命令留空，输出目录填 `public`。部署完成后进项目 Settings，加两条绑定——D1 绑为 `NAV_DB`，KV 绑为 `NAV_KV`；再加一个环境变量 `ADMIN_PASSWORD`，值是你的后台口令，自己设。绑完重新部署一次生效。
 
-## 开源协议
+环境变量只需要这一个。站名、AI 密钥、WebDAV 账号这些都进后台设置中心，不写进代码，也不会提交到 Git。
 
-本项目基于 [MIT License](LICENSE) 开源。
+**3. 打开**
+
+访问 Pages 给的地址，点报头右上角的「门牌」，或直接进 `/admin`，用口令登录。站名在后台「站点与品牌设置」里改。
+
+成本：D1、KV、Pages 的免费额度对个人导航站足够，正常使用不产生费用。AI 补简介如果选 Cloudflare Workers AI，走它每天 10000 的免费额度，不用这个功能就不涉及。
+
+## 设计要点
+
+- **同步只对账「有没有」**：站内的简介、排序、私密属于策展，浏览器的书签只是一份清单。两边按网址对账增删，策展内容永不回写浏览器——在站里改站名、写简介，不会弄乱浏览器那边的书签。
+- **私密在服务器侧过滤**：未登录拿到的 JSON 里根本没有私密站。前端隐藏只是样子，接口漏了等于没藏。分类标了私密，会向下继承到它的子分类和站点。
+- **配置只留一个环境变量**：口令放环境变量，其余进 KV。改配置不用动代码、不用重新部署，密钥也不会进 Git 历史。
+
+## 项目结构
+
+```
+public/           前台页面与静态资源（Pages 输出目录）
+functions/        接口与后台（Pages Functions）
+workers/          可选组件：Floccus 定时同步 Worker
+schema.sql        建表
+schema-seed.sql   49 条演示数据
+```
+
+## 可选组件
+
+Floccus 定时同步 Worker：每 12 小时自动对账一次，部署方法见 [workers/floccus-sync/README.md](workers/floccus-sync/README.md)。不用它的话，在后台手动点同步也一样。
+
+## 许可证与致谢
+
+[MIT License](LICENSE)。书签导入导出、WebDAV 备份、多级分类与排序这几处思路参考了 iori-nav，在此致谢。
