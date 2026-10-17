@@ -1,0 +1,17 @@
+/*
+  X-Content-Type-Options: nosniff
+  X-Frame-Options: SAMEORIGIN
+/
+  Cache-Control: no-cache
+/index.html
+  Cache-Control: no-cache
+/404.html
+  Cache-Control: no-cache
+/style.css
+  Cache-Control: public, max-age=14400, must-revalidate
+/assets/*
+  Cache-Control: public, max-age=14400, must-revalidate
+/admin-assets/*
+  Cache-Control: public, max-age=14400, must-revalidate
+/icons/*
+  Cache-Control: public, max-age=604800

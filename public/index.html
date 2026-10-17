@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>日新辑览 - 个人自用书签工作台</title>
+<link rel="icon" type="image/svg+xml" href="/favicon-2.svg">
+<link rel="icon" type="image/png" sizes="192x192" href="/icon-192-2.png">
+<link rel="apple-touch-icon" href="/icon-180-2.png">
+<meta name="theme-color" content="#f8f5ee">
+<meta name="color-scheme" content="light dark">
+<link rel="manifest" href="/site.webmanifest">
+<link rel="stylesheet" href="style.css?v=20261017c">
+<script>
+(function(){
+  var t=localStorage.getItem('myNavTheme')||(window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light');
+  if(t==='dark'){document.documentElement.classList.add('dark-theme');}
+})();
+</script>
+</head>
+<body>
+
+<main class="page" id="pageRoot">
+
+  <!-- 1. 报头 (80px 经典报头 + 纸本双墨线) -->
+  <header class="masthead">
+    <div class="masthead-main">
+      <div class="eyebrow-row">
+        <p class="eyebrow">收 集 · 整 理 · 每 日 常 用</p>
+        <span class="mast-stamp">典藏版</span>
+      </div>
+      <h1 class="mast-title">日新辑览<span class="mast-dot">。</span><span class="mast-seal" title="典藏便览">常览</span></h1>
+    </div>
+    <div class="masthead-side">
+      <div class="masthead-side-top">
+        <div class="date-block">
+          <p class="mast-solar-date" id="mastSolarDate">2026年10月15日 · 星期四</p>
+          <div class="lunar-almanac-row">
+            <span class="almanac-badge" id="mastLunarDate">丙午年 · 农历九月初六 · 寒露</span>
+          </div>
+        </div>
+        <!-- 站长门牌印钮（登录/后台入口） -->
+        <button id="adminSealBtn" class="admin-seal-btn" type="button" title="站长登录 / 管理后台" aria-label="站长登录">
+          <span class="seal-frame"><span id="adminSealText" class="seal-text">门牌</span></span>
+        </button>
+        <!-- 阴阳日夜切换印钮 -->
+        <button id="themeToggleBtn" class="yinyang-btn" type="button" title="切换白天 / 夜间模式 (阴阳流转)" aria-label="切换白天夜间模式">
+          <svg class="yinyang-icon" viewBox="0 0 32 32">
+            <circle cx="16" cy="16" r="14" fill="var(--box-bg)" stroke="currentColor" stroke-width="2.2"/>
+            <path d="M16 2 A14 14 0 0 1 16 30 A7 7 0 0 1 16 16 A7 7 0 0 0 16 2 Z" fill="currentColor"/>
+            <circle cx="16" cy="9" r="2.4" fill="var(--box-bg)"/>
+            <circle cx="16" cy="23" r="2.4" fill="currentColor"/>
+          </svg>
+        </button>
+      </div>
+      <div class="masthead-side-bottom">
+        <span class="mast-stats">已收录 <b id="siteCount">0</b> 个站点 · <b id="catCount">0</b> 个分类</span>
+        <span class="mast-divider">·</span>
+        <span class="mast-note">纸本无广 · 打开即达</span>
+      </div>
+    </div>
+  </header>
+  <div class="rule-double"></div>
+
+  <!-- 2. 工具栏 (主搜索 + 紧凑视图切换 + 私密开关) -->
+  <section class="toolbar">
+    <div class="search-box">
+      <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.8-3.8"/></svg>
+      <input id="searchInput" class="search-input" type="text" placeholder="输入名称、拼音首字母(如 fs/zh/gh)、域名，回车直达…" autocomplete="off">
+      <div class="search-kbd-hint"><kbd>/</kbd></div>
+      <button id="clearBtn" class="clear-btn" title="清空">✕</button>
+    </div>
+    <button id="viewToggleBtn" class="toggle-view-btn" type="button" title="切换详细/紧凑视图">
+      <span id="viewToggleIcon">⊞</span>
+      <span id="viewToggleText">紧凑模式</span>
+    </button>
+    <button id="privacyBtn" class="tool-btn" type="button" title="显示或隐藏标记为私密的站点" style="display: none;"><span>显示私密</span></button>
+  </section>
+
+  <!-- 2.1 A-Z 快速字母条 (主控置前) + 快速定位说明 (置后) -->
+  <div class="quick-loc-bar">
+    <div class="az-strip-wrap">
+      <div class="az-strip" id="azStrip"></div>
+    </div>
+    <div class="quick-loc-hint">
+      <span class="hint-dot">※</span>
+      <span class="desktop-hint-span">支持<strong>拼音首字母</strong>检索（如 <kbd>fs</kbd> 飞书、<kbd>zh</kbd> 知乎），回车直达</span>
+      <span class="mobile-hint-span">支持<strong>拼音首字母</strong>与字母滑轨快速定位</span>
+    </div>
+  </div>
+
+  <!-- 3. 主体工作区 (两栏字典索引布局：左侧吸顶索引 + 右侧内容主画卷) -->
+  <div class="workspace-layout">
+
+    <!-- 左侧吸顶分类索引导航 (Sidebar Index) -->
+    <aside class="sidebar-index">
+      <div class="sidebar-sticky-box">
+        <div class="sidebar-head">
+          <span class="sidebar-title">分类索引</span>
+          <span class="sidebar-subtitle">INDEX</span>
+        </div>
+        <nav class="sidebar-nav" id="sidebarNav"></nav>
+        <button class="back-to-top-btn" id="backToTopBtn" type="button">↑ 回到顶部</button>
+      </div>
+    </aside>
+
+    <!-- 右侧内容主画卷 -->
+    <div class="main-sections-content">
+      <!-- 常用常顾专区 (Pinned Essentials) -->
+      <section id="pinnedSection" class="section pinned-section" style="display: none;">
+        <div class="section-head">
+          <span class="section-star">❖</span>
+          <h2 class="section-title">常用常顾</h2>
+          <span class="section-sub">PINNED ESSENTIALS</span>
+          <span class="section-line"></span>
+          <span class="section-count" id="pinnedCount">0 个站点</span>
+        </div>
+        <div class="grid" id="pinnedGrid"></div>
+      </section>
+
+      <!-- 各分类分区 -->
+      <div id="sections"></div>
+
+      <!-- 搜索无匹配结果 -->
+      <div class="no-results" id="noResults" style="display: none;">
+        <div class="no-results-seal">未入本辑</div>
+        <p>未找到与「<strong id="noResLetter"></strong>」相符的书签，换个词试试。<br>
+        <span>请尝试缩短或更换检索词，或 <button type="button" class="reset-filter-btn" id="resetFilterBtn">点击查看全部书签</button></span></p>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- 页脚 -->
+  <footer class="footer">
+    <div class="footer-row">
+      <span>© 2026 日新辑览 · 我的互联网门牌</span>
+      <span class="footer-right">深灰 · 赭石 · 墨香</span>
+    </div>
+    <div class="footer-colophon">本辑已毕 · 下辑随缘</div>
+  </footer>
+
+  <!-- 移动端悬浮回到顶部按钮 -->
+  <button class="float-top-btn" id="floatTopBtn" title="回到顶部" aria-label="回到顶部">↑</button>
+
+</main>
+
+
+
+<!-- 站长门牌验身弹窗 (方案 A 原地解锁) -->
+<div class="modal-overlay" id="loginModalOverlay" hidden>
+  <div class="modal login-modal">
+    <div class="modal-head">
+      <span class="serif">日新辑览 · 站长验身</span>
+      <button class="modal-close" id="loginModalClose">✕</button>
+    </div>
+    <form class="modal-body" id="loginForm">
+      <div id="loginAuthInfo" class="login-auth-info" style="display: none;">
+        <p class="login-auth-status">当前已通过站长身份验证</p>
+        <div class="login-auth-actions">
+          <a href="/admin" class="add-btn modal-submit" style="text-align:center;text-decoration:none;display:inline-block;">进入管理后台 →</a>
+          <button type="button" id="logoutBtn" class="tool-btn" style="margin-top:8px;">退出登录</button>
+        </div>
+      </div>
+      <div id="loginInputWrap">
+        <label>站长管理口令
+          <input type="password" required name="password" id="loginPassword" class="modal-input" placeholder="输入 ADMIN_PASSWORD 口令…" autocomplete="current-password">
+        </label>
+        <button type="submit" id="loginSubmitBtn" class="add-btn modal-submit">验 身</button>
+        <p id="loginErrorMsg" class="login-err-msg" style="display: none; color: var(--ochre); font-size: 13px; margin-top: 6px;"></p>
+        <p class="modal-tip">验身成功后将原地解锁全量私密书签，无需刷新页面。<br><a href="/admin" style="color: var(--muted); text-decoration: underline;">直接前往管理后台登录页 →</a></p>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- 键位速查浮层 (检字诀，桌面半) -->
+<div class="shortcut-modal-overlay" id="shortcutModalOverlay" hidden>
+  <div class="shortcut-modal-card">
+    <div class="shortcut-modal-head">
+      <h3 class="shortcut-modal-title">检字诀 · 键位速查</h3>
+      <button type="button" class="shortcut-modal-close" id="shortcutCloseBtn" title="关闭 (Esc)">✕</button>
+    </div>
+    <div class="shortcut-modal-grid">
+      <div class="shortcut-row"><kbd>/</kbd><span>快速聚焦搜索框</span></div>
+      <div class="shortcut-row"><kbd>↑</kbd> <kbd>↓</kbd><span>上下方向键选中卡片</span></div>
+      <div class="shortcut-row"><kbd>Enter</kbd><span>回车直达选中网站（搜索时直达首站）</span></div>
+      <div class="shortcut-row"><kbd>Esc</kbd><span>清空搜索过滤 / 关闭浮层</span></div>
+      <div class="shortcut-row"><kbd>A</kbd>–<kbd>Z</kbd><span>随手键入拼音或字母直接检索</span></div>
+      <div class="shortcut-row"><kbd>?</kbd><span>呼出 / 关闭本键位速查</span></div>
+    </div>
+  </div>
+</div>
+
+<script src="data.js"></script>
+<script src="/assets/icon.js?v=20261017a"></script>
+<script src="/assets/app.js?v=20261017h"></script>
+</body>
+</html>

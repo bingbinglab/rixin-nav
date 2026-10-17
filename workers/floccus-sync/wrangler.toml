@@ -1,0 +1,16 @@
+name = "rixin-floccus-sync"
+main = "index.js"
+compatibility_date = "2024-04-01"
+
+# 每 12 小时自动触发一次
+[triggers]
+crons = ["0 */12 * * *"]
+
+[vars]
+# 请将此地址替换为你导航站线上实际部署的完整接口地址（如 https://nav.yourdomain.com/api/admin/sync-floccus）
+NAV_SYNC_URL = "https://your-nav-site.pages.dev/api/admin/sync-floccus"
+
+# 以下敏感凭据请勿明文写入本文件，使用 wrangler secret put 录入：
+# 1. ADMIN_API_TOKEN      - 必须与导航站 Cloudflare Pages 环境变量中的 ADMIN_API_TOKEN 保持一致
+# 2. WXPUSHER_APP_TOKEN   - WxPusher 微信推送平台 AppToken (可选)
+# 3. WXPUSHER_UID         - 站长接收推送的 WxPusher UID (可选)

@@ -1,0 +1,13 @@
+{
+  "name": "日新辑览",
+  "short_name": "辑览",
+  "description": "个人自用书签导航 · 每日导航，我的书签",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#f8f5ee",
+  "theme_color": "#f8f5ee",
+  "icons": [
+    { "src": "/icon-192-2.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "/icon-512-2.png", "sizes": "512x512", "type": "image/png" }
+  ]
+}
