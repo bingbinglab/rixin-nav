@@ -6,6 +6,8 @@
 
 ![前台·夜间](docs/screenshots/front-night.png)
 
+<img src="docs/screenshots/front-mobile.png" width="320" alt="手机端">
+
 名字出自《大学》「苟日新，日日新，又日新」。站名和页脚文案都能在后台改，默认显示「书签导航」。
 
 ## 功能
