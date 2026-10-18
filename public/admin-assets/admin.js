@@ -1097,7 +1097,8 @@ function updateBulkBar(visibleSites = []) {
     bar.className = "bulk-bar";
     const listEl = $("list");
     if (listEl && listEl.parentNode) {
-      listEl.parentNode.insertBefore(bar, listEl);
+      // 必须落在列表之后：.bulk-bar 是 bottom 吸底浮动设计，插在列表前会被页面滚走（选靠下的书签时看不见）
+      listEl.parentNode.insertBefore(bar, listEl.nextSibling);
     }
   }
 
