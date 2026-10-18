@@ -492,7 +492,7 @@ html.dark-theme .icon-box { background: var(--card); }
   }
   .cattable tr[data-cat-id] {
     display: grid !important;
-    grid-template-columns: auto auto 1fr !important;
+    grid-template-columns: 1fr auto 1fr !important;
     grid-template-areas:
       "name name count"
       "priv sort act" !important;
@@ -549,6 +549,7 @@ html.dark-theme .icon-box { background: var(--card); }
 
   /* 第一行右侧：书签数徽标（独立在右上角，绝对不可能压到分类名文字） */
   .cattable .cat-col-count {
+    justify-self: end !important;
     grid-area: count !important;
     display: flex !important;
     align-items: center !important;
@@ -581,6 +582,7 @@ html.dark-theme .icon-box { background: var(--card); }
   /* 第二行：私密开关、↑↓、改名、删除 */
   .cattable .cat-col-priv {
     grid-area: priv !important;
+    justify-self: start !important;
     display: flex !important;
     align-items: center !important;
   }
@@ -606,6 +608,7 @@ html.dark-theme .icon-box { background: var(--card); }
 
   .cattable .cat-col-sort {
     grid-area: sort !important;
+    justify-self: center !important;
     display: flex !important;
     align-items: center !important;
     gap: 4px !important;
@@ -620,6 +623,7 @@ html.dark-theme .icon-box { background: var(--card); }
 
   .cattable .cat-col-act {
     grid-area: act !important;
+    justify-self: end !important;
     display: flex !important;
     justify-content: flex-end !important;
     align-items: center !important;
