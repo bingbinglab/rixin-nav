@@ -1,4 +1,4 @@
--- 日新辑览 · D1 种子数据（由 data.js 的 49 站生成，建表后执行本文件灌入初始数据）
+-- 日新辑览 · D1 种子数据（50 站，建表后执行本文件灌入初始数据）
 
 INSERT INTO category (id, name, sort_order) VALUES (1, '人工智能', 10);
 INSERT INTO category (id, name, sort_order) VALUES (2, '办公协作', 20);
@@ -30,13 +30,14 @@ INSERT INTO sites (name, url, desc, category_id, icon, pinned, is_private, sort_
 INSERT INTO sites (name, url, desc, category_id, icon, pinned, is_private, sort_order) VALUES ('小红书', 'https://www.xiaohongshu.com', '生活方式社区', 4, 'xiaohongshu.com.png', 0, 0, 170);
 INSERT INTO sites (name, url, desc, category_id, icon, pinned, is_private, sort_order) VALUES ('微博', 'https://weibo.com', '社交媒体与热搜', 4, 'weibo.com.png', 0, 0, 180);
 INSERT INTO sites (name, url, desc, category_id, icon, pinned, is_private, sort_order) VALUES ('V2EX', 'https://www.v2ex.com', '程序员创意社区', 4, 'v2ex.com.png', 0, 0, 190);
-INSERT INTO sites (name, url, desc, category_id, icon, pinned, is_private, sort_order) VALUES ('Linux.do', 'https://linux.do', '技术与 AI 社区', 4, 'linux.do.png', 0, 0, 200);
+INSERT INTO sites (name, url, desc, category_id, icon, pinned, is_private, sort_order) VALUES ('Linux.do', 'https://linux.do', '技术与 AI 社区', 4, 'linux.do.png', 1, 0, 200);
 INSERT INTO sites (name, url, desc, category_id, icon, pinned, is_private, sort_order) VALUES ('哔哩哔哩', 'https://www.bilibili.com', '视频弹幕网站', 5, 'bilibili.com.png', 0, 0, 210);
 INSERT INTO sites (name, url, desc, category_id, icon, pinned, is_private, sort_order) VALUES ('YouTube', 'https://www.youtube.com', '全球视频平台', 5, 'youtube.com.png', 0, 0, 220);
 INSERT INTO sites (name, url, desc, category_id, icon, pinned, is_private, sort_order) VALUES ('网易云音乐', 'https://music.163.com', '在线音乐与歌单', 5, 'music.163.com.png', 0, 0, 230);
 INSERT INTO sites (name, url, desc, category_id, icon, pinned, is_private, sort_order) VALUES ('豆瓣电影', 'https://movie.douban.com', '电影评分与影评', 5, 'douban.com.png', 0, 0, 240);
 INSERT INTO sites (name, url, desc, category_id, icon, pinned, is_private, sort_order) VALUES ('腾讯视频', 'https://v.qq.com', '影视剧集与综艺', 5, 'v.qq.com.png', 0, 0, 250);
 INSERT INTO sites (name, url, desc, category_id, icon, pinned, is_private, sort_order) VALUES ('GitHub', 'https://github.com', '代码托管与开源社区', 6, 'github.com.png', 1, 0, 260);
+INSERT INTO sites (name, url, desc, category_id, icon, pinned, is_private, sort_order) VALUES ('日新辑览仓库', 'https://github.com/bingbinglab/rixin-nav', '本站开源源码', 6, 'github.com.png', 1, 0, 210);
 INSERT INTO sites (name, url, desc, category_id, icon, pinned, is_private, sort_order) VALUES ('MDN Web Docs', 'https://developer.mozilla.org', '前端开发技术文档', 6, 'developer.mozilla.org.png', 0, 0, 270);
 INSERT INTO sites (name, url, desc, category_id, icon, pinned, is_private, sort_order) VALUES ('Stack Overflow', 'https://stackoverflow.com', '编程问答与解决方案', 6, 'stackoverflow.com.png', 0, 0, 280);
 INSERT INTO sites (name, url, desc, category_id, icon, pinned, is_private, sort_order) VALUES ('Vercel', 'https://vercel.com', '前端部署与托管平台', 6, 'vercel.com.png', 0, 0, 290);

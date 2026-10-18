@@ -4,7 +4,7 @@
 
 名字出自《大学》「苟日新，日日新，又日新」。站名和页脚文案都能在后台改，默认显示「书签导航」。
 
-**在线演示**：[bmk.navv.eu.cc](https://bmk.navv.eu.cc)——里面是 49 个演示站点，后台口令是 `demo`，可以登录进去随便点。
+**在线演示**：[bmk.navv.eu.cc](https://bmk.navv.eu.cc)——里面是 50 个演示站点，后台口令是 `demo`，可以登录进去随便点。
 
 ## 界面一览
 
@@ -75,7 +75,7 @@
 
 **1. 建数据库**
 
-在 D1 里新建一个数据库，打开它的 Console，把仓库根目录的 `schema.sql` 粘贴执行。想先看效果，再执行 `schema-seed.sql`，会灌入 49 个演示站点。然后在 KV 里新建一个命名空间。
+在 D1 里新建一个数据库，打开它的 Console，把仓库根目录的 `schema.sql` 粘贴执行。想先看效果，再执行 `schema-seed.sql`，会灌入 50 个演示站点。然后在 KV 里新建一个命名空间。
 
 **2. 部署**
 
@@ -102,7 +102,7 @@ public/           前台页面与静态资源（Pages 输出目录）
 functions/        接口与后台（Pages Functions）
 workers/          可选组件：Floccus 定时同步 Worker
 schema.sql        建表
-schema-seed.sql   49 条演示数据
+schema-seed.sql   50 条演示数据
 ```
 
 ## 可选组件
