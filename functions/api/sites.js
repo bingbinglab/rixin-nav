@@ -78,9 +78,9 @@ export async function onRequestGet(context) {
     }
   }
 
-  const { site_title, site_footer } = await getSiteConfig(env);
+  const { site_title, site_footer, ext_engines } = await getSiteConfig(env);
   const cacheHeaders = authed
     ? { "Cache-Control": "private, no-store" }
     : { "Cache-Control": "public, max-age=30, stale-while-revalidate=120" };
-  return json({ categories, sites, authed, site_title, site_footer }, 200, cacheHeaders);
+  return json({ categories, sites, authed, site_title, site_footer, ext_engines }, 200, cacheHeaders);
 }

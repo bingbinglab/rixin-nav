@@ -10,7 +10,7 @@
 <meta name="theme-color" content="#f8f5ee">
 <meta name="color-scheme" content="light dark">
 <link rel="manifest" href="/site.webmanifest">
-<link rel="stylesheet" href="style.css?v=20261018a">
+<link rel="stylesheet" href="style.css?v=20261018b">
 <script>
 (function(){
   var t=localStorage.getItem('myNavTheme')||(window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light');
@@ -113,7 +113,7 @@
           <h2 class="section-title">常用常顾</h2>
           <span class="section-sub">PINNED ESSENTIALS</span>
           <span class="section-line"></span>
-          <span class="section-count" id="pinnedCount">0 个站点</span>
+          <span class="section-count" id="pinnedCount">— 个站点</span>
         </div>
         <div class="grid" id="pinnedGrid"></div>
       </section>
@@ -127,13 +127,13 @@
         <p>未找到与「<strong id="noResLetter"></strong>」相符的书签，换个词试试。<br>
         <span>请尝试缩短或更换检索词，或 <button type="button" class="reset-filter-btn" id="resetFilterBtn">点击查看全部书签</button></span></p>
         <div class="ext-search" id="extSearch" style="display: none;">
-          <p class="ext-search-label">本辑未收，去外面找「<span id="extKw"></span>」：</p>
+          <p class="ext-search-label">本辑未收「<span id="extKw"></span>」，辑外求索：</p>
           <div class="ext-search-btns">
             <a class="ext-btn" id="extBing" href="#" target="_blank" rel="noopener">必应</a>
             <a class="ext-btn" id="extGoogle" href="#" target="_blank" rel="noopener">Google</a>
             <a class="ext-btn" id="extGithub" href="#" target="_blank" rel="noopener">GitHub</a>
           </div>
-          <p class="ext-search-hint">按 Enter 直接用必应搜索</p>
+          <p class="ext-search-hint" id="extHint">← → 切换引擎 · 按 Enter 用必应搜索</p>
         </div>
       </div>
     </div>
@@ -192,8 +192,8 @@
     </div>
     <div class="shortcut-modal-grid">
       <div class="shortcut-row"><kbd>/</kbd><span>快速聚焦搜索框</span></div>
-      <div class="shortcut-row"><kbd>↑</kbd> <kbd>↓</kbd><span>上下方向键选中卡片</span></div>
-      <div class="shortcut-row"><kbd>Enter</kbd><span>回车直达选中网站（搜索时直达首站）</span></div>
+      <div class="shortcut-row"><kbd>↑</kbd> <kbd>↓</kbd> <kbd>←</kbd> <kbd>→</kbd><span>方向键移动选中卡片</span></div>
+      <div class="shortcut-row"><kbd>Enter</kbd><span>直达选中网站（未入本辑时直达外搜）</span></div>
       <div class="shortcut-row"><kbd>Esc</kbd><span>清空搜索过滤 / 关闭浮层</span></div>
       <div class="shortcut-row"><kbd>A</kbd>–<kbd>Z</kbd><span>随手键入拼音或字母直接检索</span></div>
       <div class="shortcut-row"><kbd>?</kbd><span>呼出 / 关闭本键位速查</span></div>
@@ -203,6 +203,6 @@
 
 <script src="data.js"></script>
 <script src="/assets/icon.js?v=20261017a"></script>
-<script src="/assets/app.js?v=20261018b"></script>
+<script src="/assets/app.js?v=20261018d"></script>
 </body>
 </html>

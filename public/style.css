@@ -2101,3 +2101,4 @@ html.dark-theme .shortcut-row kbd {
   .ext-search-hint { display: none; }
   .ext-btn { min-height: 42px; padding: 8px 22px; }
 }
+.ext-btn.ext-active { background: var(--ink, #333); color: var(--paper, #f7f2e7); }

@@ -158,6 +158,20 @@ export async function onRequestPut(context) {
       updatedSite = true;
     }
   }
+  // 外搜引擎勾选：只收白名单内的 id，至少保留一个（顺序按白名单固定）
+  if (body.ext_engines !== undefined) {
+    if (!Array.isArray(body.ext_engines)) {
+      groupErrors.site = "外搜引擎配置格式不对";
+    } else {
+      const picked = ["bing", "google", "github"].filter((id) => body.ext_engines.includes(id));
+      if (!picked.length) {
+        groupErrors.site = "外搜引擎至少保留一个";
+      } else {
+        kv.ext_engines = picked;
+        updatedSite = true;
+      }
+    }
+  }
 
   // 若存在有效修改则落库
   if (updatedWd || updatedAi || updatedFl || updatedSite) {

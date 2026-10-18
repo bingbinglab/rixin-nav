@@ -2162,6 +2162,10 @@ async function loadConfig() {
     if ($("siteFooterInput")) {
       $("siteFooterInput").value = cfg.site_footer || "";
     }
+    const engs = Array.isArray(cfg.ext_engines) && cfg.ext_engines.length ? cfg.ext_engines : ["bing", "google", "github"];
+    if ($("extEngBing")) $("extEngBing").checked = engs.includes("bing");
+    if ($("extEngGoogle")) $("extEngGoogle").checked = engs.includes("google");
+    if ($("extEngGithub")) $("extEngGithub").checked = engs.includes("github");
   } catch (e) {
     console.warn("加载配置失败：", e);
   }
@@ -2172,11 +2176,20 @@ if ($("siteSaveBtn")) {
     $("siteMsg").textContent = "保存中…";
     const site_title = $("siteTitleInput").value.trim();
     const site_footer = $("siteFooterInput").value.trim();
+    const ext_engines = [];
+    if ($("extEngBing") && $("extEngBing").checked) ext_engines.push("bing");
+    if ($("extEngGoogle") && $("extEngGoogle").checked) ext_engines.push("google");
+    if ($("extEngGithub") && $("extEngGithub").checked) ext_engines.push("github");
+    if (!ext_engines.length) {
+      $("siteMsg").textContent = "外搜引擎至少保留一个";
+      toast("外搜引擎至少保留一个", true);
+      return;
+    }
     try {
       const res = await api("/api/admin/config", {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ site_title, site_footer }),
+        body: JSON.stringify({ site_title, site_footer, ext_engines }),
       });
       if (res.error) {
         $("siteMsg").textContent = res.error;

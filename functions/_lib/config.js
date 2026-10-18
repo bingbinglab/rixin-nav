@@ -182,6 +182,7 @@ export async function getConfigSummary(env) {
   return {
     site_title: siteTitle,
     site_footer: siteFooter,
+    ext_engines: normalizeExtEngines(kv.ext_engines),
     webdav: {
       url: wdUrl,
       user: wdUser,
@@ -206,12 +207,21 @@ export async function getConfigSummary(env) {
   };
 }
 
+// 外搜引擎白名单（站内无结果时用）：后台可勾选启用哪几个，顺序固定为此表顺序
+export const EXT_ENGINE_IDS = ["bing", "google", "github"];
+export function normalizeExtEngines(v) {
+  if (!Array.isArray(v)) return [...EXT_ENGINE_IDS];
+  const picked = EXT_ENGINE_IDS.filter((id) => v.includes(id));
+  return picked.length ? picked : [...EXT_ENGINE_IDS];
+}
+
 // 获取生效的站点品牌文案（未配置或为空时回退至中性默认值）
 export async function getSiteConfig(env) {
   const kv = await getKvConfig(env);
   const site_title = typeof kv.site_title === "string" && kv.site_title.trim() ? kv.site_title.trim() : "书签导航";
   const site_footer = typeof kv.site_footer === "string" ? kv.site_footer.trim() : "";
-  return { site_title, site_footer };
+  const ext_engines = normalizeExtEngines(kv.ext_engines);
+  return { site_title, site_footer, ext_engines };
 }
 
 export async function getFloccusConfig(env) {

@@ -262,6 +262,43 @@ function cardElFor(site) {
 // 键盘二维导航的列锚点：记住期望的水平位置，跨过残行后仍能对回原来的列
 let kbPrefX = null;
 
+// 外搜引擎（未入本辑时用）：后台可勾选启用哪几个；←/→ 在启用的引擎间切换，Enter 打开当前引擎
+const ENGINE_DEFS = {
+  bing: { name: "必应", btnId: "extBing", url: (q) => `https://www.bing.com/search?q=${q}` },
+  google: { name: "Google", btnId: "extGoogle", url: (q) => `https://www.google.com/search?q=${q}` },
+  github: { name: "GitHub", btnId: "extGithub", url: (q) => `https://github.com/search?q=${q}` },
+};
+const ENGINE_ORDER = ["bing", "google", "github"];
+let activeEngineIds = [...ENGINE_ORDER];
+let extEngineIdx = 0;
+function curEngineDef() {
+  if (extEngineIdx >= activeEngineIds.length) extEngineIdx = 0;
+  return ENGINE_DEFS[activeEngineIds[extEngineIdx]];
+}
+function applyExtEngines(ids) {
+  const valid = ENGINE_ORDER.filter((id) => Array.isArray(ids) && ids.includes(id));
+  activeEngineIds = valid.length ? valid : [...ENGINE_ORDER];
+  if (extEngineIdx >= activeEngineIds.length) extEngineIdx = 0;
+  for (const id of ENGINE_ORDER) {
+    const b = document.getElementById(ENGINE_DEFS[id].btnId);
+    if (b) b.style.display = activeEngineIds.includes(id) ? "" : "none";
+  }
+  syncExtEngine();
+}
+function syncExtEngine() {
+  const def = curEngineDef();
+  for (const id of ENGINE_ORDER) {
+    const b = document.getElementById(ENGINE_DEFS[id].btnId);
+    if (b) b.classList.toggle('ext-active', activeEngineIds[extEngineIdx] === id);
+  }
+  const hint = document.getElementById('extHint');
+  if (hint) {
+    hint.textContent = activeEngineIds.length > 1
+      ? `← → 切换引擎 · 按 Enter 用${def.name}搜索`
+      : `按 Enter 用${def.name}搜索`;
+  }
+}
+
 // ---------- 3. 页面核心渲染逻辑 ----------
 function render() {
   const sites = displaySites();
@@ -368,15 +405,15 @@ function render() {
     const q = keyword.trim();
     if (!anyVisible && q) {
       extSearch.style.display = 'block';
+      extEngineIdx = 0;
       const enc = encodeURIComponent(q);
-      const bing = document.getElementById('extBing');
-      const google = document.getElementById('extGoogle');
-      const github = document.getElementById('extGithub');
+      for (const id of activeEngineIds) {
+        const b = document.getElementById(ENGINE_DEFS[id].btnId);
+        if (b) b.href = ENGINE_DEFS[id].url(enc);
+      }
       const kwSpan = document.getElementById('extKw');
-      if (bing) bing.href = `https://www.bing.com/search?q=${enc}`;
-      if (google) google.href = `https://www.google.com/search?q=${enc}`;
-      if (github) github.href = `https://github.com/search?q=${enc}`;
       if (kwSpan) kwSpan.textContent = q;
+      syncExtEngine();
     } else {
       extSearch.style.display = 'none';
     }
@@ -733,9 +770,9 @@ window.addEventListener('keydown', e => {
         }
       }
     } else if (keyword.trim()) {
-      // 站内无结果：回车直达外部搜索（必应），键盘流不中断
+      // 站内无结果：回车用当前选中的外搜引擎（默认必应，←/→ 可切换），键盘流不中断
       e.preventDefault();
-      window.open(`https://www.bing.com/search?q=${encodeURIComponent(keyword.trim())}`, '_blank', 'noopener');
+      window.open(curEngineDef().url(encodeURIComponent(keyword.trim())), '_blank', 'noopener');
     }
     return;
   }
@@ -746,6 +783,14 @@ window.addEventListener('keydown', e => {
     if (document.activeElement === input) {
       const pos = input.selectionStart;
       if (pos > 0 && pos < input.value.length) return;
+    }
+    // 未入本辑空状态：←/→ 改为切换外搜引擎（此时无卡片可走，不冲突）
+    const extEl = document.getElementById('extSearch');
+    if (extEl && extEl.style.display !== 'none' && visibleSitesList.length === 0 && keyword.trim() && activeEngineIds.length > 1) {
+      e.preventDefault();
+      extEngineIdx = (extEngineIdx + (e.key === 'ArrowRight' ? 1 : -1) + activeEngineIds.length) % activeEngineIds.length;
+      syncExtEngine();
+      return;
     }
     if (visibleSitesList.length > 0) {
       e.preventDefault();
@@ -1084,6 +1129,8 @@ async function refreshSitesData() {
     if (!r.ok) return;
     const data = await r.json();
     if (!data) return;
+
+    if (Array.isArray(data.ext_engines)) applyExtEngines(data.ext_engines);
 
     if (data.site_title !== undefined || data.site_footer !== undefined) {
       applySiteConfig(data.site_title, data.site_footer);

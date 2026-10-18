@@ -107,6 +107,12 @@ function getAdminHtml(siteTitle) {
 <div class="card" data-tab-pane="tab-tools"><h2><span class="chap">肆</span>站点与品牌设置</h2>
 <label>站名（留空则默认「书签导航」）</label><input id="siteTitleInput" placeholder="书签导航">
 <label>页脚文案（留空则不显示该行）</label><input id="siteFooterInput" placeholder="如：本辑已毕 · 下辑随缘">
+<label>外搜引擎（站内搜不到结果时用，至少留一个；只留一个则前台只显示那一个）</label>
+<div style="display:flex;gap:18px;flex-wrap:wrap;margin:2px 0 10px">
+<label style="display:inline-flex;align-items:center;gap:6px;margin:0"><input type="checkbox" id="extEngBing" style="width:auto;margin:0"> 必应</label>
+<label style="display:inline-flex;align-items:center;gap:6px;margin:0"><input type="checkbox" id="extEngGoogle" style="width:auto;margin:0"> Google</label>
+<label style="display:inline-flex;align-items:center;gap:6px;margin:0"><input type="checkbox" id="extEngGithub" style="width:auto;margin:0"> GitHub</label>
+</div>
 <button class="primary" id="siteSaveBtn" type="button">保存站点设置</button>
 <p class="msg" id="siteMsg"></p>
 <p class="muted">说明：站名与页脚文案保存后前台与后台将实时同步生效；若未设置站名则显示默认「书签导航」，页脚文案留空则不展示刊底文案行。</p></div>
@@ -188,7 +194,7 @@ function getAdminHtml(siteTitle) {
 
 <!-- 外置客户端逻辑 -->
 <script src="/assets/icon.js?v=20261017a" defer></script>
-<script src="/admin-assets/admin.js?v=20261018c" defer></script>
+<script src="/admin-assets/admin.js?v=20261018d" defer></script>
 </body></html>`;
 }
 
