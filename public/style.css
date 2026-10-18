@@ -2080,3 +2080,24 @@ html.dark-theme .shortcut-row kbd {
     display: none !important;
   }
 }
+
+/* 键盘导航滚动留白：选中卡滚入视野时不贴边，顶部露出分类标题 */
+.card { scroll-margin: 120px 0 84px; }
+
+/* 搜索无结果：外部搜索兜底（按钮可点可触，移动端同样好按） */
+.ext-search { margin-top: 18px; }
+.ext-search-label { font-size: 14px; margin: 0 0 10px; }
+.ext-search-btns { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
+.ext-btn {
+  display: inline-flex; align-items: center; justify-content: center;
+  min-height: 38px; padding: 6px 20px;
+  border: 1.5px solid var(--ink, #333); color: inherit;
+  font-family: "Noto Serif SC", serif; font-size: 14px; letter-spacing: 2px;
+  text-decoration: none; background: transparent; cursor: pointer;
+}
+.ext-btn:hover { background: var(--ink, #333); color: var(--paper, #f7f2e7); }
+.ext-search-hint { font-size: 12px; opacity: .65; margin: 10px 0 0; letter-spacing: 1px; }
+@media (max-width: 640px) {
+  .ext-search-hint { display: none; }
+  .ext-btn { min-height: 42px; padding: 8px 22px; }
+}

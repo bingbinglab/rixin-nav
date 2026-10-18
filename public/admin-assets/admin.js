@@ -1851,6 +1851,87 @@ $("davRestoreBtn").onclick = async () => {
   }
 };
 
+// --- 死链巡检（手动触发，分批查活，只报告、永不自动删；删不删逐条由站长定）---
+$("linkCheckBtn").onclick = async () => {
+  const btn = $("linkCheckBtn");
+  const box = $("linkCheckResult");
+  const sites = (data.sites || []).filter((s) => s && s.url);
+  if (!sites.length) {
+    toast("暂无可巡检的站点", true);
+    return;
+  }
+  btn.disabled = true;
+  box.style.display = "block";
+  box.innerHTML = "";
+  const bad = [];
+  const CHUNK = 30;
+  try {
+    for (let i = 0; i < sites.length; i += CHUNK) {
+      const chunk = sites.slice(i, i + CHUNK);
+      $("toolMsg").textContent = `正在巡检死链… ${i}/${sites.length}`;
+      const j = await api("/api/admin/check-links", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ urls: chunk.map((s) => ({ id: s.id, url: s.url })) }),
+      });
+      (j.results || []).forEach((r) => {
+        if (r.status !== "ok") {
+          const s = chunk.find((x) => x.id === r.id);
+          if (s) bad.push({ s, r });
+        }
+      });
+    }
+  } catch (e) {
+    $("toolMsg").textContent = "巡检中断：" + e.message;
+    toast("巡检中断：" + e.message, true);
+    btn.disabled = false;
+    return;
+  }
+  const deadN = bad.filter((x) => x.r.status === "dead").length;
+  const warnN = bad.length - deadN;
+  $("toolMsg").textContent = `巡检完成：共 ${sites.length} 条，存活 ${sites.length - bad.length} 条，失联 ${deadN} 条，异常 ${warnN} 条。`;
+  toast("死链巡检完成");
+  if (!bad.length) {
+    box.innerHTML = `<p class="muted" style="margin:0">全部站点都能连上，没有死链。</p>`;
+  } else {
+    box.innerHTML = bad
+      .map(
+        ({ s, r }) => `
+      <div class="lc-item" data-lc="${s.id}">
+        <div class="lc-main">
+          <span class="lc-badge ${r.status}">${r.status === "dead" ? "失联" : "异常 " + r.code}</span>
+          <a class="lc-name" href="${esc(s.url)}" target="_blank" rel="noopener">${esc(s.name)}</a>
+          <span class="lc-note">${esc(r.note || "")}</span>
+        </div>
+        <div class="lc-url">${esc(s.url)}</div>
+        <div class="lc-actions">
+          <a class="mini ghost lc-open" href="${esc(s.url)}" target="_blank" rel="noopener">打开验证</a>
+          <button type="button" class="mini ghost danger" data-lcdel="${s.id}">删除</button>
+        </div>
+      </div>`
+      )
+      .join("");
+    box.querySelectorAll("[data-lcdel]").forEach((b) => {
+      b.onclick = async () => {
+        const id = +b.dataset.lcdel;
+        const s = (data.sites || []).find((x) => x.id === id);
+        const ok = await showConfirm(`删除书签「${s ? s.name : id}」？此操作不可恢复。`, "删除书签", { isDanger: true, defaultCancel: true });
+        if (!ok) return;
+        try {
+          await api("/api/admin/sites/" + id, { method: "DELETE" });
+          toast("已删除");
+          const row = box.querySelector(`[data-lc="${id}"]`);
+          if (row) row.remove();
+          load();
+        } catch (e) {
+          toast("删除失败：" + e.message, true);
+        }
+      };
+    });
+  }
+  btn.disabled = false;
+};
+
 // --- 导入 / 导出 (HTML / JSON) ---
 $("importBtn").onclick = () => {
   const f = $("importFile").files[0];

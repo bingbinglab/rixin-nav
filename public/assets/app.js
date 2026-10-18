@@ -237,7 +237,7 @@ function renderCard(s) {
   </a>`;
 }
 
-function updateSelectedCardVisual(scroll = false) {
+function updateSelectedCardVisual(scroll = false, instant = false) {
   document.querySelectorAll('.card').forEach(el => el.classList.remove('keyboard-selected'));
   if (!keyword.trim()) return;
   const target = visibleSitesList[selectedSiteIndex];
@@ -247,10 +247,20 @@ function updateSelectedCardVisual(scroll = false) {
   if (matchEl) {
     matchEl.classList.add('keyboard-selected');
     if (scroll) {
-      matchEl.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      matchEl.scrollIntoView({ behavior: instant ? 'auto' : 'smooth', block: 'nearest' });
     }
   }
 }
+
+// 按站点找到它渲染出的卡片元素（先按名+址精确匹配，退回只按名）
+function cardElFor(site) {
+  if (!site) return null;
+  return document.querySelector(`.card[data-name="${CSS.escape(site.name)}"][data-url="${CSS.escape(site.url)}"]`) ||
+         document.querySelector(`.card[data-name="${CSS.escape(site.name)}"]`);
+}
+
+// 键盘二维导航的列锚点：记住期望的水平位置，跨过残行后仍能对回原来的列
+let kbPrefX = null;
 
 // ---------- 3. 页面核心渲染逻辑 ----------
 function render() {
@@ -265,6 +275,8 @@ function render() {
   const catCountEl = document.getElementById('catCount');
   if (siteCountEl) siteCountEl.textContent = sites.length;
   if (catCountEl) catCountEl.textContent = visibleCatsCount;
+  const mastStatsEl = document.getElementById('mastStats');
+  if (mastStatsEl) mastStatsEl.style.visibility = 'visible';
 
   const scoreMap = new Map();
   for (const s of sites) {
@@ -347,6 +359,26 @@ function render() {
     noRes.style.display = anyVisible ? 'none' : 'block';
     if (noResLetter) {
       noResLetter.textContent = (activeLetter || kw).toUpperCase();
+    }
+  }
+
+  // 搜索无结果时给出外部搜索兜底（仅关键词检索时；字母索引落空不打扰）
+  const extSearch = document.getElementById('extSearch');
+  if (extSearch) {
+    const q = keyword.trim();
+    if (!anyVisible && q) {
+      extSearch.style.display = 'block';
+      const enc = encodeURIComponent(q);
+      const bing = document.getElementById('extBing');
+      const google = document.getElementById('extGoogle');
+      const github = document.getElementById('extGithub');
+      const kwSpan = document.getElementById('extKw');
+      if (bing) bing.href = `https://www.bing.com/search?q=${enc}`;
+      if (google) google.href = `https://www.google.com/search?q=${enc}`;
+      if (github) github.href = `https://github.com/search?q=${enc}`;
+      if (kwSpan) kwSpan.textContent = q;
+    } else {
+      extSearch.style.display = 'none';
     }
   }
 
@@ -475,6 +507,7 @@ function resetFilter() {
   activeLetter = '';
   clearBtn.classList.remove('visible');
   selectedSiteIndex = 0;
+  kbPrefX = null;
   render();
   initScrollSpy();
   updateAZStripUI();
@@ -588,6 +621,7 @@ if (input) {
     activeLetter = (keyword.length === 1 && /^[a-z]$/i.test(keyword)) ? keyword.toLowerCase() : '';
     if (clearBtn) clearBtn.classList.toggle('visible', !!keyword);
     selectedSiteIndex = 0;
+    kbPrefX = null;
     if (searchRafId) cancelAnimationFrame(searchRafId);
     searchRafId = requestAnimationFrame(() => {
       searchRafId = null;
@@ -698,26 +732,63 @@ window.addEventListener('keydown', e => {
           active.blur();
         }
       }
+    } else if (keyword.trim()) {
+      // 站内无结果：回车直达外部搜索（必应），键盘流不中断
+      e.preventDefault();
+      window.open(`https://www.bing.com/search?q=${encodeURIComponent(keyword.trim())}`, '_blank', 'noopener');
     }
     return;
   }
 
-  // 2. 下方向键选择下一个卡片
-  if (e.key === 'ArrowDown') {
+  // 2. 左右方向键：沿列表逐个流转（行尾折行、跨分类衔接）
+  // 焦点在搜索框时：仅当光标停在词中间（真在改字）才放行给光标，其余一律选卡导航
+  if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
+    if (document.activeElement === input) {
+      const pos = input.selectionStart;
+      if (pos > 0 && pos < input.value.length) return;
+    }
     if (visibleSitesList.length > 0) {
       e.preventDefault();
-      selectedSiteIndex = (selectedSiteIndex + 1) % visibleSitesList.length;
-      updateSelectedCardVisual(true);
+      const step = e.key === 'ArrowRight' ? 1 : -1;
+      selectedSiteIndex = (selectedSiteIndex + step + visibleSitesList.length) % visibleSitesList.length;
+      updateSelectedCardVisual(true, e.repeat);
+      const el = cardElFor(visibleSitesList[selectedSiteIndex]);
+      if (el) { const r = el.getBoundingClientRect(); kbPrefX = r.left + r.width / 2; }
     }
     return;
   }
 
-  // 3. 上方向键选择上一个卡片
-  if (e.key === 'ArrowUp') {
+  // 3. 上下方向键：按卡片实际视觉行列移动（列锚点记忆，残行跳过后对回原列）
+  if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
     if (visibleSitesList.length > 0) {
       e.preventDefault();
-      selectedSiteIndex = (selectedSiteIndex - 1 + visibleSitesList.length) % visibleSitesList.length;
-      updateSelectedCardVisual(true);
+      const dir = e.key === 'ArrowDown' ? 1 : -1;
+      const items = visibleSitesList.map(s => ({ s, el: cardElFor(s) })).filter(x => x.el);
+      if (items.length) {
+        const cur = items[selectedSiteIndex] || items[0];
+        const curRect = cur.el.getBoundingClientRect();
+        if (kbPrefX === null) kbPrefX = curRect.left + curRect.width / 2;
+        const rows = [];
+        items.forEach(x => {
+          const r = x.el.getBoundingClientRect();
+          const cx = r.left + r.width / 2;
+          let row = rows.find(w => Math.abs(w.top - r.top) < 16);
+          if (!row) { row = { top: r.top, items: [] }; rows.push(row); }
+          row.items.push({ s: x.s, cx });
+        });
+        rows.sort((a, b) => a.top - b.top);
+        rows.forEach(w => w.items.sort((a, b) => a.cx - b.cx));
+        const ri = rows.findIndex(w => w.items.some(x => x.s === cur.s));
+        const ni = ri + dir;
+        if (ri >= 0 && ni >= 0 && ni < rows.length) {
+          let best = null, bd = Infinity;
+          rows[ni].items.forEach(x => { const d = Math.abs(x.cx - kbPrefX); if (d < bd) { bd = d; best = x; } });
+          if (best) {
+            selectedSiteIndex = visibleSitesList.indexOf(best.s);
+            updateSelectedCardVisual(true, e.repeat);
+          }
+        }
+      }
     }
     return;
   }
@@ -748,6 +819,7 @@ window.addEventListener('keydown', e => {
       activeLetter = /^[a-z]$/i.test(e.key) ? e.key.toLowerCase() : '';
       if (clearBtn) clearBtn.classList.add('visible');
       selectedSiteIndex = 0;
+      kbPrefX = null;
       render();
       initScrollSpy();
       updateAZStripUI();

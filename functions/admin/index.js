@@ -9,7 +9,7 @@ function getLoginHtml(siteTitle) {
 <html lang="zh-CN"><head><meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>${title} · 后台登录</title><link rel="icon" type="image/svg+xml" href="/favicon-2.svg"><link rel="icon" type="image/png" sizes="192x192" href="/icon-192-2.png">
-<link rel="stylesheet" href="/admin-assets/admin.css?v=20261018a">
+<link rel="stylesheet" href="/admin-assets/admin.css?v=20261018b">
 <style>
 body{display:flex;min-height:100vh;align-items:center;justify-content:center;padding:16px}
 form{background:var(--card);border:2px solid var(--ink);box-shadow:7px 7px 0 var(--card-shadow);padding:30px;width:340px;max-width:94vw}
@@ -50,7 +50,7 @@ function getAdminHtml(siteTitle) {
 <html lang="zh-CN"><head><meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>${title} · 后台管理</title><link rel="icon" type="image/svg+xml" href="/favicon-2.svg"><link rel="icon" type="image/png" sizes="192x192" href="/icon-192-2.png">
-<link rel="stylesheet" href="/admin-assets/admin.css?v=20261018a">
+<link rel="stylesheet" href="/admin-assets/admin.css?v=20261018b">
 <script>(function(){try{var t=localStorage.getItem('myNavTheme');if(!t&&window.matchMedia&&window.matchMedia('(prefers-color-scheme:dark)').matches)t='dark';if(t==='dark')document.documentElement.classList.add('dark-theme');}catch(e){}})();</script>
 </head>
 <body><div class="wrap">
@@ -98,7 +98,9 @@ function getAdminHtml(siteTitle) {
 <button class="ghost" id="floccusSyncBtn" type="button">同步 Floccus 书签</button>
 <button class="ghost" id="davBackupBtn" type="button">备份到 WebDAV</button>
 <button class="ghost" id="davRestoreBtn" type="button">从 WebDAV 恢复</button>
+<button class="ghost" id="linkCheckBtn" type="button">巡检死链</button>
 <p class="msg" id="toolMsg"></p>
+<div id="linkCheckResult" style="display:none"></div>
 <p class="muted">说明：WebDAV 备份与 AI 补简介优先读取环境变量；若未配置环境变量，则可在下方卡片中配置，即时生效。</p></div>
 
 <!-- Card 4: 站点与品牌设置 -->
@@ -186,7 +188,7 @@ function getAdminHtml(siteTitle) {
 
 <!-- 外置客户端逻辑 -->
 <script src="/assets/icon.js?v=20261017a" defer></script>
-<script src="/admin-assets/admin.js?v=20261018b" defer></script>
+<script src="/admin-assets/admin.js?v=20261018c" defer></script>
 </body></html>`;
 }
 

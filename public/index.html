@@ -10,7 +10,7 @@
 <meta name="theme-color" content="#f8f5ee">
 <meta name="color-scheme" content="light dark">
 <link rel="manifest" href="/site.webmanifest">
-<link rel="stylesheet" href="style.css?v=20261017c">
+<link rel="stylesheet" href="style.css?v=20261018a">
 <script>
 (function(){
   var t=localStorage.getItem('myNavTheme')||(window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light');
@@ -34,9 +34,9 @@
     <div class="masthead-side">
       <div class="masthead-side-top">
         <div class="date-block">
-          <p class="mast-solar-date" id="mastSolarDate">2026年10月15日 · 星期四</p>
+          <p class="mast-solar-date" id="mastSolarDate"></p>
           <div class="lunar-almanac-row">
-            <span class="almanac-badge" id="mastLunarDate">丙午年 · 农历九月初六 · 寒露</span>
+            <span class="almanac-badge" id="mastLunarDate"></span>
           </div>
         </div>
         <!-- 站长门牌印钮（登录/后台入口） -->
@@ -54,7 +54,7 @@
         </button>
       </div>
       <div class="masthead-side-bottom">
-        <span class="mast-stats">已收录 <b id="siteCount">0</b> 个站点 · <b id="catCount">0</b> 个分类</span>
+        <span class="mast-stats" id="mastStats" style="visibility:hidden">已收录 <b id="siteCount">0</b> 个站点 · <b id="catCount">0</b> 个分类</span>
         <span class="mast-divider">·</span>
         <span class="mast-note">纸本无广 · 打开即达</span>
       </div>
@@ -126,6 +126,15 @@
         <div class="no-results-seal">未入本辑</div>
         <p>未找到与「<strong id="noResLetter"></strong>」相符的书签，换个词试试。<br>
         <span>请尝试缩短或更换检索词，或 <button type="button" class="reset-filter-btn" id="resetFilterBtn">点击查看全部书签</button></span></p>
+        <div class="ext-search" id="extSearch" style="display: none;">
+          <p class="ext-search-label">本辑未收，去外面找「<span id="extKw"></span>」：</p>
+          <div class="ext-search-btns">
+            <a class="ext-btn" id="extBing" href="#" target="_blank" rel="noopener">必应</a>
+            <a class="ext-btn" id="extGoogle" href="#" target="_blank" rel="noopener">Google</a>
+            <a class="ext-btn" id="extGithub" href="#" target="_blank" rel="noopener">GitHub</a>
+          </div>
+          <p class="ext-search-hint">按 Enter 直接用必应搜索</p>
+        </div>
       </div>
     </div>
 
@@ -194,6 +203,6 @@
 
 <script src="data.js"></script>
 <script src="/assets/icon.js?v=20261017a"></script>
-<script src="/assets/app.js?v=20261018a"></script>
+<script src="/assets/app.js?v=20261018b"></script>
 </body>
 </html>
