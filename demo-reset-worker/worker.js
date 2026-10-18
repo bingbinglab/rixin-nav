@@ -1,7 +1,12 @@
 // 演示站定时重置 Worker（部署在演示站所在的 Cloudflare 账号里，与任何个人电脑无关）
 // 每天 UTC 20:00（北京时间 04:00）由 Cron 触发器自动运行：
-// 清空 sites / category 两表并重灌种子数据，恢复 50 站 / 10 分类的出厂状态。
-// 需要给这个 Worker 绑定 D1 数据库 rixin-nav-db，绑定名 DB。
+// 1）清空 sites / category 两表并重灌种子数据，恢复 50 站 / 10 分类的出厂状态；
+// 2）再把 KV 里的设置恢复到出厂快照（见下方 SETTINGS_KEYS / SNAPSHOT_KEY）。
+// 需要给这个 Worker 绑定：D1 数据库 rixin-nav-db（绑定名 DB）、
+// KV 命名空间 rixin-nav-kv（绑定名 KV）。
+// 出厂快照存在 KV 的保留键 factory_settings_v1 里（设置键 -> 原始值的 JSON），
+// 由运维脚本一次性写入；快照不存在时跳过设置恢复。快照本身和不属于设置中心的
+// 键（如 session:*）一律不碰。
 const SEED = [
     "INSERT INTO category (id, name, sort_order) VALUES (1, '人工智能', 10);",
     "INSERT INTO category (id, name, sort_order) VALUES (2, '办公协作', 20);",
@@ -65,6 +70,29 @@ const SEED = [
     "INSERT INTO sites (name, url, desc, category_id, icon, pinned, is_private, sort_order) VALUES ('12306', 'https://www.12306.cn', '火车票预订', 10, '12306.cn.png', 0, 0, 490);"
 ];
 
+// 设置中心在 KV 里使用的键（与站点 functions/_lib/config.js 的 KV_CONFIG_KEY 对齐）
+const SETTINGS_KEYS = ["app_config"];
+// 出厂设置快照的保留键（值是 {设置键: 原始字符串值} 的 JSON）
+const SNAPSHOT_KEY = "factory_settings_v1";
+
+async function restoreSettings(env) {
+  if (!env.KV) return;
+  let snap = null;
+  try {
+    snap = await env.KV.get(SNAPSHOT_KEY, "json");
+  } catch {
+    snap = null;
+  }
+  if (!snap || typeof snap !== "object") return; // 无快照则跳过，只做 D1 重置
+  for (const key of SETTINGS_KEYS) {
+    if (typeof snap[key] === "string") {
+      await env.KV.put(key, snap[key]);
+    } else {
+      await env.KV.delete(key);
+    }
+  }
+}
+
 export default {
   async scheduled(event, env, ctx) {
     const batch = [
@@ -73,6 +101,7 @@ export default {
       ...SEED.map((s) => env.DB.prepare(s)),
     ];
     await env.DB.batch(batch);
+    await restoreSettings(env);
   },
   async fetch() {
     return new Response("not found", { status: 404 });
