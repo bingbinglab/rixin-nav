@@ -87,6 +87,9 @@ async function restoreSettings(env) {
   for (const key of SETTINGS_KEYS) {
     if (typeof snap[key] === "string") {
       await env.KV.put(key, snap[key]);
+    } else if (snap[key] && typeof snap[key] === "object") {
+      // 快照若以对象形式存入，序列化后写回，避免误删现有设置
+      await env.KV.put(key, JSON.stringify(snap[key]));
     } else {
       await env.KV.delete(key);
     }

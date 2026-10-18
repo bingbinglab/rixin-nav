@@ -11,6 +11,14 @@ import {
   DEFAULT_FLOCCUS_PATH,
 } from "../../_lib/config.js";
 
+function getHostname(u) {
+  try {
+    return new URL(u).hostname.toLowerCase();
+  } catch {
+    return "";
+  }
+}
+
 export async function onRequestGet(context) {
   const denied = await requireAuth(context);
   if (denied) return denied;
@@ -48,9 +56,13 @@ export async function onRequestPut(context) {
         const prevWd = kv.webdav || {};
         const submittedPass = typeof body.webdav.pass === "string" ? body.webdav.pass.trim() : "";
         const existingPass = prevWd.pass || "";
+        const newWdUrl = inputUrl || prevWd.url || "";
 
         if (!existingPass && !submittedPass) {
           groupErrors.webdav = "该配置尚未在后台存过密钥，环境变量里的密钥不会自动搬入，请重新输入一次密钥再保存。";
+        } else if (!submittedPass && getHostname(newWdUrl) !== getHostname(prevWd.url || "")) {
+          // 与 test-webdav 的 P06 一致：域名变更时禁止沿用旧密码，防止把已存密码发往新地址
+          groupErrors.webdav = "WebDAV 地址已变更，请填写新地址对应的密码后再保存。";
         } else {
           kv.webdav = {
             url: inputUrl || prevWd.url || "",
@@ -77,8 +89,22 @@ export async function onRequestPut(context) {
         const submittedKey = typeof body.ai.api_key === "string" ? body.ai.api_key.trim() : "";
         const existingKey = prevAi.api_key || "";
 
+        // 与 test-ai 的 M1 一致：服务商、接口域名（Cloudflare 时看 Account ID）变更时禁止沿用旧密钥
+        const nextProvider = provider || prevAi.provider || "cloudflare";
+        const nextBaseUrl = typeof body.ai.base_url === "string" ? body.ai.base_url.trim() : (prevAi.base_url || "");
+        const nextAccountId = typeof body.ai.account_id === "string" ? body.ai.account_id.trim() : (prevAi.account_id || "");
+        let targetChanged = nextProvider !== (prevAi.provider || "cloudflare");
+        if (!targetChanged && nextProvider === "cloudflare") {
+          targetChanged = nextAccountId !== (prevAi.account_id || "");
+        }
+        if (!targetChanged && nextProvider !== "cloudflare" && nextBaseUrl) {
+          targetChanged = getHostname(nextBaseUrl) !== getHostname(prevAi.base_url || "");
+        }
+
         if (!existingKey && !submittedKey) {
           groupErrors.ai = "该配置尚未在后台存过密钥，环境变量里的密钥不会自动搬入，请重新输入一次密钥再保存。";
+        } else if (!submittedKey && targetChanged) {
+          groupErrors.ai = "服务商或接口地址已变更，请填写新密钥后再保存。";
         } else {
           kv.ai = {
             provider: provider || prevAi.provider || "cloudflare",

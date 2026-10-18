@@ -1,0 +1,22 @@
+# 演示站定时重置 Worker 的示例配置（可选组件，本站自部署不需要它）
+# 用法：把下面的数据库与 KV 的 id 换成你自己演示环境的，执行
+#   npx wrangler deploy
+# 即可。重置前请先把出厂设置快照存入 KV 的 factory_settings_v1 键
+# （值形如 {"app_config": "<app_config 的原始字符串>"}），没有快照时只重置数据表。
+
+name = "rixin-demo-reset"
+main = "worker.js"
+compatibility_date = "2024-11-01"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "rixin-nav-db"
+database_id = "YOUR_D1_DATABASE_ID"
+
+[[kv_namespaces]]
+binding = "KV"
+id = "YOUR_KV_NAMESPACE_ID"
+
+[triggers]
+# 每天两次：UTC 20:00 与 08:00（北京时间 04:00 与 16:00）
+crons = ["0 20 * * *", "0 8 * * *"]
