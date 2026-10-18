@@ -95,7 +95,7 @@ Pages 里选 Connect to Git 连接这个仓库：构建命令留空，输出目�
 public/           前台页面与静态资源（Pages 输出目录）
 functions/        接口与后台（Pages Functions）
 workers/          可选组件：Floccus 定时同步 Worker
-demo-reset-worker/ 可选组件：演示站每日自动重置 Worker
+demo-reset-worker/ 可选组件：演示站定时自动重置 Worker（每天两次）
 schema.sql        建表
 schema-seed.sql   50 条演示数据
 ```
@@ -104,7 +104,7 @@ schema-seed.sql   50 条演示数据
 
 Floccus 定时同步 Worker：每 12 小时自动对账一次，部署方法见 [workers/floccus-sync/README.md](workers/floccus-sync/README.md)。不用它的话，在后台手动点同步也一样。
 
-演示站每日重置 Worker：如果你也对外开一个公开演示站，可以部署 [demo-reset-worker/worker.js](demo-reset-worker/worker.js)——一个带定时触发的 Worker，每天把演示数据清回种子状态，并把设置恢复成 KV 里 `factory_settings_v1` 键存的出厂快照。部署时给它绑演示站的 D1（绑定名 `DB`）和 KV（绑定名 `KV`）即可，在线演示站用的就是它。
+演示站定时重置 Worker：如果你也对外开一个公开演示站，可以部署 [demo-reset-worker/worker.js](demo-reset-worker/worker.js)——一个带定时触发的 Worker，每天两次把演示数据清回种子状态，并把设置恢复成 KV 里 `factory_settings_v1` 键存的出厂快照。部署时给它绑演示站的 D1（绑定名 `DB`）和 KV（绑定名 `KV`）即可，在线演示站用的就是它。
 
 ## 许可证
 
