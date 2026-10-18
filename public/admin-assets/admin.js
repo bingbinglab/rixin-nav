@@ -1917,15 +1917,57 @@ $("linkCheckBtn").onclick = async () => {
     btn.disabled = false;
     return;
   }
+  // 复核一轮，减少误报：页面 404/410 的改查站点根域（根域还通就只是页面没了，不是整站失联）；
+  // 超时/连不上/未检的原网址重测一次（网络抖动不算死链）。复核仍走同一接口、分批进行。
+  const recheck = [];
+  bad.forEach(({ s, r }) => {
+    if (r.status === "dead" && (r.code === 404 || r.code === 410)) {
+      try {
+        recheck.push({ id: s.id, url: new URL(s.url).origin + "/", kind: "root" });
+      } catch {}
+    } else if ((r.status === "dead" && r.code === 0) || r.status === "error") {
+      recheck.push({ id: s.id, url: s.url, kind: "retry" });
+    }
+  });
+  if (recheck.length) {
+    try {
+      const verdict = new Map();
+      for (let i = 0; i < recheck.length; i += CHUNK) {
+        const chunk = recheck.slice(i, i + CHUNK);
+        $("toolMsg").textContent = `正在复核可疑结果… ${i}/${recheck.length}`;
+        const j = await api("/api/admin/check-links", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ urls: chunk.map((x) => ({ id: x.id, url: x.url })) }),
+        });
+        (j.results || []).forEach((r2) => verdict.set(String(r2.id), r2));
+      }
+      for (let i = bad.length - 1; i >= 0; i--) {
+        const item = recheck.find((x) => x.id === bad[i].s.id);
+        if (!item) continue;
+        const r2 = verdict.get(String(item.id));
+        if (!r2) continue;
+        if (item.kind === "retry" && r2.status === "ok") {
+          bad.splice(i, 1);
+        } else if (item.kind === "root" && (r2.status === "ok" || r2.status === "warn")) {
+          bad[i].r.status = "warn";
+          bad[i].r.note = "页面不存在（站点还在）";
+        }
+      }
+    } catch {
+      // 复核失败不影响首轮结果，照常展示
+    }
+  }
   const deadN = bad.filter((x) => x.r.status === "dead").length;
   const errN = bad.filter((x) => x.r.status === "error").length;
   const warnN = bad.length - deadN - errN;
+  const head = `<div class="lc-head"><span>失联 ${deadN} 条 · 异常 ${warnN} 条${errN ? ` · 未检 ${errN} 条` : ""}</span><button type="button" class="mini ghost" id="lcCloseBtn">关闭</button></div>`;
   $("toolMsg").textContent = `巡检完成：共 ${sites.length} 条，存活 ${sites.length - bad.length} 条，失联 ${deadN} 条，异常 ${warnN} 条${errN ? `，未检 ${errN} 条` : ""}。`;
   toast("死链巡检完成");
   if (!bad.length) {
-    box.innerHTML = `<p class="muted" style="margin:0">全部站点都能连上，没有死链。</p>`;
+    box.innerHTML = head + `<p class="muted" style="margin:0">全部站点都能连上，没有死链。</p>`;
   } else {
-    box.innerHTML = bad
+    box.innerHTML = head + bad
       .map(
         ({ s, r }) => `
       <div class="lc-item" data-lc="${s.id}">
@@ -1960,6 +2002,8 @@ $("linkCheckBtn").onclick = async () => {
       };
     });
   }
+  const lcClose = $("lcCloseBtn");
+  if (lcClose) lcClose.onclick = () => { box.style.display = "none"; box.innerHTML = ""; };
   btn.disabled = false;
 };
 

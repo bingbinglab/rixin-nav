@@ -9,7 +9,7 @@ function getLoginHtml(siteTitle) {
 <html lang="zh-CN"><head><meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>${title} · 后台登录</title><link rel="icon" type="image/svg+xml" href="/favicon-2.svg"><link rel="icon" type="image/png" sizes="192x192" href="/icon-192-2.png">
-<link rel="stylesheet" href="/admin-assets/admin.css?v=20261018b">
+<link rel="stylesheet" href="/admin-assets/admin.css?v=20261019a">
 <style>
 body{display:flex;min-height:100vh;align-items:center;justify-content:center;padding:16px}
 form{background:var(--card);border:2px solid var(--ink);box-shadow:7px 7px 0 var(--card-shadow);padding:30px;width:340px;max-width:94vw}
@@ -50,7 +50,7 @@ function getAdminHtml(siteTitle) {
 <html lang="zh-CN"><head><meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>${title} · 后台管理</title><link rel="icon" type="image/svg+xml" href="/favicon-2.svg"><link rel="icon" type="image/png" sizes="192x192" href="/icon-192-2.png">
-<link rel="stylesheet" href="/admin-assets/admin.css?v=20261018b">
+<link rel="stylesheet" href="/admin-assets/admin.css?v=20261019a">
 <script>(function(){try{var t=localStorage.getItem('myNavTheme');if(!t&&window.matchMedia&&window.matchMedia('(prefers-color-scheme:dark)').matches)t='dark';if(t==='dark')document.documentElement.classList.add('dark-theme');}catch(e){}})();</script>
 </head>
 <body><div class="wrap">
@@ -194,7 +194,7 @@ function getAdminHtml(siteTitle) {
 
 <!-- 外置客户端逻辑 -->
 <script src="/assets/icon.js?v=20261019b" defer></script>
-<script src="/admin-assets/admin.js?v=20261019b" defer></script>
+<script src="/admin-assets/admin.js?v=20261019c" defer></script>
 </body></html>`;
 }
 

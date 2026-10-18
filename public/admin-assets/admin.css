@@ -956,6 +956,7 @@ html.dark-theme .dup-warn {
 #linkCheckResult { margin-top: 6px; }
 .lc-item { border: 1.5px solid var(--ink); padding: 10px 12px; margin-top: 8px; background: var(--card); }
 .lc-main { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.lc-head { display: flex; justify-content: space-between; align-items: center; gap: 8px; font-weight: 700; margin-bottom: 2px; }
 .lc-badge { font-size: 11px; font-weight: 700; letter-spacing: 1px; padding: 2px 7px; border: 1.5px solid var(--ochre); color: var(--ochre); white-space: nowrap; }
 .lc-badge.warn { border-color: #a67c1a; color: #a67c1a; }
 .lc-name { font-weight: 700; color: inherit; text-decoration: none; word-break: break-all; }
