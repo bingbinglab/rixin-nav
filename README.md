@@ -4,7 +4,7 @@
 
 名字出自《大学》「苟日新，日日新，又日新」。站名和页脚文案都能在后台改，默认显示「书签导航」。
 
-**在线演示**：[bmk.navv.eu.cc](https://bmk.navv.eu.cc)——里面是 50 个演示站点，后台口令是 `demo`，可以登录进去随便点。
+**在线演示**：[bmk.navv.eu.cc](https://bmk.navv.eu.cc)——里面是 50 个演示站点，后台口令是 `demo`，可以登录进去随便点，弄乱了每天也会自动恢复。
 
 ## 界面一览
 
@@ -75,7 +75,7 @@
 
 **1. 建数据库**
 
-在 D1 里新建一个数据库，打开它的 Console，把仓库根目录的 `schema.sql` 粘贴执行。想先看效果，再执行 `schema-seed.sql`，会灌入 50 个演示站点。然后在 KV 里新建一个命名空间。
+在 D1 里新建一个数据库，打开它的 Console，把仓库根目录的 `schema.sql` 粘贴执行。想先看效果，再执行 `schema-seed.sql`，会灌入 50 个演示站点（就是在线演示里那一批）。然后在 KV 里新建一个命名空间。
 
 **2. 部署**
 
@@ -101,6 +101,7 @@ Pages 里选 Connect to Git 连接这个仓库：构建命令留空，输出目�
 public/           前台页面与静态资源（Pages 输出目录）
 functions/        接口与后台（Pages Functions）
 workers/          可选组件：Floccus 定时同步 Worker
+demo-reset-worker/ 可选组件：演示站每日自动重置 Worker
 schema.sql        建表
 schema-seed.sql   50 条演示数据
 ```
@@ -108,6 +109,8 @@ schema-seed.sql   50 条演示数据
 ## 可选组件
 
 Floccus 定时同步 Worker：每 12 小时自动对账一次，部署方法见 [workers/floccus-sync/README.md](workers/floccus-sync/README.md)。不用它的话，在后台手动点同步也一样。
+
+演示站每日重置 Worker：如果你也对外开一个公开演示站，可以部署 [demo-reset-worker/worker.js](demo-reset-worker/worker.js)——一个带定时触发的 Worker，每天把演示数据清回种子状态，并把设置恢复成 KV 里 `factory_settings_v1` 键存的出厂快照。部署时给它绑演示站的 D1（绑定名 `DB`）和 KV（绑定名 `KV`）即可，在线演示站用的就是它。
 
 ## 许可证
 
