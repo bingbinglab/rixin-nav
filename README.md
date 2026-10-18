@@ -2,13 +2,33 @@
 
 一个自托管的个人书签管理站。它不是那种站长精选一批网址给你用的公共导航页——这里面装的全是你自己的书签：收藏、整理、标私密、做备份，再和浏览器双向同步。前台是一张报刊式的纸墨页，白天米纸底、夜间暖黑，打开搜一下就到。数据存在自己的 Cloudflare 账号里，整套跑在免费额度内，不用买服务器。
 
-![前台·白天](docs/screenshots/front-day.png)
-
-![前台·夜间](docs/screenshots/front-night.png)
-
-<img src="docs/screenshots/front-mobile.png" width="320" alt="手机端">
-
 名字出自《大学》「苟日新，日日新，又日新」。站名和页脚文案都能在后台改，默认显示「书签导航」。
+
+## 界面一览
+
+**桌面浏览器 · 前台**
+
+| 日间 | 夜间 |
+| --- | --- |
+| <img src="docs/screenshots/front-day.png" width="400" alt="前台·日间"> | <img src="docs/screenshots/front-night.png" width="400" alt="前台·夜间"> |
+
+**桌面浏览器 · 后台**
+
+| 日间 | 夜间 |
+| --- | --- |
+| <img src="docs/screenshots/admin-day.png" width="400" alt="后台·日间"> | <img src="docs/screenshots/admin-night.png" width="400" alt="后台·夜间"> |
+
+**手机浏览器 · 前台**
+
+| 日间 | 夜间 |
+| --- | --- |
+| <img src="docs/screenshots/front-mobile.png" width="260" alt="手机前台·日间"> | <img src="docs/screenshots/front-mobile-night.png" width="260" alt="手机前台·夜间"> |
+
+**手机浏览器 · 后台**
+
+| 日间 | 夜间 |
+| --- | --- |
+| <img src="docs/screenshots/admin-mobile.png" width="260" alt="手机后台·日间"> | <img src="docs/screenshots/admin-mobile-night.png" width="260" alt="手机后台·夜间"> |
 
 ## 功能
 
@@ -31,10 +51,6 @@
 - 二级分类，左侧索引滚动跟随高亮；手机上换成顶部横排
 - 夜间主题「沉墨」，报头按钮切换，记住选择；紧凑、舒适两种密度
 - 接口不可用时用本地快照渲染，页面不会白屏
-
-![管理后台](docs/screenshots/admin.png)
-
-<img src="docs/screenshots/admin-mobile.png" width="320" alt="管理后台·手机端">
 
 ## 最省事的部署方式：交给你的 AI Agent
 
