@@ -20,17 +20,11 @@
 | --- | --- |
 | <img src="docs/screenshots/admin-day.png" width="400" alt="后台·日间"> | <img src="docs/screenshots/admin-night.png" width="400" alt="后台·夜间"> |
 
-**手机浏览器 · 前台**
+**手机浏览器**
 
-| 日间 | 夜间 |
-| --- | --- |
-| <img src="docs/screenshots/front-mobile.png" width="260" alt="手机前台·日间"> | <img src="docs/screenshots/front-mobile-night.png" width="260" alt="手机前台·夜间"> |
-
-**手机浏览器 · 后台**
-
-| 日间 | 夜间 |
-| --- | --- |
-| <img src="docs/screenshots/admin-mobile.png" width="260" alt="手机后台·日间"> | <img src="docs/screenshots/admin-mobile-night.png" width="260" alt="手机后台·夜间"> |
+| 前台 · 日间 | 前台 · 夜间 | 后台 · 日间 | 后台 · 夜间 |
+| --- | --- | --- | --- |
+| <img src="docs/screenshots/front-mobile.png" width="200" alt="手机前台·日间"> | <img src="docs/screenshots/front-mobile-night.png" width="200" alt="手机前台·夜间"> | <img src="docs/screenshots/admin-mobile.png" width="200" alt="手机后台·日间"> | <img src="docs/screenshots/admin-mobile-night.png" width="200" alt="手机后台·夜间"> |
 
 ## 功能
 
