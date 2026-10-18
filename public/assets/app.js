@@ -151,7 +151,8 @@ const themeToggleBtn = document.getElementById('themeToggleBtn');
 
 function applyTheme(theme) {
   currentTheme = theme;
-  if (theme === 'dark') {
+  const isDark = theme === 'dark';
+  if (isDark) {
     document.documentElement.classList.add('dark-theme');
     document.body.classList.add('dark-theme');
     if (themeToggleBtn) themeToggleBtn.setAttribute('title', '当前：夜间模式（点击阴阳切换为白天）');
@@ -160,6 +161,8 @@ function applyTheme(theme) {
     document.body.classList.remove('dark-theme');
     if (themeToggleBtn) themeToggleBtn.setAttribute('title', '当前：白天模式（点击阴阳切换为夜间）');
   }
+  const metaTheme = document.querySelector('meta[name="theme-color"]');
+  if (metaTheme) metaTheme.setAttribute('content', isDark ? '#100f0e' : '#f8f5ee');
   localStorage.setItem('myNavTheme', theme);
 }
 
@@ -242,8 +245,7 @@ function updateSelectedCardVisual(scroll = false, instant = false) {
   if (!keyword.trim()) return;
   const target = visibleSitesList[selectedSiteIndex];
   if (!target) return;
-  const matchEl = document.querySelector(`.main-sections-content .card[data-name="${CSS.escape(target.name)}"]`) ||
-                  document.querySelector(`.card[data-name="${CSS.escape(target.name)}"]`);
+  const matchEl = cardElFor(target);
   if (matchEl) {
     matchEl.classList.add('keyboard-selected');
     if (scroll) {
@@ -252,11 +254,16 @@ function updateSelectedCardVisual(scroll = false, instant = false) {
   }
 }
 
-// 按站点找到它渲染出的卡片元素（先按名+址精确匹配，退回只按名）
+// 按站点找到它渲染出的卡片元素（键盘导航场景下优先取分类区里的卡片，避免总命中置顶区重复卡片）
 function cardElFor(site) {
   if (!site) return null;
-  return document.querySelector(`.card[data-name="${CSS.escape(site.name)}"][data-url="${CSS.escape(site.url)}"]`) ||
-         document.querySelector(`.card[data-name="${CSS.escape(site.name)}"]`);
+  const nameEsc = CSS.escape(site.name);
+  const urlEsc = CSS.escape(site.url);
+  const secCard = document.querySelector(`#sections .card[data-name="${nameEsc}"][data-url="${urlEsc}"]`) ||
+                  document.querySelector(`#sections .card[data-name="${nameEsc}"]`);
+  if (secCard) return secCard;
+  return document.querySelector(`.card[data-name="${nameEsc}"][data-url="${urlEsc}"]`) ||
+         document.querySelector(`.card[data-name="${nameEsc}"]`);
 }
 
 // 键盘二维导航的列锚点：记住期望的水平位置，跨过残行后仍能对回原来的列
@@ -1093,7 +1100,7 @@ let currentDataFingerprint = '';
 function calcDataFingerprint(sites, cats, authed) {
   if (!Array.isArray(sites)) return '';
   const catStr = (cats || []).map(c => typeof c === 'string' ? c : (c ? c.name : '')).join(',');
-  const siteStr = sites.map(s => `${s.id || ''}:${s.name}:${s.url}:${s.pinned ? 1 : 0}:${s.private ? 1 : 0}`).join('|');
+  const siteStr = sites.map(s => `${s.id || ''}:${s.name}:${s.url}:${s.category || ''}:${s.desc || ''}:${s.icon || ''}:${s.pinned ? 1 : 0}:${s.private ? 1 : 0}`).join('|');
   return `${authed ? 1 : 0}_${sites.length}_${(cats || []).length}_${catStr}_${siteStr}`;
 }
 

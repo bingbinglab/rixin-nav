@@ -193,8 +193,8 @@ function getAdminHtml(siteTitle) {
 </div>
 
 <!-- 外置客户端逻辑 -->
-<script src="/assets/icon.js?v=20261017a" defer></script>
-<script src="/admin-assets/admin.js?v=20261019a" defer></script>
+<script src="/assets/icon.js?v=20261019b" defer></script>
+<script src="/admin-assets/admin.js?v=20261019b" defer></script>
 </body></html>`;
 }
 

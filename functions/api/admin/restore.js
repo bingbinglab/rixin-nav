@@ -13,10 +13,7 @@ export async function onRequestPost(context) {
     return json({ error: "未配置 WebDAV（请先在后台设置或环境变量中配置 WebDAV 地址、账号与应用密码）" }, 503);
   }
 
-  const body = await request.json().catch(() => null);
-  if (!body || typeof body !== "object") {
-    return json({ error: "请求体不是有效的 JSON 数据" }, 400);
-  }
+  const body = (await request.json().catch(() => ({}))) || {};
   const requestedSlot = body.slot || (body.source && /^slot([1-4])$/i.test(body.source) ? RegExp.$1 : null);
   const { mainUrl, allSlotUrls } = resolveBackupUrls(cfg.url, requestedSlot);
   const auth = "Basic " + toBase64(`${cfg.user}:${cfg.pass}`);

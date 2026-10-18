@@ -1,6 +1,12 @@
 // POST /api/admin/sites/batch — 批量操作接口（删除、移动分类、设为私密）。需会话。
-// 采用 D1 batch 事务一次性原子执行（全成全滚），极省 Worker 额度与请求数。
+// 采用 D1 batch 事务按每批 50 条切片执行，极省 Worker 额度与请求数并规避 D1 批量上限。
 import { json, requireAuth, ensureCategory, addTombstones } from "../../../_lib/util.js";
+
+async function batchInChunks(db, stmts, chunkSize = 50) {
+  for (let i = 0; i < stmts.length; i += chunkSize) {
+    await db.batch(stmts.slice(i, i + chunkSize));
+  }
+}
 
 export async function onRequestPost(context) {
   const denied = await requireAuth(context);
@@ -35,7 +41,7 @@ export async function onRequestPost(context) {
       const stmts = cleanIds.map((id) =>
         env.NAV_DB.prepare("DELETE FROM sites WHERE id = ?").bind(id)
       );
-      await env.NAV_DB.batch(stmts);
+      await batchInChunks(env.NAV_DB, stmts, 50);
 
       if (floccusRows && floccusRows.length > 0) {
         await addTombstones(env, floccusRows.map((r) => r.url));
@@ -49,7 +55,7 @@ export async function onRequestPost(context) {
       const stmts = cleanIds.map((id) =>
         env.NAV_DB.prepare("UPDATE sites SET is_private = ? WHERE id = ?").bind(privVal, id)
       );
-      await env.NAV_DB.batch(stmts);
+      await batchInChunks(env.NAV_DB, stmts, 50);
       return json({ ok: true, count: cleanIds.length, action: "set_private", private: !!is_private });
     }
 
@@ -59,7 +65,7 @@ export async function onRequestPost(context) {
       const stmts = cleanIds.map((id) =>
         env.NAV_DB.prepare("UPDATE sites SET pinned = ? WHERE id = ?").bind(pinVal, id)
       );
-      await env.NAV_DB.batch(stmts);
+      await batchInChunks(env.NAV_DB, stmts, 50);
       return json({ ok: true, count: cleanIds.length, action: "set_pinned", pinned: !!pinVal });
     }
 
@@ -68,6 +74,9 @@ export async function onRequestPost(context) {
       const targetCatName = String(target_category || "").trim();
       if (!targetCatName) {
         return json({ error: "目标分类名不能为空" }, 400);
+      }
+      if (targetCatName.length > 20) {
+        return json({ error: "分类名不能超过 20 个字符" }, 400);
       }
 
       const catId = await ensureCategory(env.NAV_DB, targetCatName);
@@ -83,7 +92,7 @@ export async function onRequestPost(context) {
         ).bind(catId, currentMax, id);
       });
 
-      await env.NAV_DB.batch(stmts);
+      await batchInChunks(env.NAV_DB, stmts, 50);
       return json({ ok: true, count: cleanIds.length, action: "move", target_category: targetCatName });
     }
 

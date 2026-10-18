@@ -16,6 +16,7 @@ export async function onRequestPut(context) {
     if (!row) return json({ error: "没有这个分类" }, 404);
     const name = String(body.name ?? row.name).trim();
     if (!name) return json({ error: "分类名必填" }, 400);
+    if (name.length > 20) return json({ error: "分类名不能超过 20 个字符" }, 400);
     const dup = await env.NAV_DB.prepare("SELECT id FROM category WHERE name=? AND id<>?").bind(name, id).first();
     if (dup) return json({ error: "这个分类名已经被占用" }, 409);
 

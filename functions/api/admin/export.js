@@ -13,7 +13,7 @@ export async function onRequestGet(context) {
   const [cats, rows] = await env.NAV_DB.batch([
     env.NAV_DB.prepare("SELECT id, name, parent_id, is_private, sort_order FROM category ORDER BY sort_order, id"),
     env.NAV_DB.prepare(
-      `SELECT s.id, s.name, s.url, s.desc, s.icon, s.pinned, s.is_private, s.sort_order, s.category_id, c.name AS category
+      `SELECT s.id, s.name, s.url, s.desc, s.icon, s.pinned, s.is_private, s.sort_order, s.origin, s.category_id, c.name AS category
          FROM sites s JOIN category c ON c.id = s.category_id
         ORDER BY c.sort_order, s.sort_order, s.id`
     ),
@@ -21,6 +21,7 @@ export async function onRequestGet(context) {
   const sites = rows.results.map((r) => ({
     name: r.name, url: r.url, desc: r.desc || "", category: r.category, icon: r.icon || "",
     pinned: r.pinned === 1, private: r.is_private === 1, sort_order: r.sort_order,
+    origin: r.origin || "manual",
   }));
 
   if (format === "html") {

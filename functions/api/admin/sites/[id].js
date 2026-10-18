@@ -35,6 +35,9 @@ export async function onRequestPut(context) {
       }
       catId = catRow.id;
     } else if (site.category) {
+      if (site.category.length > 20) {
+        return json({ error: "分类名不能超过 20 个字符" }, 400);
+      }
       catId = await ensureCategory(env.NAV_DB, site.category);
     } else {
       return json({ error: "未指定分类（需提供 category 或有效 category_id）" }, 400);

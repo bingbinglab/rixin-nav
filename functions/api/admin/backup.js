@@ -7,7 +7,7 @@ async function exportData(env) {
   const cats = await env.NAV_DB.prepare("SELECT id, name, parent_id, is_private, sort_order FROM category ORDER BY sort_order, id").all();
   const nameById = new Map(cats.results.map((c) => [c.id, c.name]));
   const rows = await env.NAV_DB.prepare(
-    `SELECT s.name, s.url, s.desc, s.icon, s.pinned, s.is_private, s.sort_order, c.name AS category
+    `SELECT s.name, s.url, s.desc, s.icon, s.pinned, s.is_private, s.sort_order, s.origin, c.name AS category
        FROM sites s JOIN category c ON c.id = s.category_id ORDER BY c.sort_order, s.sort_order, s.id`
   ).all();
   return {
@@ -21,6 +21,7 @@ async function exportData(env) {
     sites: rows.results.map((r) => ({
       name: r.name, url: r.url, desc: r.desc || "", category: r.category, icon: r.icon || "",
       pinned: r.pinned === 1, private: r.is_private === 1, sort_order: r.sort_order,
+      origin: r.origin || "manual",
     })),
   };
 }

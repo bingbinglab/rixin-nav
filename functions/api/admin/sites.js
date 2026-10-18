@@ -34,6 +34,7 @@ export async function onRequestPost(context) {
     const site = cleanSite(raw);
     if (!site) return json({ error: "站名必填，网址须以 http:// 或 https:// 开头" }, 400);
     const dup = await env.NAV_DB.prepare("SELECT id FROM sites WHERE url = ?").bind(site.url).first();
+    if (dup) return json({ error: "这个网址已经在库里了" }, 409);
     let catId;
     if (site.category_id !== null) {
       if (site.category_id === 0) {
@@ -48,6 +49,9 @@ export async function onRequestPost(context) {
       }
       catId = catRow.id;
     } else if (site.category) {
+      if (site.category.length > 20) {
+        return json({ error: "分类名不能超过 20 个字符" }, 400);
+      }
       catId = await ensureCategory(env.NAV_DB, site.category);
     } else {
       return json({ error: "未指定分类（需提供 category 或有效 category_id）" }, 400);

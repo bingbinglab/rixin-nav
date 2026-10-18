@@ -22,6 +22,7 @@ export async function onRequestPost(context) {
     }
     const name = String(body.name || "").trim();
     if (!name) return json({ error: "分类名必填" }, 400);
+    if (name.length > 20) return json({ error: "分类名不能超过 20 个字符" }, 400);
     const dup = await env.NAV_DB.prepare("SELECT id FROM category WHERE name=?").bind(name).first();
     if (dup) return json({ error: "这个分类已经有了" }, 409);
     const pv = await validParent(env.NAV_DB, Number(body.parent_id) || 0);

@@ -586,6 +586,10 @@ function renderCats() {
         toast("分类名不能为空", true);
         return;
       }
+      if (newName.length > 20) {
+        toast("分类名不能超过 20 个字符", true);
+        return;
+      }
       if (newName === oldText) {
         renderCats();
         return;
@@ -1499,8 +1503,10 @@ function checkUrlDup() {
     clearUrlDupWarn();
     return;
   }
-  // 查重口径与服务端 sites.js POST 判定一致 (url === rawUrl)
-  const dup = (data.sites || []).find((s) => s.url === rawUrl);
+  const cleanCompareUrl = (u) => String(u || "").trim().replace(/\/+$/, "");
+  const targetCompare = cleanCompareUrl(rawUrl);
+  // 查重口径：两侧去除末尾斜杠归一比对
+  const dup = (data.sites || []).find((s) => cleanCompareUrl(s.url) === targetCompare);
   if (dup) {
     warnEl.innerHTML = `⚠️ 提示：该网址已在「<b>${esc(dup.category || "未分类")}</b>」以「<b>${esc(dup.name)}</b>」收录。<a id="dupEditLink" href="javascript:void(0)">直接调出编辑</a>`;
     warnEl.style.display = "block";
@@ -1570,6 +1576,11 @@ $("saveBtn").onclick = async () => {
     return;
   }
   const cat = $("fCat").value.trim();
+  if (cat.length > 20) {
+    $("msg").textContent = "分类名不能超过 20 个字符。";
+    toast("分类名不能超过 20 个字符", true);
+    return;
+  }
   if (cat && !data.categories.some((c) => c.name === cat)) {
     // P08 + P17: 新分类确认改用统一站内弹窗
     const ok = await showConfirm("『" + cat + "』是新分类，将新建为一级分类，确定？", "新建分类确认");
@@ -1635,6 +1646,11 @@ $("catAddBtn").onclick = async () => {
   if (!name) {
     $("catMsg").textContent = "先填分类名";
     toast("先填分类名", true);
+    return;
+  }
+  if (name.length > 20) {
+    $("catMsg").textContent = "分类名不能超过 20 个字符";
+    toast("分类名不能超过 20 个字符", true);
     return;
   }
   try {
@@ -1849,7 +1865,11 @@ $("davRestoreBtn").onclick = async () => {
   if (!ok) return;
   $("toolMsg").textContent = "正在恢复…";
   try {
-    const j = await api("/api/admin/restore", { method: "POST" });
+    const j = await api("/api/admin/restore", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({}),
+    });
     let resMsg = "恢复完成：新增 " + j.added + " 条，跳过已有 " + j.skipped + " 条。";
     if (j.warning) resMsg += " " + j.warning;
     $("toolMsg").textContent = resMsg;
