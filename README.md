@@ -32,9 +32,24 @@
 
 ![管理后台](docs/screenshots/admin.png)
 
+## 最省事的部署方式：交给你的 AI Agent
+
+如果你在用 Antigravity、Claude Code、Cursor 这类带终端的 AI 工具，把下面这段话粘给它，剩下的它会自己干完：
+
+```
+帮我部署这个项目：https://github.com/bingbinglab/rixin-nav
+1. 克隆仓库，读 README 的「快速开始」一节照着做；
+2. 用 wrangler 在我的 Cloudflare 账号里建 D1 数据库，执行 schema.sql 建表（想要演示数据再执行 schema-seed.sql），再建一个 KV 命名空间；
+3. 部署到 Cloudflare Pages：输出目录 public，绑定 D1 为 NAV_DB、KV 为 NAV_KV；
+4. 部署完把访问地址告诉我。
+需要登录授权时停下来喊我；ADMIN_PASSWORD 环境变量我自己在 Cloudflare 后台设，不要替我设。
+```
+
+三件事还得你本人来：注册 Cloudflare 账号、授权时点确认、在后台设口令。其余的建库、建表、部署、绑定，agent 都能包办。
+
 ## 快速开始
 
-需要一个 Cloudflare 账号，免费版即可。三步：
+想自己动手也行。需要一个 Cloudflare 账号，免费版即可。三步：
 
 **1. 建数据库**
 
