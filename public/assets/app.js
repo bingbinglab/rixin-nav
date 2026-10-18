@@ -271,6 +271,7 @@ const ENGINE_DEFS = {
 const ENGINE_ORDER = ["bing", "google", "github"];
 let activeEngineIds = [...ENGINE_ORDER];
 let extEngineIdx = 0;
+let extLastQ = ""; // 上次填充外搜区的关键词：关键词不变时不重置已选引擎，防数据刷新重渲刷掉手势
 function curEngineDef() {
   if (extEngineIdx >= activeEngineIds.length) extEngineIdx = 0;
   return ENGINE_DEFS[activeEngineIds[extEngineIdx]];
@@ -405,7 +406,7 @@ function render() {
     const q = keyword.trim();
     if (!anyVisible && q) {
       extSearch.style.display = 'block';
-      extEngineIdx = 0;
+      if (q !== extLastQ) { extEngineIdx = 0; extLastQ = q; }
       const enc = encodeURIComponent(q);
       for (const id of activeEngineIds) {
         const b = document.getElementById(ENGINE_DEFS[id].btnId);
@@ -416,6 +417,7 @@ function render() {
       syncExtEngine();
     } else {
       extSearch.style.display = 'none';
+      extLastQ = "";
     }
   }
 

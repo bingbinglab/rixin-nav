@@ -1888,8 +1888,9 @@ $("linkCheckBtn").onclick = async () => {
     return;
   }
   const deadN = bad.filter((x) => x.r.status === "dead").length;
-  const warnN = bad.length - deadN;
-  $("toolMsg").textContent = `巡检完成：共 ${sites.length} 条，存活 ${sites.length - bad.length} 条，失联 ${deadN} 条，异常 ${warnN} 条。`;
+  const errN = bad.filter((x) => x.r.status === "error").length;
+  const warnN = bad.length - deadN - errN;
+  $("toolMsg").textContent = `巡检完成：共 ${sites.length} 条，存活 ${sites.length - bad.length} 条，失联 ${deadN} 条，异常 ${warnN} 条${errN ? `，未检 ${errN} 条` : ""}。`;
   toast("死链巡检完成");
   if (!bad.length) {
     box.innerHTML = `<p class="muted" style="margin:0">全部站点都能连上，没有死链。</p>`;
@@ -1899,14 +1900,14 @@ $("linkCheckBtn").onclick = async () => {
         ({ s, r }) => `
       <div class="lc-item" data-lc="${s.id}">
         <div class="lc-main">
-          <span class="lc-badge ${r.status}">${r.status === "dead" ? "失联" : "异常 " + r.code}</span>
+          <span class="lc-badge ${r.status === "error" ? "warn" : r.status}">${r.status === "dead" ? "失联" : r.status === "error" ? "未检" : "异常 " + r.code}</span>
           <a class="lc-name" href="${esc(s.url)}" target="_blank" rel="noopener">${esc(s.name)}</a>
           <span class="lc-note">${esc(r.note || "")}</span>
         </div>
         <div class="lc-url">${esc(s.url)}</div>
         <div class="lc-actions">
           <a class="mini ghost lc-open" href="${esc(s.url)}" target="_blank" rel="noopener">打开验证</a>
-          <button type="button" class="mini ghost danger" data-lcdel="${s.id}">删除</button>
+          ${r.status === "error" ? "" : `<button type="button" class="mini ghost danger" data-lcdel="${s.id}">删除</button>`}
         </div>
       </div>`
       )

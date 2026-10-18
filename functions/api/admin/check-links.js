@@ -1,5 +1,6 @@
 // POST /api/admin/check-links {urls:[{id,url}]} — 死链巡检（手动触发，后台分批调用）。
-// 每批最多 30 条（Workers 免费版单次调用子请求上限 50，留足余量）。
+// 每批最多 30 条；抓取不跟随重定向（3xx 本身即存活证据），子请求与网址严格 1:1，
+// 不会被跳转跳数放大而顶破 Workers 免费版单次 50 个子请求的上限。
 // 判定：能连上且状态码 <500 = ok（401/403/405 等说明主机活着）；5xx = warn（服务器异常）；连不上/超时/DNS 失败 = dead。
 // 只报告、永不自动删除，删不删由站长在结果里逐条决定。
 import { json, requireAuth } from "../../_lib/util.js";
@@ -19,7 +20,7 @@ async function checkOne(u) {
   try {
     const r = await fetch(url, {
       method: "GET",
-      redirect: "follow",
+      redirect: "manual",
       signal: ctl.signal,
       headers: { "User-Agent": UA, Accept: "text/html,application/xhtml+xml,*/*" },
     });
@@ -29,6 +30,11 @@ async function checkOne(u) {
     if (r.status >= 500) return { id, status: "warn", code: r.status, note: "服务器错误" };
     return { id, status: "ok", code: r.status };
   } catch (e) {
+    // 平台子请求额度耗尽是巡检自身的问题，绝不能误报成站点失联（会诱导误删）
+    const msg = String(e?.message || "") + " " + String(e?.name || "");
+    if (/subrequest/i.test(msg)) {
+      return { id, status: "error", code: 0, note: "平台子请求额度不足，本条未检完，请稍后重试" };
+    }
     return { id, status: "dead", code: 0, note: e?.name === "AbortError" ? "超时" : "连不上" };
   } finally {
     clearTimeout(timer);
