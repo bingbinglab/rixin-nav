@@ -24,6 +24,8 @@ async function checkOne(u) {
       headers: { "User-Agent": UA, Accept: "text/html,application/xhtml+xml,*/*" },
     });
     try { await r.body?.cancel(); } catch {}
+    // Workers 抓无法解析的域名时可能回 530 而非抛错，对访客而言等于站点不存在，归失联
+    if (r.status === 530) return { id, status: "dead", code: 530, note: "域名解析失败" };
     if (r.status >= 500) return { id, status: "warn", code: r.status, note: "服务器错误" };
     return { id, status: "ok", code: r.status };
   } catch (e) {
