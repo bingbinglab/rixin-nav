@@ -28,7 +28,7 @@ body {
 }
 .serif { font-family: "Noto Serif SC", "Source Han Serif SC", "Songti SC", serif; }
 .wrap { max-width: 1200px; margin: 0 auto; }
-.grid-layout { display: grid; grid-template-columns: 460px 1fr; gap: 20px; align-items: start; }
+.grid-layout { display: grid; grid-template-columns: 540px 1fr; gap: 20px; align-items: start; }
 .col-left, .col-right { min-width: 0; }
 .col-left .card, .col-right .card { margin: 0 0 20px; }
 header.top {
@@ -129,14 +129,20 @@ select.inline { width: auto; padding: 4px 6px; font-size: 13px; }
 .admin-tabs { display: none; }
 
 .tblwrap { overflow-x: auto; }
-.cattable { min-width: 500px; width: 100%; table-layout: fixed; }
-.cattable th:nth-child(1) { width: 120px; }
-.cattable th:nth-child(2) { width: 46px; }
-.cattable th:nth-child(3) { width: 112px; }
-.cattable th:nth-child(4) { width: 42px; }
-.cattable th:nth-child(5) { width: 90px; }
-.cattable td { text-align: center; }
-.cattable .mini { padding: 3px 7px; }
+.tblwrap-fit { overflow-x: visible; }
+.cattable { min-width: 0; width: 100%; table-layout: fixed; }
+.cattable th:nth-child(1) { width: 104px; }
+.cattable th:nth-child(2) { width: 40px; }
+.cattable th:nth-child(3) { width: 98px; }
+.cattable th:nth-child(4) { width: 38px; }
+.cattable th:nth-child(5) { width: 72px; }
+.cattable td { text-align: center; padding: 4px 6px; }
+.cattable select.inline { padding: 2px 4px; font-size: 12.5px; }
+.cat-add-form { display: flex; gap: 8px; flex-wrap: wrap; align-items: flex-end; margin-top: 10px; }
+.cat-add-form .caf-name { flex: 1 1 130px; }
+.cat-add-form .caf-parent { flex: 0 1 150px; }
+.cat-add-form .chk { align-self: center; margin: 0; }
+.cattable .mini { padding: 2px 6px; font-size: 12px; }
 .cattable th { white-space: nowrap; text-align: center; }
 .cattable .cname { white-space: nowrap; }
 .cat-priv-text { display: none; }
@@ -481,7 +487,7 @@ html.dark-theme .icon-box { background: var(--card); }
   .cattable tbody {
     display: flex !important;
     flex-direction: column !important;
-    gap: 8px !important;
+    gap: 6px !important;
     width: 100% !important;
   }
   .cattable tr[data-cat-id] {
@@ -490,13 +496,13 @@ html.dark-theme .icon-box { background: var(--card); }
     grid-template-areas:
       "name name count"
       "priv sort act" !important;
-    row-gap: 8px !important;
+    row-gap: 6px !important;
     column-gap: 8px !important;
     align-items: center !important;
     background: var(--card) !important;
     border: 1.5px solid var(--border-line) !important;
     box-shadow: 2px 2px 0 var(--border-line) !important;
-    padding: 10px 12px !important;
+    padding: 8px 10px !important;
     border-radius: 4px !important;
     box-sizing: border-box !important;
     width: 100% !important;

@@ -9,7 +9,7 @@ function getLoginHtml(siteTitle) {
 <html lang="zh-CN"><head><meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>${title} · 后台登录</title><link rel="icon" type="image/svg+xml" href="/favicon-2.svg"><link rel="icon" type="image/png" sizes="192x192" href="/icon-192-2.png">
-<link rel="stylesheet" href="/admin-assets/admin.css?v=20261019a">
+<link rel="stylesheet" href="/admin-assets/admin.css?v=20261019b">
 <style>
 body{display:flex;min-height:100vh;align-items:center;justify-content:center;padding:16px}
 form{background:var(--card);border:2px solid var(--ink);box-shadow:7px 7px 0 var(--card-shadow);padding:30px;width:340px;max-width:94vw}
@@ -50,7 +50,7 @@ function getAdminHtml(siteTitle) {
 <html lang="zh-CN"><head><meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>${title} · 后台管理</title><link rel="icon" type="image/svg+xml" href="/favicon-2.svg"><link rel="icon" type="image/png" sizes="192x192" href="/icon-192-2.png">
-<link rel="stylesheet" href="/admin-assets/admin.css?v=20261019a">
+<link rel="stylesheet" href="/admin-assets/admin.css?v=20261019b">
 <script>(function(){try{var t=localStorage.getItem('myNavTheme');if(!t&&window.matchMedia&&window.matchMedia('(prefers-color-scheme:dark)').matches)t='dark';if(t==='dark')document.documentElement.classList.add('dark-theme');}catch(e){}})();</script>
 </head>
 <body><div class="wrap">
@@ -84,11 +84,11 @@ function getAdminHtml(siteTitle) {
 
 <!-- Card 2: 分类管理 -->
 <div class="card" data-tab-pane="tab-cats"><h2><span class="chap">贰</span>分类管理</h2>
-<div class="tblwrap"><table class="cattable"><thead><tr><th>分类</th><th>书签数</th><th>父级</th><th>私密</th><th>排序</th><th></th></tr></thead><tbody id="catBody"></tbody></table></div>
-<div class="row" style="margin-top:10px"><div><label>新分类名</label><input id="cName" placeholder="如：播客"></div>
-<div><label>父级（空＝一级分类）</label><select id="cParent"><option value="0">（一级分类）</option></select></div></div>
-<label class="chk"><input type="checkbox" id="cPrivate"> 私密分类（整类未登录不可见）</label>
-<button class="primary" id="catAddBtn" type="button">新建分类</button>
+<div class="tblwrap tblwrap-fit"><table class="cattable"><thead><tr><th>分类</th><th>书签数</th><th>父级</th><th>私密</th><th>排序</th><th></th></tr></thead><tbody id="catBody"></tbody></table></div>
+<div class="cat-add-form"><div class="caf-name"><label>新分类名</label><input id="cName" placeholder="如：播客"></div>
+<div class="caf-parent"><label>父级（空＝一级）</label><select id="cParent"><option value="0">（一级分类）</option></select></div>
+<label class="chk"><input type="checkbox" id="cPrivate"> 私密分类</label>
+<button class="primary" id="catAddBtn" type="button">新建分类</button></div>
 <p class="msg" id="catMsg"></p></div>
 
 <!-- Card 3: 智能与备份工具 -->
