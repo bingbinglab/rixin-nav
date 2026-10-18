@@ -264,7 +264,7 @@ let kbPrefX = null;
 
 // 外搜引擎（未入本辑时用）：后台可勾选启用哪几个；←/→ 在启用的引擎间切换，Enter 打开当前引擎
 const ENGINE_DEFS = {
-  bing: { name: "必应", btnId: "extBing", url: (q) => `https://www.bing.com/search?q=${q}` },
+  bing: { name: "Bing", btnId: "extBing", url: (q) => `https://www.bing.com/search?q=${q}` },
   google: { name: "Google", btnId: "extGoogle", url: (q) => `https://www.google.com/search?q=${q}` },
   github: { name: "GitHub", btnId: "extGithub", url: (q) => `https://github.com/search?q=${q}` },
 };
@@ -295,8 +295,8 @@ function syncExtEngine() {
   const hint = document.getElementById('extHint');
   if (hint) {
     hint.textContent = activeEngineIds.length > 1
-      ? `← → 切换引擎 · 按 Enter 用${def.name}搜索`
-      : `按 Enter 用${def.name}搜索`;
+      ? `← → 切换引擎 · 按 Enter 用 ${def.name} 搜索`
+      : `按 Enter 用 ${def.name} 搜索`;
   }
 }
 
@@ -772,7 +772,7 @@ window.addEventListener('keydown', e => {
         }
       }
     } else if (keyword.trim()) {
-      // 站内无结果：回车用当前选中的外搜引擎（默认必应，←/→ 可切换），键盘流不中断
+      // 站内无结果：回车用当前选中的外搜引擎（默认 Bing，←/→ 可切换），键盘流不中断
       e.preventDefault();
       window.open(curEngineDef().url(encodeURIComponent(keyword.trim())), '_blank', 'noopener');
     }

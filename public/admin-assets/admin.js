@@ -127,6 +127,13 @@ function showConfirm(msg, title = "请确认", { isDanger = false, defaultCancel
   });
 }
 
+// 网址自动补协议：没写 http(s):// 时补 https://（与服务端 cleanSite 口径一致）
+function normalizeUrlInput(u) {
+  const t = String(u || "").trim();
+  if (!t || /^https?:\/\//i.test(t) || /^[a-z][a-z0-9+.-]*:\/\//i.test(t)) return t;
+  return "https://" + t.replace(/^\/+/, "");
+}
+
 // --- 书签导入预览口径比对与弹窗 ---
 function previewBookmarkImport(rawSites, rawCats = []) {
   const existingUrls = new Set((data.sites || []).map((s) => String(s.url || "").trim()));
@@ -1486,7 +1493,7 @@ function checkUrlDup() {
     clearUrlDupWarn();
     return;
   }
-  const rawUrl = ($("fUrl").value || "").trim();
+  const rawUrl = normalizeUrlInput($("fUrl").value);
   if (!rawUrl) {
     clearUrlDupWarn();
     return;
@@ -1554,7 +1561,8 @@ $("resetBtn").onclick = () => {
 
 $("saveBtn").onclick = async () => {
   const name = $("fName").value.trim();
-  const url = $("fUrl").value.trim();
+  const url = normalizeUrlInput($("fUrl").value);
+  $("fUrl").value = url;
   if (!name || !url) {
     $("msg").textContent = "请先填写站名和网址。";
     toast("请先填写站名和网址", true);
@@ -1651,7 +1659,8 @@ $("catAddBtn").onclick = async () => {
 
 // --- P09: AI 描述与站名自动清洗 ---
 $("aiDescBtn").onclick = async () => {
-  const url = $("fUrl").value.trim();
+  const url = normalizeUrlInput($("fUrl").value);
+  $("fUrl").value = url;
   if (!url) {
     $("msg").textContent = "先填网址，再让 AI 生成简介";
     toast("先填网址", true);

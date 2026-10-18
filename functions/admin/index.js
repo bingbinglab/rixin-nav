@@ -109,7 +109,7 @@ function getAdminHtml(siteTitle) {
 <label>页脚文案（留空则不显示该行）</label><input id="siteFooterInput" placeholder="如：本辑已毕 · 下辑随缘">
 <label>外搜引擎（站内搜不到结果时用，至少留一个；只留一个则前台只显示那一个）</label>
 <div style="display:flex;gap:18px;flex-wrap:wrap;margin:2px 0 10px">
-<label style="display:inline-flex;align-items:center;gap:6px;margin:0"><input type="checkbox" id="extEngBing" style="width:auto;margin:0"> 必应</label>
+<label style="display:inline-flex;align-items:center;gap:6px;margin:0"><input type="checkbox" id="extEngBing" style="width:auto;margin:0"> Bing</label>
 <label style="display:inline-flex;align-items:center;gap:6px;margin:0"><input type="checkbox" id="extEngGoogle" style="width:auto;margin:0"> Google</label>
 <label style="display:inline-flex;align-items:center;gap:6px;margin:0"><input type="checkbox" id="extEngGithub" style="width:auto;margin:0"> GitHub</label>
 </div>
@@ -194,7 +194,7 @@ function getAdminHtml(siteTitle) {
 
 <!-- 外置客户端逻辑 -->
 <script src="/assets/icon.js?v=20261017a" defer></script>
-<script src="/admin-assets/admin.js?v=20261018e" defer></script>
+<script src="/admin-assets/admin.js?v=20261018f" defer></script>
 </body></html>`;
 }
 

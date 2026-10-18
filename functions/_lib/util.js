@@ -96,7 +96,11 @@ export function passwordMatches(input, expected) {
 
 export function cleanSite(body) {
   const name = String(body.name || "").trim();
-  const url = String(body.url || "").trim();
+  let url = String(body.url || "").trim();
+  // 没写协议时自动补 https://（如直接填 www.baidu.com），不必再因格式被拒
+  if (url && !/^https?:\/\//i.test(url) && !/^[a-z][a-z0-9+.-]*:\/\//i.test(url)) {
+    url = "https://" + url.replace(/^\/+/, "");
+  }
   if (!name || !/^https?:\/\//i.test(url)) return null;
   const hasSort = body.sort_order !== undefined && body.sort_order !== null && body.sort_order !== "" && Number.isFinite(+body.sort_order);
   let category_id = null;
