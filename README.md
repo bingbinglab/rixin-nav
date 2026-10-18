@@ -34,6 +34,8 @@
 
 ![管理后台](docs/screenshots/admin.png)
 
+<img src="docs/screenshots/admin-mobile.png" width="320" alt="管理后台·手机端">
+
 ## 最省事的部署方式：交给你的 AI Agent
 
 如果你在用 Antigravity、Claude Code、Cursor 这类带终端的 AI 工具，把下面这段话粘给它，剩下的它会自己干完：
