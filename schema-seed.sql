@@ -16,7 +16,7 @@ INSERT INTO sites (name, url, desc, category_id, icon, pinned, is_private, sort_
 INSERT INTO sites (name, url, desc, category_id, icon, pinned, is_private, sort_order) VALUES ('DeepSeek', 'https://www.deepseek.com', '国产大模型对话', 1, 'deepseek.com.png', 0, 0, 30);
 INSERT INTO sites (name, url, desc, category_id, icon, pinned, is_private, sort_order) VALUES ('Kimi', 'https://www.kimi.com', '长文本 AI 助手', 1, 'kimi.com.png', 0, 0, 40);
 INSERT INTO sites (name, url, desc, category_id, icon, pinned, is_private, sort_order) VALUES ('豆包', 'https://www.doubao.com', '字节跳动 AI 助手', 1, 'doubao.com.png', 0, 0, 50);
-INSERT INTO sites (name, url, desc, category_id, icon, pinned, is_private, sort_order) VALUES ('飞书文档', 'https://www.feishu.cn', '在线文档与协作平台', 2, 'feishu.cn.png', 1, 0, 60);
+INSERT INTO sites (name, url, desc, category_id, icon, pinned, is_private, sort_order) VALUES ('飞书文档', 'https://www.feishu.cn', '在线文档与协作平台', 2, 'feishu.cn.png', 0, 0, 60);
 INSERT INTO sites (name, url, desc, category_id, icon, pinned, is_private, sort_order) VALUES ('Notion', 'https://www.notion.so', '笔记与知识库管理', 2, 'notion.so.png', 0, 0, 70);
 INSERT INTO sites (name, url, desc, category_id, icon, pinned, is_private, sort_order) VALUES ('腾讯文档', 'https://docs.qq.com', '在线文档协作', 2, 'docs.qq.com.png', 0, 0, 80);
 INSERT INTO sites (name, url, desc, category_id, icon, pinned, is_private, sort_order) VALUES ('钉钉', 'https://www.dingtalk.com', '团队沟通与会议协作', 2, 'dingtalk.com.png', 0, 0, 90);
@@ -25,7 +25,7 @@ INSERT INTO sites (name, url, desc, category_id, icon, pinned, is_private, sort_
 INSERT INTO sites (name, url, desc, category_id, icon, pinned, is_private, sort_order) VALUES ('IT之家', 'https://www.ithome.com', '数码科技新闻', 3, 'ithome.com.png', 0, 0, 120);
 INSERT INTO sites (name, url, desc, category_id, icon, pinned, is_private, sort_order) VALUES ('虎嗅', 'https://www.huxiu.com', '商业深度报道', 3, 'huxiu.com.png', 0, 0, 130);
 INSERT INTO sites (name, url, desc, category_id, icon, pinned, is_private, sort_order) VALUES ('澎湃新闻', 'https://www.thepaper.cn', '时政与社会新闻', 3, 'thepaper.cn.png', 0, 0, 140);
-INSERT INTO sites (name, url, desc, category_id, icon, pinned, is_private, sort_order) VALUES ('少数派', 'https://sspai.com', '效率与数字生活指南', 3, 'sspai.com.png', 1, 0, 150);
+INSERT INTO sites (name, url, desc, category_id, icon, pinned, is_private, sort_order) VALUES ('少数派', 'https://sspai.com', '效率与数字生活指南', 3, 'sspai.com.png', 0, 0, 150);
 INSERT INTO sites (name, url, desc, category_id, icon, pinned, is_private, sort_order) VALUES ('知乎', 'https://www.zhihu.com', '问答社区与深度内容', 4, 'zhihu.com.png', 0, 0, 160);
 INSERT INTO sites (name, url, desc, category_id, icon, pinned, is_private, sort_order) VALUES ('小红书', 'https://www.xiaohongshu.com', '生活方式社区', 4, 'xiaohongshu.com.png', 0, 0, 170);
 INSERT INTO sites (name, url, desc, category_id, icon, pinned, is_private, sort_order) VALUES ('微博', 'https://weibo.com', '社交媒体与热搜', 4, 'weibo.com.png', 0, 0, 180);
@@ -36,14 +36,14 @@ INSERT INTO sites (name, url, desc, category_id, icon, pinned, is_private, sort_
 INSERT INTO sites (name, url, desc, category_id, icon, pinned, is_private, sort_order) VALUES ('网易云音乐', 'https://music.163.com', '在线音乐与歌单', 5, 'music.163.com.png', 0, 0, 230);
 INSERT INTO sites (name, url, desc, category_id, icon, pinned, is_private, sort_order) VALUES ('豆瓣电影', 'https://movie.douban.com', '电影评分与影评', 5, 'douban.com.png', 0, 0, 240);
 INSERT INTO sites (name, url, desc, category_id, icon, pinned, is_private, sort_order) VALUES ('腾讯视频', 'https://v.qq.com', '影视剧集与综艺', 5, 'v.qq.com.png', 0, 0, 250);
-INSERT INTO sites (name, url, desc, category_id, icon, pinned, is_private, sort_order) VALUES ('GitHub', 'https://github.com', '代码托管与开源社区', 6, 'github.com.png', 1, 0, 260);
+INSERT INTO sites (name, url, desc, category_id, icon, pinned, is_private, sort_order) VALUES ('GitHub', 'https://github.com', '代码托管与开源社区', 6, 'github.com.png', 0, 0, 260);
 INSERT INTO sites (name, url, desc, category_id, icon, pinned, is_private, sort_order) VALUES ('日新辑览仓库', 'https://github.com/bingbinglab/rixin-nav', '本站开源源码', 6, 'github.com.png', 1, 0, 210);
 INSERT INTO sites (name, url, desc, category_id, icon, pinned, is_private, sort_order) VALUES ('MDN Web Docs', 'https://developer.mozilla.org', '前端开发技术文档', 6, 'developer.mozilla.org.png', 0, 0, 270);
 INSERT INTO sites (name, url, desc, category_id, icon, pinned, is_private, sort_order) VALUES ('Stack Overflow', 'https://stackoverflow.com', '编程问答与解决方案', 6, 'stackoverflow.com.png', 0, 0, 280);
 INSERT INTO sites (name, url, desc, category_id, icon, pinned, is_private, sort_order) VALUES ('Vercel', 'https://vercel.com', '前端部署与托管平台', 6, 'vercel.com.png', 0, 0, 290);
 INSERT INTO sites (name, url, desc, category_id, icon, pinned, is_private, sort_order) VALUES ('菜鸟教程', 'https://www.runoob.com', '编程入门教程', 6, 'runoob.com.png', 0, 0, 300);
 INSERT INTO sites (name, url, desc, category_id, icon, pinned, is_private, sort_order) VALUES ('Dribbble', 'https://dribbble.com', '设计灵感与作品集', 7, 'dribbble.com.png', 0, 0, 310);
-INSERT INTO sites (name, url, desc, category_id, icon, pinned, is_private, sort_order) VALUES ('Figma', 'https://www.figma.com', '在线设计与原型协作', 7, 'figma.com.png', 1, 0, 320);
+INSERT INTO sites (name, url, desc, category_id, icon, pinned, is_private, sort_order) VALUES ('Figma', 'https://www.figma.com', '在线设计与原型协作', 7, 'figma.com.png', 0, 0, 320);
 INSERT INTO sites (name, url, desc, category_id, icon, pinned, is_private, sort_order) VALUES ('Unsplash', 'https://unsplash.com', '免费高清照片素材', 7, 'unsplash.com.png', 0, 0, 330);
 INSERT INTO sites (name, url, desc, category_id, icon, pinned, is_private, sort_order) VALUES ('字由', 'https://www.hellofont.cn', '中文字体与设计资源', 7, 'hellofont.cn.png', 0, 0, 340);
 INSERT INTO sites (name, url, desc, category_id, icon, pinned, is_private, sort_order) VALUES ('站酷', 'https://www.zcool.com.cn', '设计师社区与作品', 7, 'zcool.com.cn.png', 0, 0, 350);
