@@ -500,7 +500,7 @@
   // 8. 朱砂闲章 (Leisure Seal) 控制器：拖出实物章、按压落印
   // ==========================================
   let activeStamps = [];
-  const MAX_STAMPS = 3;
+  const MAX_STAMPS = 8;
 
   function initLeisureSeal() {
     const sealToy = document.getElementById('floatingSealToy');
@@ -538,7 +538,7 @@
             stampEl.remove();
           }, 800);
         }
-      }, 8000);
+      }, 6000);
     }
 
     function clearAllStamps() {
@@ -587,8 +587,28 @@
       closeBtn.addEventListener('pointerdown', (e) => e.stopPropagation());
     }
 
-    // ---------- 拖动与按压（统一指针事件，轻点=盖印、拖动不误盖） ----------
+    // ---------- 连续盖章（按住即盖、拖动成串、停住慢盖） ----------
     let dragging = false, moved = 0, startX = 0, startY = 0, initL = 0, initT = 0;
+    let stampTimer = null, lastStampAt = 0, lastBaseX = 0, lastBaseY = 0;
+
+    function sealBasePoint(jitter) {
+      const r = sealToy.getBoundingClientRect();
+      let x = r.left + r.width / 2;
+      let y = r.bottom + 26;
+      if (jitter) {
+        x += (Math.random() - 0.5) * 14;
+        y += (Math.random() - 0.5) * 10;
+      }
+      return [x, y];
+    }
+
+    function stampNow(jitter) {
+      const [x, y] = sealBasePoint(jitter);
+      stampAt(x, y);
+      lastStampAt = Date.now();
+      lastBaseX = x; lastBaseY = y;
+    }
+
     sealToy.addEventListener('pointerdown', (e) => {
       if (e.target.closest('#sealToyCloseBtn')) return;
       dragging = true; moved = 0;
@@ -596,6 +616,12 @@
       const r = sealToy.getBoundingClientRect();
       initL = r.left; initT = r.top;
       sealToy.classList.add('is-dragging');
+      sealToy.classList.add('pressing');
+      stampNow(false);
+      clearInterval(stampTimer);
+      stampTimer = setInterval(() => {
+        if (dragging && Date.now() - lastStampAt >= 480) stampNow(true);
+      }, 160);
     });
     window.addEventListener('pointermove', (e) => {
       if (!dragging) return;
@@ -608,22 +634,18 @@
         sealToy.style.top = `${Math.min(Math.max(10, initT + dy), maxY)}px`;
         sealToy.style.right = 'auto';
         sealToy.style.bottom = 'auto';
+        const [bx, by] = sealBasePoint(false);
+        if (Math.hypot(bx - lastBaseX, by - lastBaseY) >= 54) stampNow(false);
       }
     });
     window.addEventListener('pointerup', () => {
       if (!dragging) return;
       dragging = false;
+      clearInterval(stampTimer);
       sealToy.classList.remove('is-dragging');
-      if (moved <= 5) {
-        // 按压落印：章先压到底，印随起章沉下，落在章体正下方、不与章身重叠
-        sealToy.classList.add('pressing');
-        setTimeout(() => sealToy.classList.remove('pressing'), 170);
-        const r = sealToy.getBoundingClientRect();
-        setTimeout(() => stampAt(r.left + r.width / 2, r.bottom + 26), 70);
-      } else {
-        const r = sealToy.getBoundingClientRect();
-        try { localStorage.setItem('sealPos', JSON.stringify({ x: Math.round(r.left), y: Math.round(r.top) })); } catch (_) {}
-      }
+      sealToy.classList.remove('pressing');
+      const r = sealToy.getBoundingClientRect();
+      try { localStorage.setItem('sealPos', JSON.stringify({ x: Math.round(r.left), y: Math.round(r.top) })); } catch (_) {}
     });
 
     // Esc：收章并清屏印记
