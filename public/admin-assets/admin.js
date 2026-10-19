@@ -1948,7 +1948,7 @@ $("linkCheckBtn").onclick = async () => {
         const j = await api("/api/admin/check-links", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ urls: chunk.map((x) => ({ id: x.id, url: x.url })) }),
+          body: JSON.stringify({ urls: chunk.map((x) => ({ id: x.id, url: x.url })), timeout: 8000 }),
         });
         (j.results || []).forEach((r2) => verdict.set(String(r2.id), r2));
       }

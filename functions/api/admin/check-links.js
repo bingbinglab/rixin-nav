@@ -9,14 +9,14 @@ const UA = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML,
 const TIMEOUT_MS = 6000;
 const MAX_BATCH = 30;
 
-async function checkOne(u) {
+async function checkOne(u, timeoutMs = TIMEOUT_MS) {
   const id = u?.id;
   const url = String(u?.url || "").trim();
   if (!/^https?:\/\/\S+$/i.test(url)) {
     return { id, status: "dead", code: 0, note: "网址格式不对" };
   }
   const ctl = new AbortController();
-  const timer = setTimeout(() => ctl.abort(), TIMEOUT_MS);
+  const timer = setTimeout(() => ctl.abort(), timeoutMs);
   try {
     const r = await fetch(url, {
       method: "GET",
@@ -49,6 +49,7 @@ export async function onRequestPost(context) {
   try { body = await context.request.json(); } catch { return json({ error: "请求格式不对" }, 400); }
   const urls = Array.isArray(body?.urls) ? body.urls.slice(0, MAX_BATCH) : [];
   if (!urls.length) return json({ error: "没有要巡检的网址" }, 400);
-  const results = await Promise.all(urls.map(checkOne));
+  const timeoutMs = Math.min(10000, Math.max(1000, +body?.timeout || TIMEOUT_MS));
+  const results = await Promise.all(urls.map((u) => checkOne(u, timeoutMs)));
   return json({ results });
 }
