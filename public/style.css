@@ -2451,85 +2451,56 @@ html.dark-theme .fan-illust-item {
   100% { opacity: 0; transform: translateX(-50%) translateY(-6px); }
 }
 
-/* 7. 闲章跟随预览与落印 */
-.leisure-seal-follower {
+/* 7. 闲章实物章（拖出、按压落印） */
+.floating-seal-toy {
   position: fixed;
-  top: 0;
-  left: 0;
-  width: 34px;
-  height: 34px;
-  margin-left: -17px;
-  margin-top: -17px;
-  border: 1.5px dashed var(--ochre);
-  background: rgba(158, 71, 42, 0.15);
-  color: var(--ochre);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-family: var(--serif);
-  font-size: 12px;
-  font-weight: 700;
+  z-index: 95;
+  width: 86px;
+  cursor: grab;
+  user-select: none;
+  touch-action: none;
+  filter: drop-shadow(0 4px 10px rgba(39, 36, 34, 0.18));
+}
+.floating-seal-toy.is-dragging { cursor: grabbing; }
+.seal-toy-img {
+  width: 100%;
+  height: auto;
+  display: block;
   pointer-events: none;
-  z-index: 9999;
-  opacity: 0;
-  transition: opacity .15s ease;
-  border-radius: 2px;
+  transition: transform .07s ease;
 }
-.leisure-seal-follower.visible {
-  opacity: 0.85;
+.floating-seal-toy.pressing .seal-toy-img {
+  transform: translateY(3px) scale(1.05, 0.93);
 }
-@media (hover: none) {
-  .leisure-seal-follower { display: none !important; }
-}
-.leisure-seal-hint-bar {
-  position: fixed;
-  bottom: 18px;
-  left: 50%;
-  transform: translateX(-50%) translateY(8px);
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  background: var(--card);
-  border: 1px solid var(--ochre);
-  color: var(--ink);
-  box-shadow: 2px 2px 0 rgba(39, 36, 34, 0.55);
-  padding: 4px 6px 4px 12px;
-  font-size: 12.5px;
-  font-family: var(--sans);
-  border-radius: 999px;
-  z-index: 9998;
-  opacity: 0;
-  pointer-events: none;
-  transition: opacity .2s ease, transform .2s ease;
-  white-space: nowrap;
-}
-.leisure-seal-hint-bar.visible {
-  opacity: 1;
-  transform: translateX(-50%) translateY(0);
-  pointer-events: auto;
-}
-.seal-hint-close {
-  width: 22px;
-  height: 22px;
+.seal-toy-close {
+  position: absolute;
+  top: -8px;
+  right: -8px;
+  width: 20px;
+  height: 20px;
   border-radius: 50%;
-  border: 1px solid var(--border-line);
+  border: 1.5px solid var(--ink);
   background: var(--paper);
   color: var(--ink);
-  font-size: 11px;
+  font-size: 10px;
   line-height: 1;
   cursor: pointer;
-  display: inline-flex;
+  display: flex;
   align-items: center;
   justify-content: center;
   padding: 0;
 }
-.seal-hint-close:hover { border-color: var(--ochre); color: var(--ochre); }
+.seal-toy-close:hover { border-color: var(--ochre); color: var(--ochre); }
+@media (max-width: 640px) {
+  .floating-seal-toy { width: 74px; }
+}
+
 .leisure-seal-stamp {
   position: absolute;
-  width: 50px;
-  height: 50px;
-  margin-left: -25px;
-  margin-top: -25px;
+  width: 54px;
+  height: 54px;
+  margin-left: -27px;
+  margin-top: -27px;
   pointer-events: none;
   z-index: 100;
   transform: rotate(var(--stamp-rotate, 0deg));
@@ -2557,14 +2528,17 @@ html.dark-theme .fan-illust-item {
 }
 .stamp-inner-text {
   font-family: var(--serif);
-  font-size: 20px;
   font-weight: 700;
-  letter-spacing: 2px;
-  text-indent: 2px;
+  letter-spacing: 1px;
+  line-height: 1.05;
   color: #fff8f0;
   text-shadow: 0 0 1px rgba(0,0,0,0.25);
   writing-mode: vertical-rl;
 }
+/* 二字：一列直下；三/四字：每列两字、右列先行（传统印面排法） */
+.len-2 .stamp-inner-text { font-size: 19px; }
+.len-3 .stamp-inner-text,
+.len-4 .stamp-inner-text { font-size: 16px; height: 37px; }
 @keyframes sealSinkIn {
   0% { transform: rotate(var(--stamp-rotate, 0deg)) scale(1.22); opacity: 0.96; filter: drop-shadow(0 0 4px rgba(158, 71, 42, 0.4)); }
   60% { transform: rotate(var(--stamp-rotate, 0deg)) scale(0.98); opacity: 0.92; }

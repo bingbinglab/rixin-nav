@@ -10,7 +10,7 @@
 <meta name="theme-color" content="#f8f5ee">
 <meta name="color-scheme" content="light dark">
 <link rel="manifest" href="/site.webmanifest">
-<link rel="stylesheet" href="style.css?v=20261019h">
+<link rel="stylesheet" href="style.css?v=20261019i">
 <script>
 (function(){
   var t=localStorage.getItem('myNavTheme')||(window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light');
@@ -196,6 +196,12 @@
     </div>
   </div>
 
+  <!-- 可拖动闲章（拖出实物章、按压落印） -->
+  <div class="floating-seal-toy" id="floatingSealToy" hidden style="display: none;" aria-label="可拖动闲章">
+    <img src="/assets/seal.png?v=20261019c" alt="闲章" class="seal-toy-img" draggable="false">
+    <button type="button" class="seal-toy-close" id="sealToyCloseBtn" title="收起闲章">✕</button>
+  </div>
+
 </main>
 
 
@@ -248,6 +254,6 @@
 <script src="data.js"></script>
 <script src="/assets/icon.js?v=20261019c"></script>
 <script src="/assets/app.js?v=20261019c"></script>
-<script src="/assets/widgets.js?v=20261019e" defer></script>
+<script src="/assets/widgets.js?v=20261019f" defer></script>
 </body>
 </html>
