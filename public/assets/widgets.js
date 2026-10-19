@@ -195,7 +195,7 @@
 
   // 全局小玩意儿控制器闭包
   let summonFloatingMuyu = null;
-  let summonSealToy = null;
+  let toggleSealMode = null;
 
   // ==========================================
   // 4. 偷闲浮球枢纽 (Toy Hub) 控制器
@@ -234,8 +234,8 @@
       fanSeal.addEventListener('click', (e) => {
         e.stopPropagation();
         setHubOpen(false);
-        if (typeof summonSealToy === 'function') {
-          summonSealToy();
+        if (typeof toggleSealMode === 'function') {
+          toggleSealMode();
         }
       });
     }
@@ -497,31 +497,119 @@
   }
 
   // ==========================================
-  // 8. 朱砂闲章 (Leisure Seal) 控制器：拖出实物章、按压落印
+  // 8. 朱砂闲章 (Leisure Seal) 控制器
   // ==========================================
+  let isSealActive = false;
   let activeStamps = [];
   const MAX_STAMPS = 8;
 
   function initLeisureSeal() {
-    const sealToy = document.getElementById('floatingSealToy');
-    const closeBtn = document.getElementById('sealToyCloseBtn');
-    if (!sealToy) return;
+    const fanSeal = document.getElementById('fanItemSeal');
 
-    // ---------- 落印 ----------
+    // 光标跟随预览框 (仅在支持细精度指针的桌面设备显示)
+    const follower = document.createElement('div');
+    follower.className = 'leisure-seal-follower';
+    follower.setAttribute('aria-hidden', 'true');
+    follower.innerHTML = '<span class="follower-text">印</span>';
+    document.body.appendChild(follower);
+
+    // 落印模式提示小签（紧凑版，带退出钮，手机端也能关）
+    const hintBar = document.createElement('div');
+    hintBar.className = 'leisure-seal-hint-bar';
+    hintBar.innerHTML = '<span>已执闲章 · 点空白落印</span><button type="button" class="seal-hint-close" aria-label="退出落印">✕</button>';
+    document.body.appendChild(hintBar);
+    hintBar.querySelector('.seal-hint-close').addEventListener('click', (e) => {
+      e.stopPropagation();
+      setSealMode(false);
+    });
+
+    function setSealMode(active) {
+      isSealActive = active;
+      if (fanSeal) {
+        fanSeal.classList.toggle('seal-active', isSealActive);
+        fanSeal.setAttribute('aria-pressed', isSealActive ? 'true' : 'false');
+      }
+      document.body.classList.toggle('seal-stamping-mode', isSealActive);
+      if (isSealActive) {
+        hintBar.classList.add('visible');
+      } else {
+        hintBar.classList.remove('visible');
+        follower.classList.remove('visible');
+      }
+    }
+
+    toggleSealMode = function () {
+      setSealMode(!isSealActive);
+    };
+
+    // 鼠标移动跟随
+    document.addEventListener('mousemove', (e) => {
+      if (!isSealActive) return;
+      follower.classList.add('visible');
+      follower.style.transform = `translate3d(${e.clientX}px, ${e.clientY}px, 0)`;
+    });
+
+    // 点击页面任意留白处落印
+    document.addEventListener('click', (e) => {
+      if (!isSealActive) return;
+
+      // 严禁落在链接、按钮、输入框、卡片等交互元素上
+      if (isInteractiveTarget(e.target)) {
+        return;
+      }
+
+      stampAt(e.clientX, e.clientY);
+    });
+
+    // 按 Esc 键清屏全部印迹并退出落印模式
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' || e.key === 'Esc') {
+        if (isSealActive) {
+          setSealMode(false);
+        }
+        clearAllStamps();
+      }
+    });
+
+    function isInteractiveTarget(target) {
+      if (!target || target === document.body || target === document.documentElement) return false;
+      if (typeof target.closest !== 'function') return false;
+      if (target.closest('a, button, input, textarea, select, kbd, label, .modal, .shortcut-modal-card, .floating-muyu-toy, .toy-hub-wrap')) {
+        return true;
+      }
+      if (target.closest('.card, .sidebar-index, .toolbar, .masthead, .quick-loc-bar')) {
+        return true;
+      }
+      return false;
+    }
+
     function stampAt(clientX, clientY) {
-      const pageX = clientX + (window.scrollX || 0);
-      const pageY = clientY + (window.scrollY || 0);
+      const scrollX = window.scrollX || document.documentElement.scrollLeft;
+      const scrollY = window.scrollY || document.documentElement.scrollTop;
+      const pageX = clientX + scrollX;
+      const pageY = clientY + scrollY;
+
       playSealSound();
+
       const word = SEAL_WORDS[Math.floor(Math.random() * SEAL_WORDS.length)];
-      const rotate = (Math.random() * 8 - 4).toFixed(1);
+      const rotate = (Math.random() * 8 - 4).toFixed(1); // -4deg ~ +4deg 真实手盖微倾角
+
       const stampEl = document.createElement('div');
       stampEl.className = 'leisure-seal-stamp len-' + word.length;
       stampEl.style.left = `${pageX}px`;
       stampEl.style.top = `${pageY}px`;
       stampEl.style.setProperty('--stamp-rotate', `${rotate}deg`);
-      stampEl.innerHTML = `<div class="stamp-border"><span class="stamp-inner-text">${word}</span></div>`;
+
+      stampEl.innerHTML = `
+        <div class="stamp-border">
+          <span class="stamp-inner-text">${word}</span>
+        </div>
+      `;
+
       document.body.appendChild(stampEl);
       activeStamps.push(stampEl);
+
+      // 上限管控：同屏印记 ≤ 3 枚，超出者立即平滑淡出销毁
       while (activeStamps.length > MAX_STAMPS) {
         const oldest = activeStamps.shift();
         if (oldest && oldest.parentNode) {
@@ -529,6 +617,8 @@
           setTimeout(() => oldest.remove(), 620);
         }
       }
+
+      // 8 秒后自然淡化消失
       setTimeout(() => {
         if (stampEl && stampEl.parentNode) {
           stampEl.classList.add('fading');
@@ -550,111 +640,6 @@
       });
       activeStamps = [];
     }
-
-    // ---------- 位置 ----------
-    function restoreSealPosition() {
-      try {
-        const saved = JSON.parse(localStorage.getItem('sealPos') || 'null');
-        if (saved && typeof saved.x === 'number' && typeof saved.y === 'number') {
-          const maxX = Math.max(10, window.innerWidth - 110);
-          const maxY = Math.max(10, window.innerHeight - 120);
-          sealToy.style.left = `${Math.min(Math.max(10, saved.x), maxX)}px`;
-          sealToy.style.top = `${Math.min(Math.max(10, saved.y), maxY)}px`;
-          sealToy.style.right = 'auto';
-          sealToy.style.bottom = 'auto';
-          return;
-        }
-      } catch (_) {}
-      sealToy.style.right = '104px';
-      sealToy.style.bottom = '92px';
-      sealToy.style.left = 'auto';
-      sealToy.style.top = 'auto';
-    }
-
-    function hideSeal() {
-      sealToy.hidden = true;
-      sealToy.style.display = 'none';
-    }
-
-    summonSealToy = function () {
-      sealToy.hidden = false;
-      sealToy.style.display = 'block';
-      restoreSealPosition();
-    };
-
-    if (closeBtn) {
-      closeBtn.addEventListener('click', (e) => { e.stopPropagation(); hideSeal(); });
-      closeBtn.addEventListener('pointerdown', (e) => e.stopPropagation());
-    }
-
-    // ---------- 连续盖章（按住即盖、拖动成串、停住慢盖） ----------
-    let dragging = false, moved = 0, startX = 0, startY = 0, initL = 0, initT = 0;
-    let stampTimer = null, lastStampAt = 0, lastBaseX = 0, lastBaseY = 0;
-
-    function sealBasePoint(jitter) {
-      const r = sealToy.getBoundingClientRect();
-      let x = r.left + r.width / 2;
-      let y = r.bottom + 26;
-      if (jitter) {
-        x += (Math.random() - 0.5) * 14;
-        y += (Math.random() - 0.5) * 10;
-      }
-      return [x, y];
-    }
-
-    function stampNow(jitter) {
-      const [x, y] = sealBasePoint(jitter);
-      stampAt(x, y);
-      lastStampAt = Date.now();
-      lastBaseX = x; lastBaseY = y;
-    }
-
-    sealToy.addEventListener('pointerdown', (e) => {
-      if (e.target.closest('#sealToyCloseBtn')) return;
-      dragging = true; moved = 0;
-      startX = e.clientX; startY = e.clientY;
-      const r = sealToy.getBoundingClientRect();
-      initL = r.left; initT = r.top;
-      sealToy.classList.add('is-dragging');
-      sealToy.classList.add('pressing');
-      stampNow(false);
-      clearInterval(stampTimer);
-      stampTimer = setInterval(() => {
-        if (dragging && Date.now() - lastStampAt >= 480) stampNow(true);
-      }, 160);
-    });
-    window.addEventListener('pointermove', (e) => {
-      if (!dragging) return;
-      const dx = e.clientX - startX, dy = e.clientY - startY;
-      moved = Math.hypot(dx, dy);
-      if (moved > 5) {
-        const maxX = Math.max(10, window.innerWidth - 110);
-        const maxY = Math.max(10, window.innerHeight - 120);
-        sealToy.style.left = `${Math.min(Math.max(10, initL + dx), maxX)}px`;
-        sealToy.style.top = `${Math.min(Math.max(10, initT + dy), maxY)}px`;
-        sealToy.style.right = 'auto';
-        sealToy.style.bottom = 'auto';
-        const [bx, by] = sealBasePoint(false);
-        if (Math.hypot(bx - lastBaseX, by - lastBaseY) >= 54) stampNow(false);
-      }
-    });
-    window.addEventListener('pointerup', () => {
-      if (!dragging) return;
-      dragging = false;
-      clearInterval(stampTimer);
-      sealToy.classList.remove('is-dragging');
-      sealToy.classList.remove('pressing');
-      const r = sealToy.getBoundingClientRect();
-      try { localStorage.setItem('sealPos', JSON.stringify({ x: Math.round(r.left), y: Math.round(r.top) })); } catch (_) {}
-    });
-
-    // Esc：收章并清屏印记
-    document.addEventListener('keydown', (e) => {
-      if (e.key === 'Escape' || e.key === 'Esc') {
-        if (!sealToy.hidden) hideSeal();
-        clearAllStamps();
-      }
-    });
   }
 
   // ==========================================
