@@ -2221,14 +2221,14 @@ html.dark-theme .toy-hub-btn {
 .toy-hub-wrap.is-open .fan-item:nth-child(1) { transition-delay: 0.02s; }
 .toy-hub-wrap.is-open .fan-item:nth-child(2) { transition-delay: 0.05s; }
 
-/* 桌面端坐标：双件同弧 R=112px（中心坐标）: 木鱼(46°), 闲章(78°) */
+/* 桌面端坐标：双件同弧 R=68px（中心坐标）: 木鱼(38°), 闲章(84°) */
 .fan-muyu-item {
-  --tx: -78px;
-  --ty: -81px;
+  --tx: -54px;
+  --ty: -42px;
 }
 .fan-seal-item {
-  --tx: -23px;
-  --ty: -110px;
+  --tx: -7px;
+  --ty: -68px;
 }
 
 /* 4. 子项形态：插画卡片 (.fan-illust-item) */
@@ -2595,14 +2595,14 @@ html.dark-theme .fan-illust-item {
     height: 48px;
   }
   
-  /* 手机端单弧紧凑散开 (R=80px，中心坐标) */
+  /* 手机端单弧紧凑散开 (R=60px，中心坐标) */
   .fan-muyu-item {
-    --tx: -57px;
-    --ty: -57px;
+    --tx: -49px;
+    --ty: -35px;
   }
   .fan-seal-item {
-    --tx: -17px;
-    --ty: -78px;
+    --tx: -6px;
+    --ty: -60px;
   }
 
   /* 手机端尺寸微调 */
