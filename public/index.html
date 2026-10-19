@@ -10,7 +10,7 @@
 <meta name="theme-color" content="#f8f5ee">
 <meta name="color-scheme" content="light dark">
 <link rel="manifest" href="/site.webmanifest">
-<link rel="stylesheet" href="style.css?v=20261019b">
+<link rel="stylesheet" href="style.css?v=20261019c">
 <script>
 (function(){
   var t=localStorage.getItem('myNavTheme')||(window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light');
@@ -37,11 +37,16 @@
           <p class="mast-solar-date" id="mastSolarDate"></p>
           <div class="lunar-almanac-row">
             <span class="almanac-badge" id="mastLunarDate"></span>
+            <button id="mobileDailySignBtn" class="daily-sign-badge" type="button" title="退堂日课 · 抽取今日定心签">日课签</button>
           </div>
         </div>
         <!-- 站长门牌印钮（登录/后台入口） -->
         <button id="adminSealBtn" class="admin-seal-btn" type="button" title="站长登录 / 管理后台" aria-label="站长登录">
           <span class="seal-frame"><span id="adminSealText" class="seal-text">门牌</span></span>
+        </button>
+        <!-- 朱砂闲章印钮 -->
+        <button id="leisureSealBtn" class="leisure-seal-btn" type="button" title="朱砂闲章 · 随手落印 (点击开启/退出落印模式)" aria-label="朱砂闲章">
+          <span class="seal-frame"><span class="seal-text">闲章</span></span>
         </button>
         <!-- 阴阳日夜切换印钮 -->
         <button id="themeToggleBtn" class="yinyang-btn" type="button" title="切换白天 / 夜间模式 (阴阳流转)" aria-label="切换白天夜间模式">
@@ -70,6 +75,15 @@
       <div class="search-kbd-hint"><kbd>/</kbd></div>
       <button id="clearBtn" class="clear-btn" title="清空">✕</button>
     </div>
+    <button id="typeShuffleBtn" class="type-shuffle-btn" type="button" title="百衲活字盒 · 随心一辑 (滚轮或点击拨动)" aria-label="随心一辑">
+      <span class="type-roller-track">
+        <span class="type-char">随</span>
+        <span class="type-char">心</span>
+        <span class="type-char">一</span>
+        <span class="type-char">辑</span>
+      </span>
+      <span class="type-shuffle-tag">漫游</span>
+    </button>
     <button id="viewToggleBtn" class="toggle-view-btn" type="button" title="切换详细/紧凑视图">
       <span id="viewToggleIcon">⊞</span>
       <span id="viewToggleText">紧凑模式</span>
@@ -100,6 +114,14 @@
           <span class="sidebar-subtitle">目录</span>
         </div>
         <nav class="sidebar-nav" id="sidebarNav"></nav>
+        <!-- 退堂日课签匣 -->
+        <div id="dailySignBox" class="daily-sign-box" title="退堂日课签 · 今日定心签 (点击抽取)">
+          <div class="daily-sign-casket">
+            <span class="sign-tassel"></span>
+            <span class="sign-label">退堂日课</span>
+            <span class="sign-pull-hint">抽取</span>
+          </div>
+        </div>
         <button class="back-to-top-btn" id="backToTopBtn" type="button">↑ 回到顶部</button>
       </div>
     </aside>
@@ -201,8 +223,35 @@
   </div>
 </div>
 
+<!-- 退堂日课签弹窗 -->
+<div class="daily-sign-modal-overlay" id="dailySignModalOverlay" hidden>
+  <div class="daily-sign-card" id="dailySignCard">
+    <div class="slip-header">
+      <span class="slip-tag">退堂日课</span>
+      <button type="button" class="slip-close-btn" id="dailySignCloseBtn" title="关闭 (Esc)">✕</button>
+    </div>
+    <div class="slip-body">
+      <div class="slip-yi-ji">
+        <div class="slip-yi-row"><span class="slip-badge yi">宜</span><span class="slip-text" id="dailySignYi"></span></div>
+        <div class="slip-ji-row"><span class="slip-badge ji">忌</span><span class="slip-text" id="dailySignJi"></span></div>
+      </div>
+      <p class="slip-quote" id="dailySignQuote"></p>
+    </div>
+    <div class="slip-footer">
+      <span class="slip-date" id="dailySignDate"></span>
+      <span class="slip-stamp">验讫</span>
+    </div>
+  </div>
+</div>
+
+<!-- 贪多晃盒回怼小木牌 -->
+<div class="daily-sign-refusal-toast" id="dailySignToast" hidden title="点击可重温今日签文">
+  <span class="toast-wood-tag">今日灵感已领，贪多不灵，歇歇眼睛去罢</span>
+</div>
+
 <script src="data.js"></script>
 <script src="/assets/icon.js?v=20261019c"></script>
 <script src="/assets/app.js?v=20261019c"></script>
+<script src="/assets/widgets.js?v=20261019a" defer></script>
 </body>
 </html>

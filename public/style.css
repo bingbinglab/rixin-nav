@@ -2116,3 +2116,518 @@ html.dark-theme .shortcut-row kbd {
   .ext-btn { min-height: 42px; padding: 8px 22px; }
 }
 .ext-btn.ext-active { background: var(--ink, #333); color: var(--paper, #f7f2e7); }
+
+/* ==========================================================================
+   日新辑览 · 站内小玩意儿三件套（闲章 ＋ 日课签 ＋ 活字盒）
+   纯前端装饰与闲趣微交互，零破坏既有布局
+   ========================================================================== */
+
+/* 1. 朱砂闲章 (Leisure Seal) */
+.leisure-seal-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 32px;
+  padding: 0 10px;
+  background: var(--box-bg);
+  border: 1.5px solid var(--ochre);
+  color: var(--ochre);
+  cursor: pointer;
+  font-family: var(--serif);
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  text-indent: 2px;
+  border-radius: 2px;
+  transition: all .18s ease;
+  user-select: none;
+}
+.leisure-seal-btn:hover {
+  background: var(--ochre);
+  color: var(--paper);
+  box-shadow: 2px 2px 0 var(--ink);
+  transform: translateY(-1px);
+}
+.leisure-seal-btn.seal-active {
+  background: var(--ochre);
+  color: var(--paper);
+  box-shadow: inset 1px 1px 2px rgba(0,0,0,0.3), 2px 2px 0 var(--ink);
+}
+body.seal-stamping-mode {
+  cursor: crosshair;
+}
+
+/* 闲章光标跟随预览 */
+.leisure-seal-follower {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 32px;
+  height: 32px;
+  margin-left: -16px;
+  margin-top: -16px;
+  border: 1.5px dashed var(--ochre);
+  background: rgba(158, 71, 42, 0.15);
+  color: var(--ochre);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--serif);
+  font-size: 12px;
+  font-weight: 700;
+  pointer-events: none;
+  z-index: 9999;
+  opacity: 0;
+  transition: opacity .15s ease;
+  border-radius: 2px;
+}
+.leisure-seal-follower.visible {
+  opacity: 0.85;
+}
+@media (hover: none) {
+  .leisure-seal-follower { display: none !important; }
+}
+
+/* 闲章提示条 */
+.leisure-seal-hint-bar {
+  position: fixed;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%) translateY(10px);
+  background: var(--card);
+  border: 1.5px solid var(--ochre);
+  color: var(--ink);
+  box-shadow: 3px 3px 0 var(--ink);
+  padding: 6px 14px;
+  font-size: 13px;
+  font-family: var(--sans);
+  border-radius: 3px;
+  z-index: 9998;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity .2s ease, transform .2s ease;
+  white-space: nowrap;
+}
+.leisure-seal-hint-bar.visible {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
+.leisure-seal-hint-bar kbd {
+  background: var(--paper);
+  border: 1px solid var(--border-line);
+  padding: 1px 5px;
+  border-radius: 2px;
+  font-family: var(--mono);
+}
+
+/* 页面落印印记 */
+.leisure-seal-stamp {
+  position: absolute;
+  width: 54px;
+  height: 54px;
+  margin-left: -27px;
+  margin-top: -27px;
+  pointer-events: none;
+  z-index: 100;
+  transform: rotate(var(--stamp-rotate, 0deg));
+  user-select: none;
+  animation: sealSinkIn 0.35s cubic-bezier(0.18, 0.89, 0.32, 1.28) forwards;
+}
+.leisure-seal-stamp.fading {
+  opacity: 0;
+  transform: rotate(var(--stamp-rotate, 0deg)) scale(0.92);
+  transition: opacity .5s ease, transform .5s ease;
+}
+.stamp-border {
+  width: 100%;
+  height: 100%;
+  border: 2px solid var(--ochre);
+  background: var(--ochre);
+  color: var(--paper);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  padding: 2px;
+  box-shadow: inset 0 0 1px rgba(0,0,0,0.4), 0 0 1px rgba(158, 71, 42, 0.4);
+  border-radius: 2px;
+}
+.stamp-inner-text {
+  font-family: var(--serif);
+  font-size: 20px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  text-indent: 2px;
+  color: #fff8f0;
+  text-shadow: 0 0 1px rgba(0,0,0,0.25);
+  writing-mode: vertical-rl;
+}
+@keyframes sealSinkIn {
+  0% {
+    transform: rotate(var(--stamp-rotate, 0deg)) scale(1.22);
+    opacity: 0.96;
+    filter: drop-shadow(0 0 4px rgba(158, 71, 42, 0.4));
+  }
+  60% {
+    transform: rotate(var(--stamp-rotate, 0deg)) scale(0.98);
+    opacity: 0.92;
+  }
+  100% {
+    transform: rotate(var(--stamp-rotate, 0deg)) scale(1);
+    opacity: 0.86;
+    filter: drop-shadow(0 0 0.5px rgba(158, 71, 42, 0.2));
+  }
+}
+
+/* 2. 退堂日课签 (Daily Oracle) */
+.daily-sign-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 22px;
+  padding: 0 7px;
+  background: var(--box-bg);
+  border: 1px solid var(--ochre);
+  color: var(--ochre);
+  font-family: var(--serif);
+  font-size: 11px;
+  font-weight: 700;
+  border-radius: 2px;
+  cursor: pointer;
+  letter-spacing: 1px;
+  transition: all .15s ease;
+  user-select: none;
+}
+.daily-sign-badge:hover {
+  background: var(--ochre);
+  color: var(--paper);
+}
+
+.daily-sign-box {
+  margin: 12px 0 6px;
+  background: var(--paper);
+  border: 1.5px dashed var(--border-line);
+  border-radius: 4px;
+  padding: 8px 10px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  transition: all .2s ease;
+  user-select: none;
+}
+.daily-sign-box:hover {
+  border-style: solid;
+  border-color: var(--ochre);
+  background: var(--box-bg);
+  transform: translateY(-1px);
+}
+.daily-sign-casket {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+}
+.sign-tassel {
+  width: 6px;
+  height: 14px;
+  background: var(--ochre);
+  border-radius: 1px;
+  position: relative;
+}
+.sign-tassel::after {
+  content: "";
+  position: absolute;
+  top: 14px;
+  left: 1px;
+  width: 4px;
+  height: 6px;
+  border-bottom: 2px dotted var(--ochre);
+}
+.sign-label {
+  font-family: var(--serif);
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--ink);
+  letter-spacing: 1px;
+}
+.sign-pull-hint {
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--muted);
+  background: var(--card);
+  padding: 1px 5px;
+  border: 1px solid var(--border-line);
+  border-radius: 2px;
+  margin-left: auto;
+}
+
+/* 晃盒回怼动画与木牌提示 */
+@keyframes casketShake {
+  0%, 100% { transform: translateX(0); }
+  20%, 60% { transform: translateX(-4px); }
+  40%, 80% { transform: translateX(4px); }
+}
+.daily-sign-box.shake,
+.daily-sign-badge.shake {
+  animation: casketShake .35s ease;
+}
+
+.daily-sign-refusal-toast {
+  position: fixed;
+  top: 80px;
+  left: 50%;
+  transform: translateX(-50%) translateY(-10px);
+  background: var(--card);
+  border: 1.5px solid var(--ochre);
+  color: var(--ochre);
+  box-shadow: 3px 3px 0 var(--ink);
+  padding: 8px 16px;
+  font-family: var(--serif);
+  font-size: 13.5px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  border-radius: 3px;
+  z-index: 10001;
+  opacity: 0;
+  pointer-events: auto;
+  cursor: pointer;
+  transition: opacity .2s ease, transform .2s ease;
+  white-space: nowrap;
+}
+.daily-sign-refusal-toast.visible {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
+.toast-wood-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.toast-wood-tag::before {
+  content: "※";
+  color: var(--ochre);
+}
+
+/* 日课签弹窗展示 */
+.daily-sign-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: var(--modal-overlay);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10000;
+  padding: 16px;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity .2s ease;
+}
+.daily-sign-modal-overlay.visible {
+  opacity: 1;
+  pointer-events: auto;
+}
+.daily-sign-card {
+  width: 320px;
+  max-width: 90vw;
+  background: var(--paper);
+  border: 2px solid var(--ink);
+  box-shadow: 6px 6px 0 var(--ink);
+  border-radius: 3px;
+  padding: 22px 20px 18px;
+  position: relative;
+  animation: slipPopIn .28s cubic-bezier(0.18, 0.89, 0.32, 1.25) forwards;
+}
+@keyframes slipPopIn {
+  from { transform: translateY(18px) scale(0.95); opacity: 0; }
+  to { transform: translateY(0) scale(1); opacity: 1; }
+}
+.slip-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1.5px solid var(--border-line);
+  padding-bottom: 8px;
+  margin-bottom: 16px;
+}
+.slip-tag {
+  font-family: var(--serif);
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  color: var(--ink);
+}
+.slip-close-btn {
+  background: none;
+  border: none;
+  font-size: 16px;
+  color: var(--muted);
+  cursor: pointer;
+  padding: 2px 6px;
+}
+.slip-close-btn:hover { color: var(--ochre); }
+
+.slip-body {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.slip-yi-ji {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.slip-yi-row, .slip-ji-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.slip-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  font-family: var(--serif);
+  font-size: 13px;
+  font-weight: 700;
+  border-radius: 2px;
+  color: #fff;
+  flex-shrink: 0;
+}
+.slip-badge.yi { background: var(--green); }
+.slip-badge.ji { background: var(--ochre); }
+.slip-text {
+  font-family: var(--serif);
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--ink);
+  letter-spacing: 1px;
+}
+.slip-quote {
+  margin-top: 6px;
+  padding: 10px 12px;
+  background: var(--card);
+  border-left: 2.5px solid var(--ochre);
+  font-family: var(--serif);
+  font-size: 13.5px;
+  line-height: 1.6;
+  color: var(--muted);
+  border-radius: 0 2px 2px 0;
+}
+.slip-footer {
+  margin-top: 18px;
+  border-top: 1px dashed var(--border-line);
+  padding-top: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.slip-date {
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--muted);
+}
+.slip-stamp {
+  font-family: var(--serif);
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--ochre);
+  border: 1px solid var(--ochre);
+  padding: 1px 4px;
+  border-radius: 2px;
+  letter-spacing: 1px;
+}
+
+/* 3. 百衲活字盒 (Movable Type Roller) */
+.type-shuffle-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 42px;
+  padding: 0 10px;
+  background: var(--box-bg);
+  border: 1.5px solid var(--border-line);
+  border-radius: 4px;
+  cursor: pointer;
+  user-select: none;
+  transition: border-color .15s ease, box-shadow .15s ease;
+  flex-shrink: 0;
+}
+.type-shuffle-btn:hover {
+  border-color: var(--ochre);
+  box-shadow: 2px 2px 0 var(--card-shadow);
+}
+.type-roller-track {
+  display: flex;
+  gap: 2.5px;
+}
+.type-char {
+  width: 22px;
+  height: 25px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--paper);
+  border: 1px solid var(--border-line);
+  font-family: var(--serif);
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--ink);
+  border-radius: 2px;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.7);
+  transition: transform .08s ease;
+}
+html.dark-theme .type-char {
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.1);
+}
+.type-shuffle-tag {
+  font-size: 11px;
+  font-family: var(--mono);
+  color: var(--muted);
+  background: var(--paper);
+  padding: 1px 5px;
+  border: 1px solid var(--border-line);
+  border-radius: 2px;
+}
+.type-shuffle-btn.rolling .type-char {
+  animation: typeCharFlip .12s infinite;
+}
+@keyframes typeCharFlip {
+  0% { transform: rotateX(0deg); }
+  50% { transform: rotateX(85deg); color: var(--ochre); }
+  100% { transform: rotateX(0deg); }
+}
+
+/* 活字盒命中卡片金色聚焦脉冲 */
+.card.card-gold-pulse {
+  outline: 2.5px solid var(--ochre) !important;
+  box-shadow: 0 0 0 4px rgba(158, 71, 42, 0.22), 4px 4px 0 var(--ink) !important;
+  transform: translateY(-3px) !important;
+  transition: transform .25s cubic-bezier(0.2, 0, 0.2, 1), box-shadow .25s ease, outline .25s ease !important;
+}
+
+/* 手机端精细化兼容 */
+@media (max-width: 540px) {
+  .leisure-seal-btn {
+    height: 36px;
+    padding: 0 8px;
+    font-size: 12px;
+  }
+  .type-shuffle-btn {
+    height: 44px;
+    padding: 0 6px;
+  }
+  .type-char {
+    width: 20px;
+    height: 22px;
+    font-size: 12px;
+  }
+  .type-shuffle-tag {
+    display: none;
+  }
+}
