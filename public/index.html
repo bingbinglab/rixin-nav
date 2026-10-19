@@ -10,7 +10,7 @@
 <meta name="theme-color" content="#f8f5ee">
 <meta name="color-scheme" content="light dark">
 <link rel="manifest" href="/site.webmanifest">
-<link rel="stylesheet" href="style.css?v=20261019f">
+<link rel="stylesheet" href="style.css?v=20261019g">
 <script>
 (function(){
   var t=localStorage.getItem('myNavTheme')||(window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light');
@@ -169,34 +169,8 @@
         <span class="fan-item-badge">木鱼</span>
       </button>
 
-      <!-- 3. 今日签 (功能件 · 内弧) -->
-      <button type="button" class="fan-item fan-btn-round fan-sign-item" id="fanItemDailySign" title="退堂日课 · 抽取今日签" aria-label="今日签">
-        <span class="fan-btn-text">今日签</span>
-        <span class="fan-sign-dot" id="dailySignStatusDot" title="今日签状态"></span>
-      </button>
-
-      <!-- 4. 随便逛逛 (功能件 · 内弧平位) -->
-      <button type="button" class="fan-item fan-btn-round fan-wander-item" id="fanItemWander" title="公开站点随机漫游" aria-label="随便逛逛">
-        <span class="fan-wander-row">随便</span>
-        <span class="fan-wander-row">逛逛</span>
-      </button>
     </div>
 
-    <!-- 随便逛逛钮旁浮出的站名小签 -->
-    <div id="randomSitePopover" class="random-site-popover" hidden>
-      <div class="popover-head">
-        <span class="popover-badge">偶遇一辑</span>
-        <button type="button" class="popover-close-btn" id="popoverCloseBtn" title="关闭 (Esc)">✕</button>
-      </div>
-      <a id="popoverSiteLink" class="popover-body" href="#" target="_blank" rel="noopener">
-        <span class="popover-site-name" id="popoverSiteName"></span>
-        <span class="popover-site-desc" id="popoverSiteDesc"></span>
-        <span class="popover-site-foot">
-          <span class="popover-site-host" id="popoverSiteHost"></span>
-          <span class="popover-site-go">直达 ↗</span>
-        </span>
-      </a>
-    </div>
 
     <!-- 主入口钮 (常驻右下角) -->
     <button type="button" class="toy-hub-btn" id="toyHubBtn" title="偷闲 · 站内小玩意儿" aria-label="偷闲小玩意儿" aria-expanded="false">
@@ -271,35 +245,9 @@
   </div>
 </div>
 
-<!-- 退堂日课签弹窗 -->
-<div class="daily-sign-modal-overlay" id="dailySignModalOverlay" hidden>
-  <div class="daily-sign-card" id="dailySignCard">
-    <div class="slip-header">
-      <span class="slip-tag">退堂日课</span>
-      <button type="button" class="slip-close-btn" id="dailySignCloseBtn" title="关闭 (Esc)">✕</button>
-    </div>
-    <div class="slip-body">
-      <div class="slip-yi-ji">
-        <div class="slip-yi-row"><span class="slip-badge yi">宜</span><span class="slip-text" id="dailySignYi"></span></div>
-        <div class="slip-ji-row"><span class="slip-badge ji">忌</span><span class="slip-text" id="dailySignJi"></span></div>
-      </div>
-      <p class="slip-quote" id="dailySignQuote"></p>
-    </div>
-    <div class="slip-footer">
-      <span class="slip-date" id="dailySignDate"></span>
-      <span class="slip-stamp">验讫</span>
-    </div>
-  </div>
-</div>
-
-<!-- 贪多晃盒回怼小木牌 -->
-<div class="daily-sign-refusal-toast" id="dailySignToast" hidden title="点击可重温今日签文">
-  <span class="toast-wood-tag">今日灵感已领，贪多不灵，歇歇眼睛去罢</span>
-</div>
-
 <script src="data.js"></script>
 <script src="/assets/icon.js?v=20261019c"></script>
 <script src="/assets/app.js?v=20261019c"></script>
-<script src="/assets/widgets.js?v=20261019d" defer></script>
+<script src="/assets/widgets.js?v=20261019e" defer></script>
 </body>
 </html>
