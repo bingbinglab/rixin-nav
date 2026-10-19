@@ -202,7 +202,7 @@ export async function restoreBookmarkData(db, data) {
     insertStmts.push(
       db.prepare(
         "INSERT INTO sites (name, url, desc, category_id, icon, pinned, is_private, sort_order, origin) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)"
-      ).bind(site.name, site.url, site.desc, catId, site.icon, site.pinned, site.is_private, site.sort_order, site.origin || "manual")
+      ).bind(site.name, site.url, site.desc, catId, site.icon, site.pinned, site.is_private, site.sort_order ?? 0, site.origin || "manual")
     );
   }
 

@@ -177,7 +177,29 @@ function previewBookmarkImport(rawSites, rawCats = []) {
     }
   }
 
-  for (const raw of rawSites) {
+  const siteList = Array.isArray(rawSites) ? rawSites : [];
+  for (const raw of siteList) {
+    if (!raw || typeof raw !== "object") {
+      items.push({
+        name: "（空条目）",
+        url: "",
+        desc: "",
+        category: "未分类",
+        parent_category: "",
+        icon: "",
+        pinned: false,
+        private: false,
+        sort_order: 0,
+        origin: "manual",
+        normUrl: "",
+        isExists: false,
+        isDup: false,
+        isInvalid: true,
+        checked: false,
+      });
+      continue;
+    }
+
     const name = String(raw.name || "").trim();
     const rawUrl = String(raw.url || "").trim();
     const normUrl = normalizeUrl(rawUrl);
@@ -194,14 +216,20 @@ function previewBookmarkImport(rawSites, rawCats = []) {
     let isExists = false;
 
     if (!isInvalid) {
-      if (existingUrls.has(normUrl)) {
-        isExists = true;
-      } else if (seenBatchUrls.has(normUrl)) {
+      if (seenBatchUrls.has(normUrl)) {
         isDup = true;
       } else {
         seenBatchUrls.add(normUrl);
+        if (existingUrls.has(normUrl)) {
+          isExists = true;
+        }
       }
     }
+
+    const sort_order = (raw.sort_order !== undefined && raw.sort_order !== null && Number.isFinite(+raw.sort_order))
+      ? Math.trunc(+raw.sort_order)
+      : 0;
+    const origin = raw.origin ? String(raw.origin).trim() : "manual";
 
     items.push({
       name,
@@ -212,6 +240,8 @@ function previewBookmarkImport(rawSites, rawCats = []) {
       icon: String(raw.icon || "").trim(),
       pinned: Boolean(raw.pinned),
       private: Boolean(raw.private || raw.is_private),
+      sort_order,
+      origin,
       normUrl,
       isExists,
       isDup,
@@ -521,6 +551,8 @@ function showImportPreviewModal(previewData) {
           icon: item.icon || "",
           pinned: item.pinned ? 1 : 0,
           private: item.private ? 1 : 0,
+          sort_order: item.sort_order !== undefined ? item.sort_order : 0,
+          origin: item.origin || "manual",
         }));
 
       if (!selectedSites.length) {

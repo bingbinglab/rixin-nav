@@ -66,7 +66,7 @@ function matchSiteScore(site, kw) {
   if (!kw) return 100;
   enrichSite(site);
   kw = kw.toLowerCase().trim();
-  const name = site.name.toLowerCase();
+  const name = (site.name || '').toLowerCase();
   const desc = (site.desc || '').toLowerCase();
   const cat = (site.category || '').toLowerCase();
   const url = (site.url || '').toLowerCase();
@@ -174,7 +174,7 @@ if (themeToggleBtn) {
 
 applyTheme(currentTheme);
 
-const allSites = () => (window.NAV_DATA || []);
+const allSites = () => (Array.isArray(window.NAV_DATA) ? window.NAV_DATA : []);
 
 // 私密站点：默认隐藏，工具栏「显示私密」切换（状态存本机）
 let showPrivate = localStorage.getItem('myNavShowPrivate') === '1';
@@ -1099,9 +1099,13 @@ if (logoutBtn) {
 let currentDataFingerprint = '';
 function calcDataFingerprint(sites, cats, authed) {
   if (!Array.isArray(sites)) return '';
-  const catStr = (cats || []).map(c => typeof c === 'string' ? c : (c ? c.name : '')).join(',');
-  const siteStr = sites.map(s => `${s.id || ''}:${s.name}:${s.url}:${s.category || ''}:${s.desc || ''}:${s.icon || ''}:${s.pinned ? 1 : 0}:${s.private ? 1 : 0}`).join('|');
-  return `${authed ? 1 : 0}_${sites.length}_${(cats || []).length}_${catStr}_${siteStr}`;
+  const catList = Array.isArray(cats) ? cats : [];
+  const catStr = catList.map(c => typeof c === 'string' ? c : (c ? c.name : '')).join(',');
+  const siteStr = sites.map(s => {
+    if (!s || typeof s !== 'object') return '';
+    return `${s.id || ''}:${s.name || ''}:${s.url || ''}:${s.category || ''}:${s.desc || ''}:${s.icon || ''}:${s.pinned ? 1 : 0}:${s.private ? 1 : 0}`;
+  }).join('|');
+  return `${authed ? 1 : 0}_${sites.length}_${catList.length}_${catStr}_${siteStr}`;
 }
 
 // ---------- 11.5 站点品牌与页脚文案动态同步 ----------
@@ -1185,10 +1189,14 @@ try {
 } catch (e) {}
 
 // 第一阶段：同步渲染静态 data.js 垫底，网站绝对零白屏
-currentDataFingerprint = calcDataFingerprint(window.NAV_DATA, window.NAV_CATEGORIES, false);
-render();
-initScrollSpy();
-renderAZStrip();
+try {
+  currentDataFingerprint = calcDataFingerprint(window.NAV_DATA, window.NAV_CATEGORIES, false);
+  render();
+  initScrollSpy();
+  renderAZStrip();
+} catch (err) {
+  console.warn('首屏静态数据渲染异常，等待接口拉取：', err);
+}
 
 // 第二阶段：异步吃 D1 接口数据（/api/sites）；若指纹无变化则静默跳过重渲
 refreshSitesData();
