@@ -9,7 +9,7 @@ function getLoginHtml(siteTitle) {
 <html lang="zh-CN"><head><meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>${title} · 后台登录</title><link rel="icon" type="image/svg+xml" href="/favicon-2.svg"><link rel="icon" type="image/png" sizes="192x192" href="/icon-192-2.png">
-<link rel="stylesheet" href="/admin-assets/admin.css?v=20261019i">
+<link rel="stylesheet" href="/admin-assets/admin.css?v=20261019j">
 <style>
 body{display:flex;min-height:100vh;align-items:center;justify-content:center;padding:16px}
 form{background:var(--card);border:2px solid var(--ink);box-shadow:7px 7px 0 var(--card-shadow);padding:30px;width:340px;max-width:94vw}
@@ -50,7 +50,7 @@ function getAdminHtml(siteTitle) {
 <html lang="zh-CN"><head><meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>${title} · 后台管理</title><link rel="icon" type="image/svg+xml" href="/favicon-2.svg"><link rel="icon" type="image/png" sizes="192x192" href="/icon-192-2.png">
-<link rel="stylesheet" href="/admin-assets/admin.css?v=20261019i">
+<link rel="stylesheet" href="/admin-assets/admin.css?v=20261019j">
 <script>(function(){try{var t=localStorage.getItem('myNavTheme');if(!t&&window.matchMedia&&window.matchMedia('(prefers-color-scheme:dark)').matches)t='dark';if(t==='dark')document.documentElement.classList.add('dark-theme');}catch(e){}})();</script>
 </head>
 <body><div class="wrap">
@@ -62,7 +62,8 @@ function getAdminHtml(siteTitle) {
   <button type="button" class="tab-pill active" data-tab="tab-sites">全部书签</button>
   <button type="button" class="tab-pill" data-tab="tab-edit">新增·编辑</button>
   <button type="button" class="tab-pill" data-tab="tab-cats">分类管理</button>
-  <button type="button" class="tab-pill" data-tab="tab-tools">设置与工具</button>
+  <button type="button" class="tab-pill" data-tab="tab-data">数据与备份</button>
+  <button type="button" class="tab-pill" data-tab="tab-settings">设置与智能</button>
 </nav>
 
 <div class="grid-layout">
@@ -79,7 +80,7 @@ function getAdminHtml(siteTitle) {
 <div><label>图标文件名（可空）</label><input id="fIcon" placeholder="如 doubao.com.png"></div></div>
 <label class="chk"><input type="checkbox" id="fPinned"> 置顶（常用常顾）</label>
 <label class="chk"><input type="checkbox" id="fPrivate"> 私密（未登录不可见）</label>
-<button class="primary" id="saveBtn">保 存</button><button class="ghost" id="resetBtn" type="button">清空表单</button>
+<div class="form-actions-sticky"><button class="primary" id="saveBtn">保 存</button><button class="ghost" id="resetBtn" type="button">清空表单</button></div>
 <p class="msg" id="msg"></p></div>
 
 <!-- Card 2: 分类管理 -->
@@ -91,20 +92,45 @@ function getAdminHtml(siteTitle) {
 <button class="primary" id="catAddBtn" type="button">新建分类</button></div>
 <p class="msg" id="catMsg"></p></div>
 
-<!-- Card 3: 智能与备份工具 -->
-<div class="card" data-tab-pane="tab-tools"><h2><span class="chap">叁</span>智能与备份工具</h2>
-<button class="ghost" id="bulkAiBtn" type="button">给缺简介的书签批量补简介</button>
-<button class="ghost danger" id="bulkAiStopBtn" type="button" style="display:none">中止</button>
-<button class="ghost" id="floccusSyncBtn" type="button">同步 Floccus 书签</button>
-<button class="ghost" id="davBackupBtn" type="button">备份到 WebDAV</button>
-<button class="ghost" id="davRestoreBtn" type="button">从 WebDAV 恢复</button>
-<button class="ghost" id="linkCheckBtn" type="button">巡检死链</button>
+<!-- Card 3: WebDAV 备份与同步 (属于数据与备份) -->
+<div class="card" data-tab-pane="tab-data"><h2><span class="chap">叁</span>WebDAV 备份与同步 <span id="wdBadge" class="badge none">未配置</span></h2>
+<div class="dav-action-btns" style="display:flex;gap:8px;flex-wrap:wrap;margin:4px 0 10px">
+  <button class="ghost" id="davBackupBtn" type="button">备份到 WebDAV</button>
+  <button class="ghost" id="davRestoreBtn" type="button">从 WebDAV 恢复</button>
+  <button class="ghost" id="floccusSyncBtn" type="button">同步 Floccus 书签</button>
+</div>
 <p class="msg" id="toolMsg"></p>
-<div id="linkCheckResult" style="display:none"></div>
-<p class="muted">说明：WebDAV 备份与 AI 补简介优先读取环境变量；若未配置环境变量，则可在下方卡片中配置，即时生效。</p></div>
+<div class="preset-btns"><span class="muted" style="font-size:12px">快捷预设：</span>
+<button class="ghost mini" type="button" id="wdPresetJianGuo">坚果云</button>
+<button class="ghost mini" type="button" id="wdPresetNextcloud">Nextcloud</button>
+<button class="ghost mini" type="button" id="wdPresetCustom">自定义</button></div>
+<label>WebDAV 地址</label><input id="wdUrl" placeholder="https://dav.jianguoyun.com/dav/">
+<label>账号</label><input id="wdUser" placeholder="WebDAV 登录账号">
+<label>应用密码（密码框留空表示保持原值不修改）</label><input id="wdPass" type="password" placeholder="未设置">
+<div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px">
+  <button class="primary" id="wdSaveBtn" type="button">保存 WebDAV 设置</button>
+  <button class="ghost" id="wdTestBtn" type="button">测试连接</button>
+  <button class="ghost danger" id="wdClearBtn" type="button">清除配置</button>
+</div>
+<p class="msg" id="wdMsg"></p>
+<p class="muted" id="wdTip">提示：坚果云密码请填「账户信息 - 安全设置」中生成的应用密码，非登录密码；备份文件将写入对应目录下的 rixin-jilan-backup.json。</p>
+<div style="margin-top:14px;padding-top:12px;border-top:1px dashed var(--line, #ddd)">
+<label>Floccus 同步文件相对路径（相对于 WebDAV 文件所在目录，如 bookmarks.xbel）</label>
+<input id="floccusPath" placeholder="bookmarks.xbel">
+<button class="ghost mini" id="floccusSaveBtn" type="button" style="margin-top:4px">保存 Floccus 路径</button>
+<p class="msg" id="floccusMsg"></p>
+</div></div>
 
-<!-- Card 4: 站点与品牌设置 -->
-<div class="card" data-tab-pane="tab-tools"><h2><span class="chap">肆</span>站点与品牌设置</h2>
+<!-- Card 4: 导入 / 导出 (属于数据与备份) -->
+<div class="card" data-tab-pane="tab-data"><h2><span class="chap">肆</span>导入 / 导出</h2>
+<input type="file" id="importFile" accept=".html,.htm,.json">
+<button class="ghost" id="importBtn" type="button">导入书签 (HTML / JSON)</button>
+<a href="/api/admin/export?format=json" class="btn ghost">导出 JSON</a>
+<a href="/api/admin/export?format=html" class="btn ghost">导出书签 HTML</a>
+<p class="muted">导入按网址去重；支持浏览器书签 HTML 与本站备份 JSON（文件夹/父级自动还原分类）。</p></div>
+
+<!-- Card 5: 站点与品牌设置 (属于设置与智能) -->
+<div class="card" data-tab-pane="tab-settings"><h2><span class="chap">伍</span>站点与品牌设置</h2>
 <label>站名（留空则默认「书签导航」）</label><input id="siteTitleInput" placeholder="书签导航">
 <label>页脚文案（留空则不显示该行）</label><input id="siteFooterInput" placeholder="如：本辑已毕 · 下辑随缘">
 <label>外搜引擎（站内搜不到结果时用，至少留一个；只留一个则前台只显示那一个）</label>
@@ -117,29 +143,13 @@ function getAdminHtml(siteTitle) {
 <p class="msg" id="siteMsg"></p>
 <p class="muted">说明：站名与页脚文案保存后前台与后台将实时同步生效；若未设置站名则显示默认「书签导航」，页脚文案留空则不展示刊底文案行。</p></div>
 
-<!-- Card 5: WebDAV 备份设置 -->
-<div class="card" data-tab-pane="tab-tools"><h2><span class="chap">伍</span>WebDAV 备份设置 <span id="wdBadge" class="badge none">未配置</span></h2>
-<div class="preset-btns"><span class="muted" style="font-size:12px">快捷预设：</span>
-<button class="ghost mini" type="button" id="wdPresetJianGuo">坚果云</button>
-<button class="ghost mini" type="button" id="wdPresetNextcloud">Nextcloud</button>
-<button class="ghost mini" type="button" id="wdPresetCustom">自定义</button></div>
-<label>WebDAV 地址</label><input id="wdUrl" placeholder="https://dav.jianguoyun.com/dav/">
-<label>账号</label><input id="wdUser" placeholder="WebDAV 登录账号">
-<label>应用密码（密码框留空表示保持原值不修改）</label><input id="wdPass" type="password" placeholder="未设置">
-<button class="primary" id="wdSaveBtn" type="button">保存 WebDAV 设置</button>
-<button class="ghost" id="wdTestBtn" type="button">测试连接</button>
-<button class="ghost danger" id="wdClearBtn" type="button">清除配置</button>
-<p class="msg" id="wdMsg"></p>
-<p class="muted" id="wdTip">提示：坚果云密码请填「账户信息 - 安全设置」中生成的应用密码，非登录密码；备份文件将写入对应目录下的 rixin-jilan-backup.json。</p>
-<div style="margin-top:14px;padding-top:12px;border-top:1px dashed var(--line)">
-<label>Floccus 同步文件相对路径（相对于 WebDAV 文件所在目录，如 bookmarks.xbel）</label>
-<input id="floccusPath" placeholder="bookmarks.xbel">
-<button class="ghost mini" id="floccusSaveBtn" type="button" style="margin-top:4px">保存 Floccus 路径</button>
-<p class="msg" id="floccusMsg"></p>
-</div></div>
-
-<!-- Card 6: AI 补简介设置 -->
-<div class="card" data-tab-pane="tab-tools"><h2><span class="chap">陆</span>AI 补简介设置 <span id="aiBadge" class="badge none">未配置</span></h2>
+<!-- Card 6: AI 补简介设置 (属于设置与智能) -->
+<div class="card" data-tab-pane="tab-settings"><h2><span class="chap">陆</span>AI 补简介设置 <span id="aiBadge" class="badge none">未配置</span></h2>
+<div style="display:flex;gap:8px;flex-wrap:wrap;margin:4px 0 10px">
+  <button class="ghost" id="bulkAiBtn" type="button">给缺简介的书签批量补简介</button>
+  <button class="ghost danger" id="bulkAiStopBtn" type="button" style="display:none">中止</button>
+</div>
+<p class="msg" id="aiToolMsg"></p>
 <label>AI 服务商</label>
 <select id="aiProvider">
   <option value="cloudflare">Cloudflare Workers AI（原生）</option>
@@ -156,25 +166,29 @@ function getAdminHtml(siteTitle) {
 </div>
 <label id="aiKeyLabel">Workers AI 令牌 (API Token，留空保持原值)</label><input id="aiKey" type="password" placeholder="未设置">
 <label>模型名称 (model)</label><input id="aiModel" placeholder="@cf/meta/llama-3.3-70b-instruct-fp8-fast">
-<button class="primary" id="aiSaveBtn" type="button">保存 AI 设置</button>
-<button class="ghost" id="aiTestBtn" type="button">测试生成</button>
-<button class="ghost danger" id="aiClearBtn" type="button">清除配置</button>
+<div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px">
+  <button class="primary" id="aiSaveBtn" type="button">保存 AI 设置</button>
+  <button class="ghost" id="aiTestBtn" type="button">测试生成</button>
+  <button class="ghost danger" id="aiClearBtn" type="button">清除配置</button>
+</div>
 <p class="msg" id="aiMsg"></p>
 <div id="aiTestResult" class="test-res-box" style="display:none"></div>
 <p class="muted" id="aiTip">提示：Google Gemini 亦原生支持 OpenAI 兼容端点；测生成将使用斗鱼直播作为样本网站跑一次实际生成。</p></div>
 
-<!-- Card 7: 导入 / 导出 -->
-<div class="card" data-tab-pane="tab-tools"><h2><span class="chap">柒</span>导入 / 导出</h2>
-<input type="file" id="importFile" accept=".html,.htm,.json">
-<button class="ghost" id="importBtn" type="button">导入书签 (HTML / JSON)</button>
-<a href="/api/admin/export?format=json" class="btn ghost">导出 JSON</a>
-<a href="/api/admin/export?format=html" class="btn ghost">导出书签 HTML</a>
-<p class="muted">导入按网址去重；支持浏览器书签 HTML 与本站备份 JSON（文件夹/父级自动还原分类）。</p></div>
+<!-- Card 7: 死链巡检 (属于设置与智能) -->
+<div class="card" data-tab-pane="tab-settings"><h2><span class="chap">柒</span>死链巡检</h2>
+<button class="ghost" id="linkCheckBtn" type="button">巡检死链</button>
+<p class="msg" id="lcToolMsg"></p>
+<div id="linkCheckResult" style="display:none"></div>
+<p class="muted">说明：分批并发探测各书签连通性并二次复核；异常站点可一键打开验证或直接删除。</p></div>
+
 </div>
 
 <!-- Card 8: 全部书签 (右栏) -->
 <div class="col-right" data-tab-pane="tab-sites">
-<div class="card"><div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px"><h2><span class="chap">捌</span>全部书签</h2><div class="fold-controls" style="display:flex;gap:6px"><button class="ghost mini" type="button" id="foldAllBtn" title="全部折叠分类">全部折叠</button><button class="ghost mini" type="button" id="unfoldAllBtn" title="全部展开分类">全部展开</button></div></div><div class="searchbar"><input id="siteSearch" placeholder="过滤：打站名、网址或分类…"></div><div id="list">加载中…</div></div>
+<div class="card"><div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px"><h2><span class="chap">捌</span>全部书签</h2><div class="fold-controls" style="display:flex;gap:6px"><button class="ghost mini" type="button" id="foldAllBtn" title="全部折叠分类">全部折叠</button><button class="ghost mini" type="button" id="unfoldAllBtn" title="全部展开分类">全部展开</button></div></div><div class="searchbar"><input id="siteSearch" placeholder="过滤：打站名、网址或分类…"><button type="button" class="search-clear-btn" id="searchClearBtn" title="清空搜索" aria-label="清空搜索" style="display:none">×</button></div><div id="list">加载中…</div></div>
+</div>
+</div>
 </div>
 </div>
 
@@ -194,7 +208,7 @@ function getAdminHtml(siteTitle) {
 
 <!-- 外置客户端逻辑 -->
 <script src="/assets/icon.js?v=20261019c" defer></script>
-<script src="/admin-assets/admin.js?v=20261019i" defer></script>
+<script src="/admin-assets/admin.js?v=20261019j" defer></script>
 </body></html>`;
 }
 

@@ -701,7 +701,7 @@ function showFloccusSyncModal(d) {
 
 // --- P15: 移动端 Tab 化逻辑 ---
 function switchTab(tabId) {
-  document.body.classList.remove("tab-sites", "tab-edit", "tab-cats", "tab-tools");
+  document.body.classList.remove("tab-sites", "tab-edit", "tab-cats", "tab-data", "tab-settings");
   document.body.classList.add(tabId);
   document.querySelectorAll(".tab-pill").forEach((btn) => {
     btn.classList.toggle("active", btn.dataset.tab === tabId);
@@ -1161,11 +1161,26 @@ function renderSites() {
     if (!orderedNames.includes(n)) orderedNames.push(n);
   });
 
-  // P12: 精细化空态
+  // P12: 精细化空态与搜索清空
   const emptyHtml =
     data.sites.length === 0
       ? '<p class="muted">库里还没有书签。</p>'
-      : `<p class="muted">未找到包含『${esc(rawKw)}』的书签。</p>`;
+      : `<p class="muted">未找到包含『${esc(rawKw)}』的书签。<button type="button" class="mini ghost inline-reset" id="emptyResetBtn">清空筛选</button></p>`;
+
+  const searchClearBtn = $("searchClearBtn");
+  if (searchClearBtn) {
+    searchClearBtn.style.display = isSearching ? "flex" : "none";
+    if (!searchClearBtn._bound) {
+      searchClearBtn._bound = true;
+      searchClearBtn.onclick = () => {
+        const inp = $("siteSearch");
+        if (inp) inp.value = "";
+        searchClearBtn.style.display = "none";
+        renderSites();
+        if (inp) inp.focus();
+      };
+    }
+  }
 
   $("list").innerHTML =
     orderedNames
@@ -1239,6 +1254,18 @@ function renderSites() {
           <div class="tblwrap" style="display:${isCollapsed ? "none" : "block"}"><table class="sites-tbl"><tbody data-cat="${esc(cat)}">${trs}</tbody></table></div>`;
       })
       .join("") || emptyHtml;
+
+  const emptyResetBtn = $("emptyResetBtn");
+  if (emptyResetBtn) {
+    emptyResetBtn.onclick = () => {
+      const inp = $("siteSearch");
+      if (inp) inp.value = "";
+      const cb = $("searchClearBtn");
+      if (cb) cb.style.display = "none";
+      renderSites();
+      if (inp) inp.focus();
+    };
+  }
 
   const moveSite = async (s, target) => {
     if ((($("siteSearch") || {}).value || "").trim()) {
@@ -1440,22 +1467,46 @@ function updateBulkBar(visibleSites = []) {
   bar.innerHTML = `
     <div class="bulk-info">
       <span>已选 <b>${selectedCount}</b> 条${matchTip}</span>
-      <button type="button" class="mini ghost" id="bulkSelectVisibleBtn">${selectBtnText}</button>
       <button type="button" class="mini ghost" id="bulkClearBtn">清空已选</button>
+      <button type="button" class="mini ghost desktop-only-inline" id="bulkSelectVisibleBtn">${selectBtnText}</button>
     </div>
-    <div class="bulk-actions-group">
-      <select id="bulkTargetCat" class="inline" style="max-width:140px">
-        ${catOptions}
-      </select>
-      <button type="button" class="mini ghost" id="bulkMoveBtn">移动分类</button>
-      <button type="button" class="mini ghost" id="bulkPinBtn">设为置顶</button>
-      <button type="button" class="mini ghost" id="bulkUnpinBtn">取消置顶</button>
-      <button type="button" class="mini ghost" id="bulkPrivBtn">设为私密</button>
-      <button type="button" class="mini ghost" id="bulkPubBtn">设为公开</button>
-      <button type="button" class="mini ghost" id="bulkAiBtnRow">补简介</button>
-      <button type="button" class="mini ghost danger" id="bulkDelBtn">批量删除</button>
+    <div class="bulk-actions-group" id="bulkActionsGroup">
+      <div class="bulk-cat-wrap">
+        <select id="bulkTargetCat" class="inline" style="max-width:140px">
+          ${catOptions}
+        </select>
+        <button type="button" class="mini ghost" id="bulkMoveBtn">移动分类</button>
+      </div>
+      <div class="bulk-btns-wrap">
+        <button type="button" class="mini ghost" id="bulkPinBtn">设为置顶</button>
+        <button type="button" class="mini ghost" id="bulkUnpinBtn">取消置顶</button>
+        <button type="button" class="mini ghost" id="bulkPrivBtn">设为私密</button>
+        <button type="button" class="mini ghost" id="bulkPubBtn">设为公开</button>
+        <button type="button" class="mini ghost" id="bulkAiBtnRow">补简介</button>
+        <button type="button" class="mini ghost danger" id="bulkDelBtn">批量删除</button>
+      </div>
     </div>
+    <button type="button" class="mini primary mobile-bulk-more" id="bulkMoreBtn">操作 ▾</button>
   `;
+
+  const moreBtn = $("bulkMoreBtn");
+  if (moreBtn) {
+    moreBtn.onclick = (e) => {
+      e.stopPropagation();
+      const isExp = bar.classList.toggle("expanded");
+      moreBtn.textContent = isExp ? "收起 ▴" : "操作 ▾";
+    };
+  }
+  if (!bar._docClickBound) {
+    bar._docClickBound = true;
+    document.addEventListener("click", (e) => {
+      if (bar.classList.contains("expanded") && !bar.contains(e.target)) {
+        bar.classList.remove("expanded");
+        const b = $("bulkMoreBtn");
+        if (b) b.textContent = "操作 ▾";
+      }
+    });
+  }
 
   $("bulkClearBtn").onclick = () => {
     selectedSiteIds.clear();
@@ -1855,7 +1906,17 @@ function edit(id) {
   $("resetBtn").textContent = "取消编辑";
   updateDescCount();
   switchTab("tab-edit"); // P15: 编辑自动切至新增/编辑Tab
-  window.scrollTo({ top: 0, behavior: "smooth" });
+  if (window.innerWidth <= 900) {
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  } else {
+    const formCard = document.querySelector('[data-tab-pane="tab-edit"]');
+    if (formCard) {
+      formCard.classList.remove("card-highlight");
+      void formCard.offsetWidth;
+      formCard.classList.add("card-highlight");
+      setTimeout(() => formCard.classList.remove("card-highlight"), 1600);
+    }
+  }
 }
 
 $("resetBtn").onclick = () => {
@@ -2021,15 +2082,16 @@ $("aiDescBtn").onclick = async () => {
 
 // --- P13: 批量补简介 (中止与连续3次失败自动停) ---
 let bulkAiAborted = false;
+const setAiToolMsg = (txt) => { const el = $("aiToolMsg") || $("toolMsg"); if (el) el.textContent = txt; };
 $("bulkAiStopBtn").onclick = () => {
   bulkAiAborted = true;
   $("bulkAiStopBtn").disabled = true;
-  $("toolMsg").textContent = "正在中止批量补简介…";
+  setAiToolMsg("正在中止批量补简介…");
 };
 
 async function runBulkAiDesc(todo) {
   if (!todo.length) {
-    $("toolMsg").textContent = "没有缺简介的书签。";
+    setAiToolMsg("没有缺简介的书签。");
     toast("没有缺简介的书签");
     return;
   }
@@ -2044,7 +2106,7 @@ async function runBulkAiDesc(todo) {
   for (let i = 0; i < todo.length; i++) {
     if (bulkAiAborted) break;
     const s = todo[i];
-    $("toolMsg").textContent = "批量补简介中 (" + (i + 1) + "/" + todo.length + ")：" + s.name;
+    setAiToolMsg("批量补简介中 (" + (i + 1) + "/" + todo.length + ")：" + s.name);
     try {
       const j = await api("/api/admin/ai-desc", {
         method: "POST",
@@ -2085,8 +2147,9 @@ async function runBulkAiDesc(todo) {
       consecutiveFail++;
       lastFailReason = e.message || "网络或接口异常";
       if (consecutiveFail >= 3) {
-        $("toolMsg").textContent =
-          "连续 3 次失败已自动停止（原因：" + lastFailReason + "），已完成 " + done + " 条。";
+        setAiToolMsg(
+          "连续 3 次失败已自动停止（原因：" + lastFailReason + "），已完成 " + done + " 条。"
+        );
         toast("连续 3 次失败已停止：" + lastFailReason, true);
         break;
       }
@@ -2096,11 +2159,11 @@ async function runBulkAiDesc(todo) {
   $("bulkAiStopBtn").style.display = "none";
   if (bulkAiAborted) {
     const resMsg = "批量补简介已中止，已完成 " + done + " 条。";
-    $("toolMsg").textContent = resMsg;
+    setAiToolMsg(resMsg);
     toast(resMsg);
   } else if (consecutiveFail < 3) {
     const resMsg = "批量完成：成功补上 " + done + " 条。";
-    $("toolMsg").textContent = resMsg;
+    setAiToolMsg(resMsg);
     toast(resMsg);
   }
 }
@@ -2204,10 +2267,11 @@ $("linkCheckBtn").onclick = async () => {
   box.innerHTML = "";
   const bad = [];
   const CHUNK = 30;
+  const setLcToolMsg = (txt) => { const el = $("lcToolMsg") || $("toolMsg"); if (el) el.textContent = txt; };
   try {
     for (let i = 0; i < sites.length; i += CHUNK) {
       const chunk = sites.slice(i, i + CHUNK);
-      $("toolMsg").textContent = `正在巡检死链… ${i}/${sites.length}`;
+      setLcToolMsg(`正在巡检死链… ${i}/${sites.length}`);
       const j = await api("/api/admin/check-links", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -2223,7 +2287,7 @@ $("linkCheckBtn").onclick = async () => {
   } catch (e) {
     box.style.display = "none";
     box.innerHTML = "";
-    $("toolMsg").textContent = "巡检中断：" + e.message;
+    setLcToolMsg("巡检中断：" + e.message);
     toast("巡检中断：" + e.message, true);
     btn.disabled = false;
     return;
@@ -2251,7 +2315,7 @@ $("linkCheckBtn").onclick = async () => {
       const verdict = new Map();
       for (let i = 0; i < recheck.length; i += CHUNK) {
         const chunk = recheck.slice(i, i + CHUNK);
-        $("toolMsg").textContent = `正在复核可疑结果… ${i}/${recheck.length}`;
+        setLcToolMsg(`正在复核可疑结果… ${i}/${recheck.length}`);
         const j = await api("/api/admin/check-links", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -2279,7 +2343,7 @@ $("linkCheckBtn").onclick = async () => {
   const errN = bad.filter((x) => x.r.status === "error").length;
   const warnN = bad.length - deadN - errN;
   const head = `<div class="lc-head"><span>失联 ${deadN} 条 · 异常 ${warnN} 条${errN ? ` · 未检 ${errN} 条` : ""}</span><button type="button" class="mini ghost" id="lcCloseBtn">关闭</button></div>`;
-  $("toolMsg").textContent = `巡检完成：共 ${sites.length} 条，存活 ${sites.length - bad.length} 条，失联 ${deadN} 条，异常 ${warnN} 条${errN ? `，未检 ${errN} 条` : ""}。`;
+  setLcToolMsg(`巡检完成：共 ${sites.length} 条，存活 ${sites.length - bad.length} 条，失联 ${deadN} 条，异常 ${warnN} 条${errN ? `，未检 ${errN} 条` : ""}。`);
   box.dataset.lcAlive = sites.length - bad.length;
   toast("死链巡检完成");
   if (!bad.length) {
@@ -2332,7 +2396,7 @@ $("linkCheckBtn").onclick = async () => {
             box.insertAdjacentHTML("beforeend", `<p class="lc-empty muted" style="margin:12px 0 0;text-align:center">清单已清空，本轮巡检发现的问题都处理完了。</p>`);
           }
           // 工具卡上的巡检汇总还停在完成时的数字时，跟着面板一起扣减（被别的工具覆盖过就不动）
-          const tm = $("toolMsg");
+          const tm = $("lcToolMsg") || $("toolMsg");
           if (tm && box.dataset.lcAlive !== undefined && tm.textContent.startsWith("巡检完成")) {
             const alive = +box.dataset.lcAlive;
             tm.textContent = `巡检完成：共 ${alive + rowsLeft.length} 条，存活 ${alive} 条，失联 ${d} 条，异常 ${w} 条${e2 ? `，未检 ${e2} 条` : ""}。`;
