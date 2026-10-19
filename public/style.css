@@ -2221,20 +2221,20 @@ html.dark-theme .toy-hub-btn {
 .toy-hub-wrap.is-open .fan-item:nth-child(1) { transition-delay: 0.02s; }
 .toy-hub-wrap.is-open .fan-item:nth-child(2) { transition-delay: 0.05s; }
 
-/* 桌面端坐标：双件同弧 R=190px（中心坐标）: 木鱼(46°), 闲章(78°) */
+/* 桌面端坐标：双件同弧 R=158px（中心坐标）: 木鱼(46°), 闲章(78°) */
 .fan-muyu-item {
-  --tx: -132px;
-  --ty: -137px;
+  --tx: -110px;
+  --ty: -114px;
 }
 .fan-seal-item {
-  --tx: -40px;
-  --ty: -185px;
+  --tx: -33px;
+  --ty: -155px;
 }
 
 /* 4. 子项形态：插画卡片 (.fan-illust-item) */
 .fan-illust-item {
-  width: 46px;
-  height: 46px;
+  width: 40px;
+  height: 40px;
   border-radius: 6px;
   background: var(--paper);
   border: 2px solid var(--ink);
@@ -2257,8 +2257,8 @@ html.dark-theme .fan-illust-item {
   transform: translate(calc(var(--tx) + var(--hub-half, 26px)), calc(var(--ty) + var(--hub-half, 26px))) translate(-50%, -50%) scale(0.95);
 }
 .fan-illust-img {
-  width: 33px;
-  height: 33px;
+  width: 28px;
+  height: 28px;
   object-fit: contain;
   pointer-events: none;
 }
@@ -2283,7 +2283,7 @@ html.dark-theme .fan-illust-item {
 .floating-muyu-toy {
   position: fixed;
   z-index: 95;
-  width: 152px;
+  width: 134px;
   cursor: grab;
   user-select: none;
   touch-action: none;
@@ -2294,15 +2294,15 @@ html.dark-theme .fan-illust-item {
 }
 .muyu-stage {
   position: relative;
-  width: 152px;
-  height: 100px;
+  width: 134px;
+  height: 88px;
   touch-action: none;
 }
 .muyu-body-img {
   position: absolute;
-  left: 8px;
-  top: 20px;
-  width: 101px;
+  left: 7px;
+  top: 18px;
+  width: 89px;
   height: auto;
   transform-origin: bottom center;
   transition: transform 0.05s ease;
@@ -2310,9 +2310,9 @@ html.dark-theme .fan-illust-item {
 }
 .muyu-mallet-img {
   position: absolute;
-  right: 10px;
-  top: 12px;
-  width: 54px;
+  right: 9px;
+  top: 10px;
+  width: 47px;
   height: auto;
   transform-origin: 80% 80%;
   transform: rotate(8deg);
@@ -2321,7 +2321,7 @@ html.dark-theme .fan-illust-item {
 }
 /* 敲击动效 */
 .muyu-stage.hit .muyu-mallet-img {
-  transform: translate(-16px, 26px) rotate(12deg);
+  transform: translate(-14px, 23px) rotate(12deg);
 }
 .muyu-stage.hit .muyu-body-img {
   transform: scale(1.05, 0.92);
@@ -2455,7 +2455,7 @@ html.dark-theme .fan-illust-item {
 .floating-seal-toy {
   position: fixed;
   z-index: 95;
-  width: 86px;
+  width: 74px;
   cursor: grab;
   user-select: none;
   touch-action: none;
@@ -2492,17 +2492,17 @@ html.dark-theme .fan-illust-item {
 }
 .seal-toy-close:hover { border-color: var(--ochre); color: var(--ochre); }
 @media (max-width: 640px) {
-  .floating-seal-toy { width: 74px; }
+  .floating-seal-toy { width: 64px; }
 }
 
 .leisure-seal-stamp {
   position: absolute;
-  width: 54px;
-  height: 54px;
-  margin-left: -27px;
-  margin-top: -27px;
+  width: 48px;
+  height: 48px;
+  margin-left: -24px;
+  margin-top: -24px;
   pointer-events: none;
-  z-index: 100;
+  z-index: 90;
   transform: rotate(var(--stamp-rotate, 0deg));
   user-select: none;
   animation: sealSinkIn 0.35s cubic-bezier(0.18, 0.89, 0.32, 1.28) forwards;
@@ -2536,9 +2536,9 @@ html.dark-theme .fan-illust-item {
   writing-mode: vertical-rl;
 }
 /* 二字：一列直下；三/四字：每列两字、右列先行（传统印面排法） */
-.len-2 .stamp-inner-text { font-size: 19px; }
+.len-2 .stamp-inner-text { font-size: 17px; }
 .len-3 .stamp-inner-text,
-.len-4 .stamp-inner-text { font-size: 16px; height: 37px; }
+.len-4 .stamp-inner-text { font-size: 14.5px; height: 33px; }
 @keyframes sealSinkIn {
   0% { transform: rotate(var(--stamp-rotate, 0deg)) scale(1.22); opacity: 0.96; filter: drop-shadow(0 0 4px rgba(158, 71, 42, 0.4)); }
   60% { transform: rotate(var(--stamp-rotate, 0deg)) scale(0.98); opacity: 0.92; }
@@ -2566,24 +2566,24 @@ html.dark-theme .fan-illust-item {
     height: 48px;
   }
   
-  /* 手机端单弧紧凑散开 (R=124px，中心坐标) */
+  /* 手机端单弧紧凑散开 (R=98px，中心坐标) */
   .fan-muyu-item {
-    --tx: -88px;
-    --ty: -88px;
+    --tx: -69px;
+    --ty: -69px;
   }
   .fan-seal-item {
-    --tx: -26px;
-    --ty: -121px;
+    --tx: -20px;
+    --ty: -96px;
   }
 
   /* 手机端尺寸微调 */
   .fan-illust-item {
-    width: 40px;
-    height: 40px;
+    width: 36px;
+    height: 36px;
   }
   .fan-illust-img {
-    width: 29px;
-    height: 29px;
+    width: 25px;
+    height: 25px;
   }
   
   /* 手机端回到顶部协同：浮球在最底，回顶在浮球正上方 16px (bottom: 74px) */
@@ -2597,18 +2597,18 @@ html.dark-theme .fan-illust-item {
   
   /* 手机端可拖动木鱼尺寸自适应 */
   .floating-muyu-toy {
-    width: 134px;
+    width: 118px;
   }
   .muyu-stage {
-    width: 134px;
-    height: 92px;
+    width: 118px;
+    height: 80px;
   }
   .muyu-body-img {
-    width: 88px;
-    top: 18px;
+    width: 78px;
+    top: 15px;
   }
   .muyu-mallet-img {
-    width: 46px;
+    width: 40px;
     top: 2px;
     right: 2px;
   }

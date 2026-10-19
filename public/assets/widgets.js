@@ -615,11 +615,11 @@
       dragging = false;
       sealToy.classList.remove('is-dragging');
       if (moved <= 5) {
-        // 按压落印：章身下压一瞬，印落在章体正下方中心
+        // 按压落印：章先压到底，印随起章沉下，落在章体正下方、不与章身重叠
         sealToy.classList.add('pressing');
-        setTimeout(() => sealToy.classList.remove('pressing'), 150);
+        setTimeout(() => sealToy.classList.remove('pressing'), 170);
         const r = sealToy.getBoundingClientRect();
-        stampAt(r.left + r.width / 2, r.top + r.height - 4);
+        setTimeout(() => stampAt(r.left + r.width / 2, r.bottom + 26), 70);
       } else {
         const r = sealToy.getBoundingClientRect();
         try { localStorage.setItem('sealPos', JSON.stringify({ x: Math.round(r.left), y: Math.round(r.top) })); } catch (_) {}
