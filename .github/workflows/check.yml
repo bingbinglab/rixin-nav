@@ -1,0 +1,27 @@
+name: check
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  js-syntax:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check JS syntax
+        run: |
+          fail=0
+          count=0
+          while IFS= read -r f; do
+            count=$((count+1))
+            tmp="$(mktemp --suffix=.mjs)"
+            cp "$f" "$tmp"
+            if ! node --check "$tmp"; then
+              echo "::error file=$f::syntax check failed"
+              fail=1
+            fi
+            rm -f "$tmp"
+          done < <(find public functions workers demo-reset-worker -name "*.js" -type f -not -path "*/node_modules/*" 2>/dev/null)
+          echo "checked $count files"
+          exit $fail
