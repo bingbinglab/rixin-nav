@@ -872,8 +872,8 @@
         const relX = (clientX - rect.left) / rect.width;
         const relY = (clientY - rect.top) / rect.height;
 
-        // 判定 1: 背上金币区域 (右上角: relX >= 0.52 && relY <= 0.40)
-        if (relX >= 0.52 && relY <= 0.40) {
+        // 判定 1: 背上金币区域 (右侧中段，对准图上金币: relX >= 0.70 && relY 0.38~0.72)
+        if (relX >= 0.70 && relY >= 0.38 && relY <= 0.72) {
           showFortuneSign();
           return;
         }
@@ -983,8 +983,8 @@
     window.addEventListener('pointerup', onPointerUp);
     window.addEventListener('pointercancel', onPointerUp);
 
-    // 双击溜回案角默认位
-    stageEl.addEventListener('dblclick', (e) => {
+    // 双击溜回案角默认位（挂浮件根：指针捕获会把 dblclick 靶心移到根元素）
+    beastToy.addEventListener('dblclick', (e) => {
       e.stopPropagation();
       clearSearchSnap();
       const def = getDefaultPos();
@@ -1257,8 +1257,8 @@
       }
     }
 
-    // 双击快速唤醒
-    stageEl.addEventListener('dblclick', (e) => {
+    // 双击快速唤醒（挂浮件根：指针捕获会把 dblclick 靶心移到根元素）
+    catToy.addEventListener('dblclick', (e) => {
       e.stopPropagation();
       setAwakeState();
     });
