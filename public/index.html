@@ -10,7 +10,7 @@
 <meta name="theme-color" content="#f8f5ee">
 <meta name="color-scheme" content="light dark">
 <link rel="manifest" href="/site.webmanifest">
-<link rel="stylesheet" href="style.css?v=20261019n">
+<link rel="stylesheet" href="style.css?v=20261020a">
 <script>
 (function(){
   var t=localStorage.getItem('myNavTheme')||(window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light');
@@ -155,20 +155,37 @@
 
   <!-- 统一浮动入口 · 偷闲 (四友同席 · 双弧扇列) -->
   <div class="toy-hub-wrap" id="toyHubWrap">
-    <!-- 展开扇形子项 (桌面双弧错落 / 手机单弧紧凑) -->
+    <!-- 展开扇形子项 (桌面双弧错落 / 手机双弧紧凑) -->
     <div class="toy-fan-menu" id="toyFanMenu" aria-hidden="true">
-      <!-- 1. 闲章 (插画件 · 外弧高位) -->
-      <button type="button" class="fan-item fan-illust-item fan-seal-item" id="fanItemSeal" title="朱砂闲章 · 拾起钤印" aria-label="朱砂闲章">
-        <img src="/assets/seal.png?v=20261019c" alt="闲章" class="fan-illust-img">
-        <span class="fan-item-badge">闲章</span>
+      <!-- 1. 今日特许盘 (插画件 · 内弧 0°) -->
+      <button type="button" class="fan-item fan-illust-item fan-wheel-item" id="fanItemWheel" title="今日特许盘 · 开启摇转" aria-label="今日特许盘">
+        <img src="/assets/wheel.png?v=20261020a" alt="特许盘" class="fan-illust-img">
+        <span class="fan-item-badge">特许</span>
       </button>
 
-      <!-- 2. 木鱼 (插画件 · 外弧次高位) -->
+      <!-- 2. 木鱼 (插画件 · 内弧 33°) -->
       <button type="button" class="fan-item fan-illust-item fan-muyu-item" id="fanItemMuyu" title="墨镜木鱼 · 唤出敲击" aria-label="墨镜木鱼">
-        <img src="/assets/muyu.png?v=20261019c" alt="木鱼" class="fan-illust-img">
+        <img src="/assets/muyu.png?v=20261020a" alt="木鱼" class="fan-illust-img">
         <span class="fan-item-badge">木鱼</span>
       </button>
 
+      <!-- 3. 黑狸 (插画件 · 外弧 20°) -->
+      <button type="button" class="fan-item fan-illust-item fan-cat-item" id="fanItemCat" title="案头卧黑狸 · 唤出抚弄" aria-label="案头卧黑狸">
+        <img src="/assets/cat-sleep.png?v=20261020a" alt="黑狸" class="fan-illust-img">
+        <span class="fan-item-badge">黑狸</span>
+      </button>
+
+      <!-- 4. 镇纸兽 (插画件 · 外弧 50°) -->
+      <button type="button" class="fan-item fan-illust-item fan-beast-item" id="fanItemBeast" title="伏案镇纸兽 · 唤出镇压" aria-label="伏案镇纸兽">
+        <img src="/assets/beast.png?v=20261020a" alt="镇纸兽" class="fan-illust-img">
+        <span class="fan-item-badge">镇纸</span>
+      </button>
+
+      <!-- 5. 闲章 (插画件 · 外弧 82°) -->
+      <button type="button" class="fan-item fan-illust-item fan-seal-item" id="fanItemSeal" title="朱砂闲章 · 拾起钤印" aria-label="朱砂闲章">
+        <img src="/assets/seal.png?v=20261020a" alt="闲章" class="fan-illust-img">
+        <span class="fan-item-badge">闲章</span>
+      </button>
     </div>
 
 
@@ -182,8 +199,8 @@
   <!-- 可拖动浮动木鱼 -->
   <div class="floating-muyu-toy" id="floatingMuyuToy" hidden aria-label="可拖动木鱼" style="display: none;">
     <div class="muyu-stage" id="muyuStage" title="轻点敲击积攒功德，按住可拖动">
-      <img src="/assets/muyu.png?v=20261019c" alt="木鱼" class="muyu-body-img" id="muyuBodyImg" draggable="false">
-      <img src="/assets/mallet.png?v=20261019c" alt="木鱼槌" class="muyu-mallet-img" id="muyuMalletImg" draggable="false">
+      <img src="/assets/muyu.png?v=20261020a" alt="木鱼" class="muyu-body-img" id="muyuBodyImg" draggable="false">
+      <img src="/assets/mallet.png?v=20261020a" alt="木鱼槌" class="muyu-mallet-img" id="muyuMalletImg" draggable="false">
       <div class="muyu-particles" id="muyuParticles" aria-hidden="true"></div>
       <div class="muyu-bubble-hint" id="muyuBubbleHint" hidden>点我积功德，可随意拖动哦~</div>
     </div>
@@ -196,6 +213,49 @@
     </div>
   </div>
 
+  <!-- 可拖动伏案镇纸兽 -->
+  <div class="floating-beast-toy" id="floatingBeastToy" hidden aria-label="伏案镇纸兽" style="display: none;">
+    <div class="beast-stage" id="beastStage" title="轻点摸头静气，按住可拖动镇压分类，双击溜回案角">
+      <img src="/assets/beast.png?v=20261020a" alt="镇纸兽" class="beast-body-img" id="beastBodyImg" draggable="false">
+      <div class="beast-bubble-hint" id="beastBubbleHint" hidden>静气</div>
+    </div>
+    <button type="button" class="beast-close-btn" id="beastCloseBtn" title="收起镇纸兽">✕</button>
+  </div>
+
+  <!-- 可拖动案头卧黑狸 -->
+  <div class="floating-cat-toy" id="floatingCatToy" hidden aria-label="案头卧黑狸" style="display: none;">
+    <div class="cat-stage" id="catStage" title="来回抚摸呼噜，按住可拖动，醒后在空白处移动可引它踱步">
+      <img src="/assets/cat-sleep.png?v=20261020a" alt="黑狸" class="cat-body-img" id="catBodyImg" draggable="false">
+      <span class="cat-heart-icon" id="catHeartIcon" hidden>❤</span>
+    </div>
+    <button type="button" class="cat-close-btn" id="catCloseBtn" title="收起黑狸">✕</button>
+  </div>
+
+  <!-- 今日特许盘面板 -->
+  <div class="fortune-wheel-modal" id="fortuneWheelModal" hidden aria-label="今日特许盘" style="display: none;">
+    <div class="wheel-panel-card" id="wheelPanelCard">
+      <div class="wheel-panel-head">
+        <span class="wheel-panel-title">今日特许盘</span>
+        <button type="button" class="wheel-close-btn" id="wheelCloseBtn" title="收起特许盘">✕</button>
+      </div>
+      <div class="wheel-stage" id="wheelStage">
+        <div class="wheel-pointer" id="wheelPointer" aria-hidden="true"></div>
+        <div class="wheel-rotator" id="wheelRotator">
+          <img src="/assets/wheel.png?v=20261020a" alt="特许盘盘面" class="wheel-disc-img" draggable="false">
+          <div class="wheel-sector-labels" id="wheelSectorLabels" aria-hidden="true"></div>
+        </div>
+      </div>
+      <div class="wheel-panel-actions">
+        <button type="button" class="wheel-spin-btn" id="wheelSpinBtn">摇 转</button>
+      </div>
+      <!-- 命中特许签弹层 -->
+      <div class="wheel-result-slip" id="wheelResultSlip" hidden>
+        <div class="slip-seal-stamp">准</div>
+        <div class="slip-prize-text" id="wheelPrizeText">摸鱼十分钟</div>
+        <button type="button" class="slip-accept-btn" id="wheelSlipAcceptBtn">收 下</button>
+      </div>
+    </div>
+  </div>
 
 </main>
 
@@ -249,6 +309,6 @@
 <script src="data.js"></script>
 <script src="/assets/icon.js?v=20261019c"></script>
 <script src="/assets/app.js?v=20261019c"></script>
-<script src="/assets/widgets.js?v=20261019i" defer></script>
+<script src="/assets/widgets.js?v=20261020a" defer></script>
 </body>
 </html>
