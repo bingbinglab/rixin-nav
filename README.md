@@ -58,7 +58,7 @@
 
 ```
 帮我部署这个项目：https://github.com/bingbinglab/rixin-nav
-1. 克隆仓库，读 README 的「快速开始」一节照着做；
+1. 克隆仓库，读 README 的「手动部署」一节照着做；
 2. 用 wrangler 在我的 Cloudflare 账号里建 D1 数据库，执行 schema.sql 建表（想要演示数据再执行 schema-seed.sql），再建一个 KV 命名空间，并把新建的 D1 数据库 ID 与 KV 命名空间 ID 回填进仓库根目录 wrangler.toml 的占位符处；
 3. 部署到 Cloudflare Pages：输出目录 public，绑定 D1 为 NAV_DB、KV 为 NAV_KV；
 4. 部署完把访问地址告诉我。
