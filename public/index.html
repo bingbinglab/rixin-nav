@@ -10,7 +10,7 @@
 <meta name="theme-color" content="#f8f5ee">
 <meta name="color-scheme" content="light dark">
 <link rel="manifest" href="/site.webmanifest">
-<link rel="stylesheet" href="style.css?v=20261020e">
+<link rel="stylesheet" href="style.css?v=20261020f">
 <script>
 (function(){
   var t=localStorage.getItem('myNavTheme')||(window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light');
@@ -239,12 +239,13 @@
         <button type="button" class="wheel-close-btn" id="wheelCloseBtn" title="收起特许盘">✕</button>
       </div>
       <div class="wheel-stage" id="wheelStage">
-        <img src="/assets/wheel.png?v=20261020a" alt="" class="wheel-base-img" draggable="false">
+        <img src="/assets/wheel-stand.png?v=20261020a" alt="" class="wheel-stand-img" draggable="false">
         <div class="wheel-rotator" id="wheelRotator">
           <div class="wheel-disc-css" aria-hidden="true"></div>
           <div class="wheel-sector-labels" id="wheelSectorLabels" aria-hidden="true"></div>
           <div class="wheel-hub-cap" aria-hidden="true"></div>
         </div>
+        <div class="wheel-pointer" aria-hidden="true"></div>
       </div>
       <div class="wheel-panel-actions">
         <button type="button" class="wheel-spin-btn" id="wheelSpinBtn">摇 转</button>

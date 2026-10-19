@@ -2712,31 +2712,38 @@ html.dark-theme .wheel-panel-card {
 .wheel-stage {
   position: relative;
   width: 200px;
-  height: 200px;
+  height: 218px;
   margin: 4px 0 10px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
 }
-.wheel-base-img {
+.wheel-stand-img {
   position: absolute;
+  bottom: 0;
   left: 50%;
-  top: 50%;
-  width: 190px;
-  height: 190px;
-  margin-left: -95px;
-  margin-top: -95px;
-  object-fit: contain;
+  transform: translateX(-50%);
+  width: 172px;
+  pointer-events: none;
+}
+.wheel-pointer {
+  position: absolute;
+  top: -2px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 0;
+  height: 0;
+  border-left: 9px solid transparent;
+  border-right: 9px solid transparent;
+  border-top: 17px solid var(--ochre);
+  filter: drop-shadow(0 0 1.5px var(--ink)) drop-shadow(0 1.5px 1.5px rgba(39, 36, 34, 0.35));
+  z-index: 10;
   pointer-events: none;
 }
 .wheel-rotator {
   position: absolute;
   left: 50%;
-  top: 50%;
-  width: 150px;
-  height: 137px;
-  margin-left: -75px;
-  margin-top: -81px;
+  top: 4px;
+  width: 176px;
+  height: 176px;
+  margin-left: -88px;
   border-radius: 50%;
   cursor: pointer;
   z-index: 2;
@@ -2746,7 +2753,7 @@ html.dark-theme .wheel-panel-card {
   inset: 0;
   border-radius: 50%;
   border: 2px solid var(--ink);
-  box-shadow: inset 0 0 12px rgba(39, 36, 34, 0.18);
+  box-shadow: 0 0 0 9px #b87743, 0 0 0 11px var(--ink), inset 0 0 12px rgba(39, 36, 34, 0.18);
   background:
     repeating-conic-gradient(from -22.5deg, rgba(39, 36, 34, 0.85) 0deg 1.5deg, transparent 1.5deg 45deg),
     conic-gradient(from -22.5deg, #f8f5ee 0deg 45deg, #e8ba8c 45deg 90deg, #f8f5ee 90deg 135deg, #e8ba8c 135deg 180deg, #f8f5ee 180deg 225deg, #e8ba8c 225deg 270deg, #f8f5ee 270deg 315deg, #e8ba8c 315deg 360deg);
@@ -2755,9 +2762,9 @@ html.dark-theme .wheel-panel-card {
   position: absolute;
   left: 50%;
   top: 50%;
-  width: 34px;
-  height: 34px;
-  margin: -17px 0 0 -17px;
+  width: 38px;
+  height: 38px;
+  margin: -19px 0 0 -19px;
   border-radius: 50%;
   background: radial-gradient(circle at 35% 30%, #f0ca6e, #c89b3c 70%, #a67c2e);
   border: 2px solid var(--ink);
@@ -2777,12 +2784,12 @@ html.dark-theme .wheel-panel-card {
   top: 0;
   left: 50%;
   width: 24px;
-  height: 68px;
+  height: 88px;
   margin-left: -12px;
   transform-origin: bottom center;
   display: flex;
   justify-content: center;
-  padding-top: 7px;
+  padding-top: 19px;
   box-sizing: border-box;
 }
 .wheel-label-text {
@@ -3284,23 +3291,19 @@ body.seal-stamping-mode {
   }
   .wheel-stage {
     width: 176px;
-    height: 176px;
+    height: 192px;
   }
-  .wheel-base-img {
-    width: 168px;
-    height: 168px;
-    margin-left: -84px;
-    margin-top: -84px;
+  .wheel-stand-img {
+    width: 150px;
   }
   .wheel-rotator {
-    width: 133px;
-    height: 121px;
-    margin-left: -66px;
-    margin-top: -73px;
+    width: 152px;
+    height: 152px;
+    margin-left: -76px;
   }
   .wheel-sector-label {
-    height: 60px;
-    padding-top: 6px;
+    height: 76px;
+    padding-top: 16px;
   }
   .wheel-label-text {
     font-size: 8.5px;
