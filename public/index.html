@@ -10,7 +10,7 @@
 <meta name="theme-color" content="#f8f5ee">
 <meta name="color-scheme" content="light dark">
 <link rel="manifest" href="/site.webmanifest">
-<link rel="stylesheet" href="style.css?v=20261019d">
+<link rel="stylesheet" href="style.css?v=20261019e">
 <script>
 (function(){
   var t=localStorage.getItem('myNavTheme')||(window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light');
@@ -140,58 +140,87 @@
 
   </div>
 
-  <!-- 文房闲趣区 (前台页脚区：今日签 ＋ 随便逛逛 ＋ 朱砂闲章) -->
-  <section class="dock-section" id="dockSection" aria-label="文房闲趣">
-    <div class="dock-inner">
-      <!-- 1. 今日签 (竹木签身) -->
-      <button id="dailySignSlipBtn" class="daily-slip-toy" type="button" title="退堂日课 · 抽取今日签">
-        <span class="slip-toy-thread"></span>
-        <span class="slip-toy-title">今日签</span>
-        <span class="slip-toy-tag">日课</span>
-      </button>
-
-      <!-- 2. 随便逛逛 (素钮直达) -->
-      <div class="random-wander-wrap">
-        <button id="randomWanderBtn" class="random-wander-btn" type="button" title="从公开书签中随机漫游一站">
-          <span class="wander-btn-icon">❖</span>
-          <span class="wander-btn-text">随便逛逛</span>
-        </button>
-        <!-- 钮旁浮出的站名小签 -->
-        <div id="randomSitePopover" class="random-site-popover" hidden>
-          <div class="popover-head">
-            <span class="popover-badge">偶遇一辑</span>
-            <button type="button" class="popover-close-btn" id="popoverCloseBtn" title="关闭 (Esc)">✕</button>
-          </div>
-          <a id="popoverSiteLink" class="popover-body" href="#" target="_blank" rel="noopener">
-            <span class="popover-site-name" id="popoverSiteName"></span>
-            <span class="popover-site-desc" id="popoverSiteDesc"></span>
-            <span class="popover-site-foot">
-              <span class="popover-site-host" id="popoverSiteHost"></span>
-              <span class="popover-site-go">直达 ↗</span>
-            </span>
-          </a>
-        </div>
-      </div>
-
-      <!-- 3. 朱砂闲章本体 (看得见的石钮印身) -->
-      <button id="leisureStampToy" class="leisure-stamp-toy" type="button" title="朱砂闲章 · 随手落印 (点击拿取印章，轻点留白盖印)">
-        <span class="stamp-toy-stone"></span>
-        <span class="stamp-toy-text">闲章</span>
-      </button>
-    </div>
-  </section>
-
   <!-- 页脚 -->
   <footer class="footer">
     <div class="footer-row">
       <span>© 2026 <span id="footerSiteTitle">书签导航</span> · 我的互联网门牌</span>
       <span class="footer-right">深灰 · 赭石 · 墨香</span>
     </div>
+    <div class="footer-credit" style="font-size: 11px; color: var(--muted); margin-top: 4px; text-align: center;">木鱼声 · George Papargyris / Freesound</div>
     <div class="footer-colophon" id="footerColophon" style="display: none;"></div>
   </footer>
 
   <!-- 移动端悬浮回到顶部按钮 -->
   <button class="float-top-btn" id="floatTopBtn" title="回到顶部" aria-label="回到顶部">↑</button>
+
+  <!-- 统一浮动入口 · 偷闲 (四友同席 · 双弧扇列) -->
+  <div class="toy-hub-wrap" id="toyHubWrap">
+    <!-- 展开扇形子项 (桌面双弧错落 / 手机单弧紧凑) -->
+    <div class="toy-fan-menu" id="toyFanMenu" aria-hidden="true">
+      <!-- 1. 闲章 (插画件 · 外弧高位) -->
+      <button type="button" class="fan-item fan-illust-item fan-seal-item" id="fanItemSeal" title="朱砂闲章 · 拾起钤印" aria-label="朱砂闲章">
+        <img src="/assets/seal.png?v=20261019c" alt="闲章" class="fan-illust-img">
+        <span class="fan-item-badge">闲章</span>
+      </button>
+
+      <!-- 2. 木鱼 (插画件 · 外弧次高位) -->
+      <button type="button" class="fan-item fan-illust-item fan-muyu-item" id="fanItemMuyu" title="墨镜木鱼 · 唤出敲击" aria-label="墨镜木鱼">
+        <img src="/assets/muyu.png?v=20261019c" alt="木鱼" class="fan-illust-img">
+        <span class="fan-item-badge">木鱼</span>
+      </button>
+
+      <!-- 3. 今日签 (功能件 · 内弧) -->
+      <button type="button" class="fan-item fan-btn-round fan-sign-item" id="fanItemDailySign" title="退堂日课 · 抽取今日签" aria-label="今日签">
+        <span class="fan-btn-text">今日签</span>
+        <span class="fan-sign-dot" id="dailySignStatusDot" title="今日签状态"></span>
+      </button>
+
+      <!-- 4. 随便逛逛 (功能件 · 内弧平位) -->
+      <button type="button" class="fan-item fan-btn-round fan-wander-item" id="fanItemWander" title="公开站点随机漫游" aria-label="随便逛逛">
+        <span class="fan-wander-row">随便</span>
+        <span class="fan-wander-row">逛逛</span>
+      </button>
+    </div>
+
+    <!-- 随便逛逛钮旁浮出的站名小签 -->
+    <div id="randomSitePopover" class="random-site-popover" hidden>
+      <div class="popover-head">
+        <span class="popover-badge">偶遇一辑</span>
+        <button type="button" class="popover-close-btn" id="popoverCloseBtn" title="关闭 (Esc)">✕</button>
+      </div>
+      <a id="popoverSiteLink" class="popover-body" href="#" target="_blank" rel="noopener">
+        <span class="popover-site-name" id="popoverSiteName"></span>
+        <span class="popover-site-desc" id="popoverSiteDesc"></span>
+        <span class="popover-site-foot">
+          <span class="popover-site-host" id="popoverSiteHost"></span>
+          <span class="popover-site-go">直达 ↗</span>
+        </span>
+      </a>
+    </div>
+
+    <!-- 主入口钮 (常驻右下角) -->
+    <button type="button" class="toy-hub-btn" id="toyHubBtn" title="偷闲 · 站内小玩意儿" aria-label="偷闲小玩意儿" aria-expanded="false">
+      <span class="hub-label-text">偷闲</span>
+      <span class="hub-close-icon">✕</span>
+    </button>
+  </div>
+
+  <!-- 可拖动浮动木鱼 -->
+  <div class="floating-muyu-toy" id="floatingMuyuToy" hidden aria-label="可拖动木鱼" style="display: none;">
+    <div class="muyu-stage" id="muyuStage" title="轻点敲击积攒功德，按住可拖动">
+      <img src="/assets/muyu.png?v=20261019c" alt="木鱼" class="muyu-body-img" id="muyuBodyImg" draggable="false">
+      <img src="/assets/mallet.png?v=20261019c" alt="木鱼槌" class="muyu-mallet-img" id="muyuMalletImg" draggable="false">
+      <div class="muyu-particles" id="muyuParticles" aria-hidden="true"></div>
+      <div class="muyu-bubble-hint" id="muyuBubbleHint" hidden>点我积功德，可随意拖动哦~</div>
+    </div>
+    <div class="muyu-footer-bar">
+      <span class="muyu-counter">功德 <strong id="muyuCountNum">0</strong></span>
+      <div class="muyu-actions">
+        <button type="button" class="muyu-ctrl-btn" id="muyuMuteBtn" title="静音切换">🔔</button>
+        <button type="button" class="muyu-ctrl-btn" id="muyuCloseBtn" title="收起木鱼">✕</button>
+      </div>
+    </div>
+  </div>
 
 </main>
 
@@ -271,6 +300,6 @@
 <script src="data.js"></script>
 <script src="/assets/icon.js?v=20261019c"></script>
 <script src="/assets/app.js?v=20261019c"></script>
-<script src="/assets/widgets.js?v=20261019b" defer></script>
+<script src="/assets/widgets.js?v=20261019c" defer></script>
 </body>
 </html>

@@ -1,12 +1,14 @@
 /**
- * 日新辑览 · 站内小玩意儿三件套 (widgets.js - 返工重做版)
- * 1. 今日签 (Daily Oracle Slip)：竹木签身、功能在脸上、一日一签、晃动回怼
- * 2. 随便逛逛 (Random Wander)：素钮直达、钮旁浮出站名与简介小签、一键新标签打开
- * 3. 朱砂闲章 (Leisure Seal)：石钮印身本体、随手落印、渗墨淡化、防误触穿透
+ * 日新辑览 · 站内小玩意儿四友同席 (widgets.js - 统一浮动入口＋木鱼正式版)
+ * 1. 偷闲浮球枢纽 (Toy Hub): 常驻右下角，双弧扇列展开四友 (闲章、木鱼、今日签、随便逛逛)
+ * 2. 墨镜木鱼 (Floating Muyu): 可拖动独立浮件、真实敲击定音(Freesound)、功德累进、整百飘签语
+ * 3. 今日签 (Daily Oracle Slip): 圆钮上脸、红灰状态点、一日一签、晃动回怼
+ * 4. 随便逛逛 (Random Wander): 素圆钮直达、钮旁浮出站名与简介小签、一键新标签打开
+ * 5. 朱砂闲章 (Leisure Seal): 石章插画本体、随手落印、渗墨淡化、防误触穿透
  * 
  * 架构规范：
  * - 纯前端驱动：零 /api/* 请求，零 D1/KV 读写，不碰付费线；
- * - 惰性音效：Web Audio 纯振荡器/噪声算法合成，零外部音频资源下载；
+ * - 声音资产：真实木鱼 MP3 (MD5: e46b7425ba923c7abb80cda1c6ca397d) ＋ 闲章/签条 Web Audio 合成；
  * - 解耦安全：关掉或移除本脚本，完全不影响主站书签检索与核心功能。
  */
 
@@ -14,7 +16,7 @@
   'use strict';
 
   // ==========================================
-  // 0. Web Audio 纯合成音效引擎 (零外部网络请求)
+  // 0. 音效引擎 (Web Audio API 纯合成 + 木鱼真实采样)
   // ==========================================
   let audioCtx = null;
   function getAudioCtx() {
@@ -36,7 +38,6 @@
     if (!ctx) return;
     const t = ctx.currentTime;
 
-    // 低频撞击体 (130Hz 衰减至 38Hz)
     const osc = ctx.createOscillator();
     const gain = ctx.createGain();
     osc.type = 'triangle';
@@ -49,7 +50,6 @@
     osc.start(t);
     osc.stop(t + 0.09);
 
-    // 软印泥微摩擦白噪声
     try {
       const bufSize = Math.floor(ctx.sampleRate * 0.025);
       const buf = ctx.createBuffer(1, bufSize, ctx.sampleRate);
@@ -109,10 +109,83 @@
     osc.stop(t + 0.06);
   }
 
+  // 0.4 木鱼真实音频采样加载与定音变调播放 (MD5 严格对齐)
+  let muyuAudioBuffer = null;
+  let muyuAudioLoading = false;
+
+  function preloadMuyuAudio() {
+    if (muyuAudioBuffer || muyuAudioLoading) return;
+    const ctx = getAudioCtx();
+    if (!ctx) return;
+    muyuAudioLoading = true;
+    fetch('/assets/muyu.mp3?v=20261019c')
+      .then(res => res.arrayBuffer())
+      .then(buf => ctx.decodeAudioData(buf))
+      .then(decoded => {
+        muyuAudioBuffer = decoded;
+        muyuAudioLoading = false;
+      })
+      .catch(() => {
+        muyuAudioLoading = false;
+      });
+  }
+
+  function playMuyuSound(isMuted) {
+    if (isMuted) return;
+    const ctx = getAudioCtx();
+    if (!ctx) return;
+
+    // 每下音高随机 0.97 - 1.03
+    const pitch = 0.97 + Math.random() * 0.06;
+
+    if (muyuAudioBuffer) {
+      try {
+        const src = ctx.createBufferSource();
+        src.buffer = muyuAudioBuffer;
+        src.playbackRate.setValueAtTime(pitch, ctx.currentTime);
+        src.connect(ctx.destination);
+        src.start(0);
+      } catch (_) {}
+    } else {
+      // 首次加载未完成或降级时的 HTML5 Audio 回退
+      try {
+        const a = new Audio('/assets/muyu.mp3?v=20261019c');
+        a.playbackRate = pitch;
+        a.play().catch(() => {});
+      } catch (_) {}
+    }
+  }
+
   // ==========================================
-  // 1. 今日签 (Daily Oracle Slip)
+  // 1. 墨镜木鱼词库与专属句 (定稿词库照抄不改字)
   // ==========================================
-  // 24 条生活向、带人情味、适度自嘲的松弛日课签文 (文案一字不动)
+  const MUYU_FORTUNES = [
+    '宜躺平，忌瞎忙',
+    '功德无量，宜喝口茶',
+    '宜摸鱼，忌加班',
+    '宜断舍离，忌冲动消费',
+    '宜发呆三分钟，忌跟人抬杠',
+    '万事顺意，宜给猫加餐',
+    '今日宜早睡，说的就是你',
+    '好运在攒，别停',
+    '宜清空购物车，忌清空钱包',
+    '心平气和，宜深呼吸',
+    '宜出门走走，忌久坐生根',
+    '宜给老友发条消息',
+    '烦恼清零，宜吃点甜的',
+    '宜把手机放下三分钟'
+  ];
+
+  function getMuyuHundredFortune(count) {
+    if (count === 500) return '五百功德已满，宜许个愿';
+    if (count === 1000) return '一千功德，佛祖看了都点头';
+    const idx = Math.floor(Math.random() * MUYU_FORTUNES.length);
+    return MUYU_FORTUNES[idx];
+  }
+
+  // ==========================================
+  // 2. 今日签词库 (24 条生活向松弛日课文案)
+  // ==========================================
   const DAILY_ORACLE_SLIPS = [
     { yi: '慢喝热茶', ji: '连轴硬撑', quote: '水泡开了，事总能一件件办。' },
     { yi: '晒晒太阳', ji: '室内发霉', quote: '阳光免费，多照五分钟也是赚。' },
@@ -140,7 +213,6 @@
     { yi: '宽怀一笑', ji: '小事挂怀', quote: '今天天气不错，别让鸡毛蒜皮扫了兴。' }
   ];
 
-  // 日期哈希种子算法
   function getDailySignIndex(dateStr) {
     let hash = 0;
     for (let i = 0; i < dateStr.length; i++) {
@@ -158,8 +230,329 @@
     return `${y}-${m}-${day}`;
   }
 
+  // ==========================================
+  // 3. 朱砂闲章印文库
+  // ==========================================
+  const SEAL_WORDS = [
+    '好品', '过眼', '无事忙', '且慢', '知足', '寸锦',
+    '随喜', '长乐', '得闲', '清欢', '不染', '未央',
+    '常安', '有味'
+  ];
+
+  // 全局小玩意儿控制器闭包
+  let triggerDailyOracleDraw = null;
+  let updateDailySignDot = null;
+  let summonFloatingMuyu = null;
+  let toggleSealMode = null;
+
+  // ==========================================
+  // 4. 偷闲浮球枢纽 (Toy Hub) 控制器
+  // ==========================================
+  function initToyHub() {
+    const hubWrap = document.getElementById('toyHubWrap');
+    const hubBtn = document.getElementById('toyHubBtn');
+    const fanMenu = document.getElementById('toyFanMenu');
+
+    if (!hubWrap || !hubBtn) return;
+
+    let isHubOpen = false;
+
+    function setHubOpen(open) {
+      isHubOpen = open;
+      hubWrap.classList.toggle('is-open', isHubOpen);
+      hubBtn.setAttribute('aria-expanded', isHubOpen ? 'true' : 'false');
+      if (fanMenu) {
+        fanMenu.setAttribute('aria-hidden', isHubOpen ? 'false' : 'true');
+      }
+      if (isHubOpen) {
+        preloadMuyuAudio();
+        if (typeof updateDailySignDot === 'function') {
+          updateDailySignDot();
+        }
+      }
+    }
+
+    hubBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      setHubOpen(!isHubOpen);
+    });
+
+    // 绑定扇面各子项
+    const fanSeal = document.getElementById('fanItemSeal');
+    const fanMuyu = document.getElementById('fanItemMuyu');
+    const fanDailySign = document.getElementById('fanItemDailySign');
+    const fanWander = document.getElementById('fanItemWander');
+
+    if (fanSeal) {
+      fanSeal.addEventListener('click', (e) => {
+        e.stopPropagation();
+        setHubOpen(false);
+        if (typeof toggleSealMode === 'function') {
+          toggleSealMode();
+        }
+      });
+    }
+
+    if (fanMuyu) {
+      fanMuyu.addEventListener('click', (e) => {
+        e.stopPropagation();
+        setHubOpen(false);
+        if (typeof summonFloatingMuyu === 'function') {
+          summonFloatingMuyu();
+        }
+      });
+    }
+
+    if (fanDailySign) {
+      fanDailySign.addEventListener('click', (e) => {
+        e.stopPropagation();
+        setHubOpen(false);
+        if (typeof triggerDailyOracleDraw === 'function') {
+          triggerDailyOracleDraw();
+        }
+      });
+    }
+
+    // 点击外部区域或按 Esc 收拢扇面
+    document.addEventListener('click', (e) => {
+      if (isHubOpen && !hubWrap.contains(e.target)) {
+        setHubOpen(false);
+      }
+    });
+
+    document.addEventListener('keydown', (e) => {
+      if ((e.key === 'Escape' || e.key === 'Esc') && isHubOpen) {
+        setHubOpen(false);
+      }
+    });
+
+    // 暴露收拢方法供子模块使用
+    window.__closeToyHub = () => setHubOpen(false);
+  }
+
+  // ==========================================
+  // 5. 墨镜木鱼 (Floating Muyu Toy) 控制器
+  // ==========================================
+  function initFloatingMuyu() {
+    const muyuToy = document.getElementById('floatingMuyuToy');
+    const stageEl = document.getElementById('muyuStage');
+    const countNumEl = document.getElementById('muyuCountNum');
+    const muteBtn = document.getElementById('muyuMuteBtn');
+    const closeBtn = document.getElementById('muyuCloseBtn');
+    const particlesEl = document.getElementById('muyuParticles');
+    const bubbleHint = document.getElementById('muyuBubbleHint');
+
+    if (!muyuToy || !stageEl) return;
+
+    // 功德计数初始化
+    let muyuCount = parseInt(localStorage.getItem('muyuCount') || '0', 10);
+    if (isNaN(muyuCount) || muyuCount < 0) muyuCount = 0;
+    if (countNumEl) countNumEl.textContent = String(muyuCount);
+
+    // 静音状态初始化
+    let isMuted = localStorage.getItem('muyuMuted') === '1';
+    function updateMuteBtnUI() {
+      if (!muteBtn) return;
+      muteBtn.textContent = isMuted ? '🔕' : '🔔';
+      muteBtn.title = isMuted ? '已静音 (点击开启)' : '声音开启 (点击静音)';
+    }
+    updateMuteBtnUI();
+
+    if (muteBtn) {
+      muteBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        isMuted = !isMuted;
+        localStorage.setItem('muyuMuted', isMuted ? '1' : '0');
+        updateMuteBtnUI();
+      });
+    }
+
+    if (closeBtn) {
+      closeBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        muyuToy.hidden = true;
+        muyuToy.style.display = 'none';
+      });
+    }
+
+    // 敲击核心调度
+    let hitTimer = null;
+    function knockMuyu() {
+      preloadMuyuAudio();
+      muyuCount++;
+      localStorage.setItem('muyuCount', String(muyuCount));
+      if (countNumEl) countNumEl.textContent = String(muyuCount);
+
+      // 槌子敲击与鱼身弹性回弹动效
+      stageEl.classList.remove('hit');
+      void stageEl.offsetWidth; // 触发重绘
+      stageEl.classList.add('hit');
+      clearTimeout(hitTimer);
+      hitTimer = setTimeout(() => {
+        stageEl.classList.remove('hit');
+      }, 100);
+
+      // 音效播放
+      playMuyuSound(isMuted);
+
+      // 飘字动效：点一下飘「功德+1」
+      if (particlesEl) {
+        const popup = document.createElement('div');
+        popup.className = 'muyu-merit-popup';
+        popup.textContent = '功德+1';
+        particlesEl.appendChild(popup);
+        setTimeout(() => popup.remove(), 820);
+      }
+
+      // 整百飘签语（词库照抄，500/1000 专属句）
+      if (muyuCount % 100 === 0 && particlesEl) {
+        const fortuneText = getMuyuHundredFortune(muyuCount);
+        const slip = document.createElement('div');
+        slip.className = 'muyu-fortune-slip';
+        slip.textContent = fortuneText;
+        particlesEl.appendChild(slip);
+        setTimeout(() => slip.remove(), 2400);
+      }
+
+      // 首访气泡敲击后淡出并记录
+      if (bubbleHint && !bubbleHint.hidden) {
+        bubbleHint.style.opacity = '0';
+        setTimeout(() => { bubbleHint.hidden = true; }, 300);
+        localStorage.setItem('muyuBubbleHintShown', '1');
+      }
+    }
+
+    // 位置恢复与拖动处理 (轻点是敲、拖动超 5px 算拖不误敲)
+    function restorePosition() {
+      const saved = localStorage.getItem('muyuPos');
+      if (saved) {
+        try {
+          const pos = JSON.parse(saved);
+          if (typeof pos.x === 'number' && typeof pos.y === 'number') {
+            const maxX = Math.max(10, window.innerWidth - 185);
+            const maxY = Math.max(10, window.innerHeight - 150);
+            const clampedX = Math.min(Math.max(10, pos.x), maxX);
+            const clampedY = Math.min(Math.max(10, pos.y), maxY);
+            muyuToy.style.left = `${clampedX}px`;
+            muyuToy.style.top = `${clampedY}px`;
+            muyuToy.style.right = 'auto';
+            muyuToy.style.bottom = 'auto';
+            return;
+          }
+        } catch (_) {}
+      }
+      // 默认位置：停在右下角
+      muyuToy.style.right = '88px';
+      muyuToy.style.bottom = '88px';
+      muyuToy.style.left = 'auto';
+      muyuToy.style.top = 'auto';
+    }
+
+    restorePosition();
+
+    // 拖动与轻点敲击逻辑
+    let isDragging = false;
+    let startX = 0;
+    let startY = 0;
+    let initialLeft = 0;
+    let initialTop = 0;
+    let movedDistance = 0;
+
+    function onPointerDown(e) {
+      if (e.target.closest('#muyuMuteBtn, #muyuCloseBtn')) return;
+      isDragging = true;
+      movedDistance = 0;
+      startX = e.clientX || (e.touches && e.touches[0].clientX) || 0;
+      startY = e.clientY || (e.touches && e.touches[0].clientY) || 0;
+
+      const rect = muyuToy.getBoundingClientRect();
+      initialLeft = rect.left;
+      initialTop = rect.top;
+
+      muyuToy.classList.add('is-dragging');
+    }
+
+    function onPointerMove(e) {
+      if (!isDragging) return;
+      const clientX = e.clientX || (e.touches && e.touches[0].clientX) || 0;
+      const clientY = e.clientY || (e.touches && e.touches[0].clientY) || 0;
+
+      const dx = clientX - startX;
+      const dy = clientY - startY;
+      movedDistance = Math.hypot(dx, dy);
+
+      if (movedDistance > 5) {
+        const maxX = Math.max(10, window.innerWidth - 185);
+        const maxY = Math.max(10, window.innerHeight - 150);
+        const newX = Math.min(Math.max(10, initialLeft + dx), maxX);
+        const newY = Math.min(Math.max(10, initialTop + dy), maxY);
+
+        muyuToy.style.left = `${newX}px`;
+        muyuToy.style.top = `${newY}px`;
+        muyuToy.style.right = 'auto';
+        muyuToy.style.bottom = 'auto';
+      }
+    }
+
+    function onPointerUp() {
+      if (!isDragging) return;
+      isDragging = false;
+      muyuToy.classList.remove('is-dragging');
+
+      if (movedDistance <= 5) {
+        // 轻点是敲
+        knockMuyu();
+      } else {
+        // 拖动超 5px 算拖不误敲：存 localStorage
+        const rect = muyuToy.getBoundingClientRect();
+        localStorage.setItem('muyuPos', JSON.stringify({
+          x: Math.round(rect.left),
+          y: Math.round(rect.top)
+        }));
+      }
+    }
+
+    stageEl.addEventListener('mousedown', onPointerDown);
+    window.addEventListener('mousemove', onPointerMove);
+    window.addEventListener('mouseup', onPointerUp);
+
+    stageEl.addEventListener('touchstart', onPointerDown, { passive: true });
+    window.addEventListener('touchmove', onPointerMove, { passive: false });
+    window.addEventListener('touchend', onPointerUp);
+
+    // 唤出木鱼公开调度
+    summonFloatingMuyu = function () {
+      muyuToy.hidden = false;
+      muyuToy.style.display = 'block';
+      restorePosition();
+      preloadMuyuAudio();
+
+      // 首访出一次气泡提示
+      const bubbleShown = localStorage.getItem('muyuBubbleHintShown');
+      if (!bubbleShown && bubbleHint) {
+        bubbleHint.hidden = false;
+        bubbleHint.style.opacity = '1';
+        setTimeout(() => {
+          if (bubbleHint && !bubbleHint.hidden) {
+            bubbleHint.style.opacity = '0';
+            setTimeout(() => { bubbleHint.hidden = true; }, 300);
+            localStorage.setItem('muyuBubbleHintShown', '1');
+          }
+        }, 4000);
+      }
+
+      // 轻微抖动提示存在
+      stageEl.classList.remove('hit');
+      void stageEl.offsetWidth;
+      stageEl.classList.add('hit');
+      setTimeout(() => stageEl.classList.remove('hit'), 120);
+    };
+  }
+
+  // ==========================================
+  // 6. 今日签 (Daily Oracle Slip) 控制器
+  // ==========================================
   function initDailyOracle() {
-    const slipBtn = document.getElementById('dailySignSlipBtn');
     const modal = document.getElementById('dailySignModalOverlay');
     const closeBtn = document.getElementById('dailySignCloseBtn');
     const yiEl = document.getElementById('dailySignYi');
@@ -167,8 +560,9 @@
     const quoteEl = document.getElementById('dailySignQuote');
     const dateEl = document.getElementById('dailySignDate');
     const toast = document.getElementById('dailySignToast');
+    const statusDot = document.getElementById('dailySignStatusDot');
 
-    if (!slipBtn || !modal) return;
+    if (!modal) return;
 
     function openSlipModal(slip, todayStr) {
       if (yiEl) yiEl.textContent = slip.yi;
@@ -199,9 +593,12 @@
     let toastTimer = null;
     function showRefusalToast() {
       if (!toast) return;
-      slipBtn.classList.remove('shake');
-      void slipBtn.offsetWidth; // 触发重绘
-      slipBtn.classList.add('shake');
+      const fanSignBtn = document.getElementById('fanItemDailySign');
+      if (fanSignBtn) {
+        fanSignBtn.classList.remove('shake');
+        void fanSignBtn.offsetWidth;
+        fanSignBtn.classList.add('shake');
+      }
 
       toast.hidden = false;
       toast.classList.add('visible');
@@ -212,24 +609,37 @@
       }, 2800);
     }
 
+    // 更新圆钮右上角状态点 (当日未抽＝赭石红点，已抽＝淡灰圈)
+    updateDailySignDot = function () {
+      if (!statusDot) return;
+      const todayStr = getTodayString();
+      const lastDate = localStorage.getItem('dailySign_lastDate');
+      const isRead = (lastDate === todayStr);
+      statusDot.classList.toggle('is-read', isRead);
+      statusDot.title = isRead ? '今日签已抽' : '今日签未抽';
+    };
+
+    updateDailySignDot();
+
     // 抽签核心调度
-    function triggerDraw() {
+    triggerDailyOracleDraw = function () {
       const todayStr = getTodayString();
       const lastDate = localStorage.getItem('dailySign_lastDate');
       const slipIdx = getDailySignIndex(todayStr);
       const slip = DAILY_ORACLE_SLIPS[slipIdx];
 
       if (lastDate === todayStr) {
-        // 当天已抽过：晃动回怼
+        // 当天已抽过：回怼木牌提示
         showRefusalToast();
       } else {
         // 当天初次抽取
         playSlipSound();
         localStorage.setItem('dailySign_lastDate', todayStr);
         localStorage.setItem('dailySign_lastIndex', String(slipIdx));
+        updateDailySignDot();
         openSlipModal(slip, todayStr);
       }
-    }
+    };
 
     // 点击回怼木牌可重温当日签文
     if (toast) {
@@ -242,15 +652,13 @@
         openSlipModal(slip, todayStr);
       });
     }
-
-    slipBtn.addEventListener('click', triggerDraw);
   }
 
   // ==========================================
-  // 2. 随便逛逛 (Random Wander)
+  // 7. 随便逛逛 (Random Wander) 控制器
   // ==========================================
   function initRandomWander() {
-    const wanderBtn = document.getElementById('randomWanderBtn');
+    const wanderBtn = document.getElementById('fanItemWander');
     const popover = document.getElementById('randomSitePopover');
     const closeBtn = document.getElementById('popoverCloseBtn');
     const siteLink = document.getElementById('popoverSiteLink');
@@ -332,21 +740,14 @@
   }
 
   // ==========================================
-  // 3. 朱砂闲章 (Leisure Seal)
+  // 8. 朱砂闲章 (Leisure Seal) 控制器
   // ==========================================
-  const SEAL_WORDS = [
-    '好品', '过眼', '无事忙', '且慢', '知足', '寸锦',
-    '随喜', '长乐', '得闲', '清欢', '不染', '未央',
-    '常安', '有味'
-  ];
-
   let isSealActive = false;
   let activeStamps = [];
   const MAX_STAMPS = 3;
 
   function initLeisureSeal() {
-    const stampToy = document.getElementById('leisureStampToy');
-    if (!stampToy) return;
+    const fanSeal = document.getElementById('fanItemSeal');
 
     // 光标跟随预览框 (仅在支持细精度指针的桌面设备显示)
     const follower = document.createElement('div');
@@ -364,8 +765,10 @@
 
     function setSealMode(active) {
       isSealActive = active;
-      stampToy.classList.toggle('seal-active', isSealActive);
-      stampToy.setAttribute('aria-pressed', isSealActive ? 'true' : 'false');
+      if (fanSeal) {
+        fanSeal.classList.toggle('seal-active', isSealActive);
+        fanSeal.setAttribute('aria-pressed', isSealActive ? 'true' : 'false');
+      }
       document.body.classList.toggle('seal-stamping-mode', isSealActive);
       if (isSealActive) {
         hintBar.classList.add('visible');
@@ -375,14 +778,13 @@
       }
     }
 
-    stampToy.addEventListener('click', (e) => {
-      e.stopPropagation();
+    toggleSealMode = function () {
       setSealMode(!isSealActive);
       // 触屏手机端：如果开启落印模式，在视口留白直接落印一枚
       if (isSealActive && window.matchMedia('(hover: none)').matches) {
         stampAt(window.innerWidth / 2, window.innerHeight * 0.42);
       }
-    });
+    };
 
     // 鼠标移动跟随
     document.addEventListener('mousemove', (e) => {
@@ -415,10 +817,11 @@
 
     function isInteractiveTarget(target) {
       if (!target || target === document.body || target === document.documentElement) return false;
-      if (target.closest('a, button, input, textarea, select, kbd, label, .modal, .shortcut-modal-card, .daily-sign-card, .random-site-popover')) {
+      if (typeof target.closest !== 'function') return false;
+      if (target.closest('a, button, input, textarea, select, kbd, label, .modal, .shortcut-modal-card, .daily-sign-card, .random-site-popover, .floating-muyu-toy, .toy-hub-wrap')) {
         return true;
       }
-      if (target.closest('.card, .sidebar-index, .toolbar, .masthead, .quick-loc-bar, .dock-section')) {
+      if (target.closest('.card, .sidebar-index, .toolbar, .masthead, .quick-loc-bar')) {
         return true;
       }
       return false;
@@ -484,17 +887,19 @@
   }
 
   // ==========================================
-  // 4. 初始化挂载
+  // 9. 初始化挂载
   // ==========================================
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', () => {
-      initDailyOracle();
-      initRandomWander();
-      initLeisureSeal();
-    });
-  } else {
+  function bootstrap() {
+    initToyHub();
+    initFloatingMuyu();
     initDailyOracle();
     initRandomWander();
     initLeisureSeal();
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', bootstrap);
+  } else {
+    bootstrap();
   }
 })();
