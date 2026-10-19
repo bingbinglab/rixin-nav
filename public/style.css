@@ -2381,7 +2381,8 @@ html.dark-theme .fan-illust-item {
 .muyu-footer-bar {
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  justify-content: flex-start;
+  gap: 16px;
   padding: 0 4px;
   margin-top: 0;
   background: transparent;
