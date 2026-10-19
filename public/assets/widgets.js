@@ -117,7 +117,7 @@
     const ctx = getAudioCtx();
     if (!ctx) return;
     muyuAudioLoading = true;
-    fetch('/assets/muyu.mp3?v=20261020a')
+    fetch('/assets/muyu.mp3?v=20261020b')
       .then(res => res.arrayBuffer())
       .then(buf => ctx.decodeAudioData(buf))
       .then(decoded => {
@@ -148,7 +148,7 @@
     } else {
       // 首次加载未完成或降级时的 HTML5 Audio 回退
       try {
-        const a = new Audio('/assets/muyu.mp3?v=20261020a');
+        const a = new Audio('/assets/muyu.mp3?v=20261020b');
         a.playbackRate = pitch;
         a.play().catch(() => {});
       } catch (_) {}
@@ -258,6 +258,61 @@
     gain.connect(ctx.destination);
     osc.start(t);
     osc.stop(t + 0.022);
+  }
+
+  // 0.8 金丝眼镜轻拨歪斜音效：极短的高音金丝金属微鸣 (2200Hz -> 1800Hz)
+  function playGlassesClickSound() {
+    const ctx = getAudioCtx();
+    if (!ctx) return;
+    const t = ctx.currentTime;
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.type = 'triangle';
+    osc.frequency.setValueAtTime(2200, t);
+    osc.frequency.exponentialRampToValueAtTime(1800, t + 0.05);
+    gain.gain.setValueAtTime(0.08, t);
+    gain.gain.exponentialRampToValueAtTime(0.001, t + 0.06);
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    osc.start(t);
+    osc.stop(t + 0.06);
+  }
+
+  // 0.9 镇纸兽金币转运音效：金石铜铃清脆共鸣 (520Hz + 1040Hz)
+  function playCoinSpinSound() {
+    const ctx = getAudioCtx();
+    if (!ctx) return;
+    const t = ctx.currentTime;
+    [520, 1040].forEach((freq, i) => {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(freq, t);
+      gain.gain.setValueAtTime(i === 0 ? 0.12 : 0.06, t);
+      gain.gain.exponentialRampToValueAtTime(0.001, t + 0.35);
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.start(t);
+      osc.stop(t + 0.35);
+    });
+  }
+
+  // 0.10 睡猫轻揉短呼噜：柔和短促微气流
+  function playCatSoftPurrSound() {
+    const ctx = getAudioCtx();
+    if (!ctx) return;
+    const t = ctx.currentTime;
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(52, t);
+    gain.gain.setValueAtTime(0.001, t);
+    gain.gain.linearRampToValueAtTime(0.08, t + 0.12);
+    gain.gain.linearRampToValueAtTime(0.001, t + 0.35);
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    osc.start(t);
+    osc.stop(t + 0.35);
   }
 
   // ==========================================
@@ -637,15 +692,31 @@
   }
 
   // ==========================================
-  // 5.1 伏案镇纸兽 (Paperweight Beast Toy) 控制器
+    // 5.1 伏案镇纸兽 (Paperweight Beast Toy) 控制器
   // ==========================================
   function initPaperweightBeast() {
     const beastToy = document.getElementById('floatingBeastToy');
     const stageEl = document.getElementById('beastStage');
     const closeBtn = document.getElementById('beastCloseBtn');
     const bubbleHint = document.getElementById('beastBubbleHint');
+    const fortuneSign = document.getElementById('beastFortuneSign');
+    const fortuneText = document.getElementById('beastFortuneText');
+    const searchBox = document.querySelector('.search-box');
+    const searchInput = document.getElementById('searchInput');
 
     if (!beastToy || !stageEl) return;
+
+    const BEAST_REPLIES = [
+      '放肆！',
+      '成何体统！',
+      '尔等休得无礼',
+      '休得动手动脚',
+      '本座正坐镇中'
+    ];
+    const FORTUNE_CHARS = ['稳', '吉', '镇', '发', '安', '顺', '定', '亨'];
+
+    let origPlaceholder = '';
+    let isSnappedToSearch = false;
 
     function getDefaultPos() {
       const w = beastToy.offsetWidth || 92;
@@ -685,6 +756,56 @@
     }
 
     restorePosition();
+
+    function showBubble(text) {
+      if (!bubbleHint) return;
+      bubbleHint.textContent = text;
+      bubbleHint.hidden = false;
+      bubbleHint.style.animation = 'none';
+      void bubbleHint.offsetWidth;
+      bubbleHint.style.animation = 'beastBubbleFade 2s ease-out forwards';
+      setTimeout(() => { bubbleHint.hidden = true; }, 2000);
+    }
+
+    function showFortuneSign() {
+      if (!fortuneSign || !fortuneText) return;
+      playCoinSpinSound();
+      stageEl.classList.remove('coin-spin');
+      void stageEl.offsetWidth;
+      stageEl.classList.add('coin-spin');
+      setTimeout(() => stageEl.classList.remove('coin-spin'), 400);
+
+      const ch = FORTUNE_CHARS[Math.floor(Math.random() * FORTUNE_CHARS.length)];
+      fortuneText.textContent = ch;
+      fortuneSign.hidden = false;
+      fortuneSign.style.animation = 'none';
+      void fortuneSign.offsetWidth;
+      fortuneSign.style.animation = 'beastFortuneSignPop 2s cubic-bezier(0.18, 0.89, 0.32, 1.28) forwards';
+      setTimeout(() => { fortuneSign.hidden = true; }, 2000);
+    }
+
+    function triggerGlassesTilt() {
+      playGlassesClickSound();
+      stageEl.classList.remove('tilt');
+      void stageEl.offsetWidth;
+      stageEl.classList.add('tilt');
+      setTimeout(() => stageEl.classList.remove('tilt'), 450);
+
+      const reply = BEAST_REPLIES[Math.floor(Math.random() * BEAST_REPLIES.length)];
+      setTimeout(() => {
+        showBubble(reply);
+      }, 200);
+    }
+
+    function clearSearchSnap() {
+      if (isSnappedToSearch) {
+        isSnappedToSearch = false;
+        if (searchBox) searchBox.classList.remove('beast-glow');
+        if (searchInput && origPlaceholder) {
+          searchInput.placeholder = origPlaceholder;
+        }
+      }
+    }
 
     // 拖动与摸头判定
     let isDragging = false;
@@ -745,13 +866,30 @@
       }
 
       if (movedDistance <= 5) {
-        // 轻点摸头：压扁回弹
+        const clientX = e.clientX || (e.touches && e.touches[0].clientX) || 0;
+        const clientY = e.clientY || (e.touches && e.touches[0].clientY) || 0;
+        const rect = stageEl.getBoundingClientRect();
+        const relX = (clientX - rect.left) / rect.width;
+        const relY = (clientY - rect.top) / rect.height;
+
+        // 判定 1: 背上金币区域 (右上角: relX >= 0.52 && relY <= 0.40)
+        if (relX >= 0.52 && relY <= 0.40) {
+          showFortuneSign();
+          return;
+        }
+
+        // 判定 2: 鼻尖金丝圆镜区域 (面部正中偏上: relX 0.32~0.68, relY 0.38~0.68)
+        if (relX >= 0.32 && relX <= 0.68 && relY >= 0.38 && relY <= 0.68) {
+          triggerGlassesTilt();
+          return;
+        }
+
+        // 判定 3: 摸头压扁回弹与 1 秒 3 击小喷嚏「静气」
         stageEl.classList.remove('squash');
         void stageEl.offsetWidth;
         stageEl.classList.add('squash');
         setTimeout(() => stageEl.classList.remove('squash'), 160);
 
-        // 1秒内连点3下 -> 小喷嚏 + 冒墨色小泡浮出「静气」
         const now = Date.now();
         clickTimestamps.push(now);
         clickTimestamps = clickTimestamps.filter(t => now - t <= 1000);
@@ -761,21 +899,42 @@
           void stageEl.offsetWidth;
           stageEl.classList.add('sneeze');
           setTimeout(() => stageEl.classList.remove('sneeze'), 380);
-
-          if (bubbleHint) {
-            bubbleHint.hidden = false;
-            bubbleHint.style.animation = 'none';
-            void bubbleHint.offsetWidth;
-            bubbleHint.style.animation = 'beastBubbleFade 2s ease-out forwards';
-            setTimeout(() => { bubbleHint.hidden = true; }, 2000);
-          }
+          showBubble('静气');
         }
       } else {
-        // 拖动超 5px：镇压判定区（只认分类标题栏 .section-head）
+        // 拖动判定区
         const beastRect = beastToy.getBoundingClientRect();
         const beastCenterX = beastRect.left + beastRect.width / 2;
         const beastCenterY = beastRect.top + beastRect.height / 2;
 
+        // A. 判定搜索框吸附
+        if (searchBox) {
+          const sRect = searchBox.getBoundingClientRect();
+          if (beastCenterX >= sRect.left - 20 && beastCenterX <= sRect.right + 40 &&
+              beastCenterY >= sRect.top - 50 && beastCenterY <= sRect.bottom + 30) {
+            clearSearchSnap();
+            isSnappedToSearch = true;
+            searchBox.classList.add('beast-glow');
+            if (searchInput) {
+              if (!origPlaceholder) origPlaceholder = searchInput.placeholder;
+              searchInput.placeholder = '神兽坐镇 · 静心思阅';
+            }
+            const targetLeft = Math.min(Math.max(10, sRect.right - beastRect.width - 6), window.innerWidth - beastRect.width - 10);
+            const targetTop = sRect.top - beastRect.height + 14;
+            beastToy.style.left = `${targetLeft}px`;
+            beastToy.style.top = `${targetTop}px`;
+            savePos(targetLeft, targetTop);
+
+            stageEl.classList.remove('squash');
+            void stageEl.offsetWidth;
+            stageEl.classList.add('squash');
+            setTimeout(() => stageEl.classList.remove('squash'), 180);
+            playBeastSnapSound();
+            return;
+          }
+        }
+
+        // B. 判定分类标题栏吸附 (.section-head)
         let hitHead = null;
         const heads = document.querySelectorAll('.section-head');
         for (const head of heads) {
@@ -788,7 +947,7 @@
         }
 
         if (hitHead) {
-          // 吸附坐实在标题栏上（兽身压住栏上沿）
+          clearSearchSnap();
           const hr = hitHead.getBoundingClientRect();
           const targetLeft = Math.min(Math.max(10, hr.right - beastRect.width - 20), window.innerWidth - beastRect.width - 10);
           const targetTop = hr.top - beastRect.height + 16;
@@ -797,16 +956,13 @@
           beastToy.style.top = `${targetTop}px`;
           savePos(targetLeft, targetTop);
 
-          // 播下压回弹
           stageEl.classList.remove('squash');
           void stageEl.offsetWidth;
           stageEl.classList.add('squash');
           setTimeout(() => stageEl.classList.remove('squash'), 180);
 
-          // 播极轻的「笃」
           playBeastSnapSound();
 
-          // 分类框泛起青玉光晕环 (2秒淡去)
           const sec = hitHead.closest('.section, .pinned-section') || hitHead.parentElement;
           if (sec) {
             sec.classList.remove('beast-glow');
@@ -815,7 +971,7 @@
             setTimeout(() => sec.classList.remove('beast-glow'), 2000);
           }
         } else {
-          // 停在原地（普通摆放）
+          clearSearchSnap();
           const r = beastToy.getBoundingClientRect();
           savePos(r.left, r.top);
         }
@@ -830,6 +986,7 @@
     // 双击溜回案角默认位
     stageEl.addEventListener('dblclick', (e) => {
       e.stopPropagation();
+      clearSearchSnap();
       const def = getDefaultPos();
       beastToy.style.left = `${def.left}px`;
       beastToy.style.top = `${def.top}px`;
@@ -844,6 +1001,7 @@
     if (closeBtn) {
       closeBtn.addEventListener('click', (e) => {
         e.stopPropagation();
+        clearSearchSnap();
         beastToy.hidden = true;
         beastToy.style.display = 'none';
       });
@@ -854,16 +1012,15 @@
       beastToy.style.display = 'block';
       restorePosition();
 
-      // 唤出时微弹提示
       stageEl.classList.remove('squash');
       void stageEl.offsetWidth;
       stageEl.classList.add('squash');
-      setTimeout(() => stageEl.classList.remove('squash'), 160);
+      setTimeout(() => stageEl.classList.remove('squash'), 120);
     };
   }
 
   // ==========================================
-  // 5.2 案头卧黑狸 (Desk Cat Toy) 控制器
+    // 5.2 案头卧黑狸 (Desk Cat Toy) 控制器
   // ==========================================
   function initDeskCat() {
     const catToy = document.getElementById('floatingCatToy');
@@ -871,15 +1028,15 @@
     const bodyImg = document.getElementById('catBodyImg');
     const closeBtn = document.getElementById('catCloseBtn');
     const heartIcon = document.getElementById('catHeartIcon');
+    const snoozeBubble = document.getElementById('catSnoozeBubble');
 
     if (!catToy || !stageEl || !bodyImg) return;
 
     let isAwake = false;
     let awakeTimer = null;
-    let stepCount = 0;
-    let lastStepTime = 0;
     let activePawPrints = [];
     const MAX_PAWS = 8;
+    let isWalking = false;
 
     function getDefaultPos() {
       const w = catToy.offsetWidth || 96;
@@ -922,19 +1079,25 @@
 
     function setSleepState() {
       isAwake = false;
-      bodyImg.src = '/assets/cat-sleep.png?v=20261020a';
+      isWalking = false;
+      catToy.classList.remove('is-walking');
+      bodyImg.src = '/assets/cat-sleep.png?v=20261020b';
       if (heartIcon) heartIcon.hidden = true;
+      stageEl.style.transform = 'scaleX(1)';
     }
 
     function setAwakeState() {
+      if (isAwake) {
+        clearTimeout(awakeTimer);
+        awakeTimer = setTimeout(setSleepState, 12000);
+        return;
+      }
       isAwake = true;
-      stepCount = 0;
-      bodyImg.src = '/assets/cat-awake.png?v=20261020a';
+      isWalking = false;
+      bodyImg.src = '/assets/cat-awake.png?v=20261020b';
 
-      // 呼噜声
       playCatPurrSound();
 
-      // 冒出红心
       if (heartIcon) {
         heartIcon.hidden = false;
         heartIcon.style.animation = 'none';
@@ -944,7 +1107,7 @@
       }
 
       clearTimeout(awakeTimer);
-      awakeTimer = setTimeout(setSleepState, 6000);
+      awakeTimer = setTimeout(setSleepState, 12000);
     }
 
     function dropPawPrint(pageX, pageY) {
@@ -970,7 +1133,24 @@
       }, 2000);
     }
 
-    // 抚摸手势折返计程与拖动区分
+    // 盘睡发呆动作定时器（每隔 24 秒耳动或打鼾气泡）
+    setInterval(() => {
+      if (isAwake || catToy.hidden || catToy.style.display === 'none') return;
+      if (Math.random() < 0.5) {
+        stageEl.classList.remove('ear-twitch');
+        void stageEl.offsetWidth;
+        stageEl.classList.add('ear-twitch');
+        setTimeout(() => stageEl.classList.remove('ear-twitch'), 450);
+      } else if (snoozeBubble) {
+        snoozeBubble.hidden = false;
+        snoozeBubble.style.animation = 'none';
+        void snoozeBubble.offsetWidth;
+        snoozeBubble.style.animation = 'catSnoozeFloat 2.2s ease-out forwards';
+        setTimeout(() => { snoozeBubble.hidden = true; }, 2200);
+      }
+    }, 24000);
+
+    // 拖动与抚摸抓痒判定
     let isTouching = false;
     let startX = 0;
     let startY = 0;
@@ -1015,7 +1195,6 @@
       const stepDist = Math.hypot(dx, dy);
       strokeDistance += stepDist;
 
-      // 折返计程：检测横向折返
       const dirX = Math.sign(dx);
       if (dirX !== 0 && lastDirX !== 0 && dirX !== lastDirX) {
         reversals++;
@@ -1025,13 +1204,12 @@
       lastX = clientX;
       lastY = clientY;
 
-      // 累计抚摸约 2 秒或折返达到标准唤醒
       const elapsed = Date.now() - touchStartTime;
-      if (!isAwake && ((reversals >= 4 && strokeDistance > 90) || (elapsed >= 1800 && strokeDistance > 80))) {
+      // 轻抚下巴或抚摸 0.35s 且横向位移 > 20px 即可快速唤醒
+      if (!isAwake && ((reversals >= 2 && strokeDistance > 30) || (elapsed >= 350 && strokeDistance > 25))) {
         setAwakeState();
       }
 
-      // 如果单向直线位移显著 > 15px 且折返很少，判定为拖动
       const totalDx = clientX - startX;
       const totalDy = clientY - startY;
       if (Math.hypot(totalDx, totalDy) > 15 && reversals <= 1) {
@@ -1059,28 +1237,52 @@
       if (totalMoved > 15 && reversals <= 1) {
         const r = catToy.getBoundingClientRect();
         savePos(r.left, r.top);
-      } else if (totalMoved <= 5 && !isAwake) {
-        // 轻点（非拖动）：只轻微受力弹动，不出声、不走动
-        stageEl.classList.remove('bounce');
-        void stageEl.offsetWidth;
-        stageEl.classList.add('bounce');
-        setTimeout(() => stageEl.classList.remove('bounce'), 160);
+      } else if (totalMoved <= 5) {
+        if (!isAwake) {
+          // 睡态轻点：柔和揉肚皮回弹并伴随轻柔呼噜
+          stageEl.classList.remove('tummy-squish');
+          void stageEl.offsetWidth;
+          stageEl.classList.add('tummy-squish');
+          setTimeout(() => stageEl.classList.remove('tummy-squish'), 350);
+          playCatSoftPurrSound();
+        } else {
+          // 醒态轻点：微小弹动刷新活跃计时
+          stageEl.classList.remove('bounce');
+          void stageEl.offsetWidth;
+          stageEl.classList.add('bounce');
+          setTimeout(() => stageEl.classList.remove('bounce'), 160);
+          clearTimeout(awakeTimer);
+          awakeTimer = setTimeout(setSleepState, 12000);
+        }
       }
     }
+
+    // 双击快速唤醒
+    stageEl.addEventListener('dblclick', (e) => {
+      e.stopPropagation();
+      setAwakeState();
+    });
 
     stageEl.addEventListener('pointerdown', onPointerDown);
     window.addEventListener('pointermove', onPointerMove);
     window.addEventListener('pointerup', onPointerUp);
     window.addEventListener('pointercancel', onPointerUp);
 
-    // 起身后 6 秒内：在页面空白处移动光标，伸懒腰并小步朝光标走动（最多 3 步）
+    // 醒来后光标视线追踪 (左右翻转大金眼)
     document.addEventListener('pointermove', (e) => {
-      if (!isAwake || catToy.hidden) return;
-      if (isTouching) return;
-      const now = Date.now();
-      if (now - lastStepTime < 450) return;
-      if (stepCount >= 3) return;
+      if (!isAwake || catToy.hidden || isWalking || isTouching) return;
+      const rect = catToy.getBoundingClientRect();
+      const catCenterX = rect.left + rect.width / 2;
+      if (e.clientX < catCenterX - 24) {
+        stageEl.style.transform = 'scaleX(-1)';
+      } else if (e.clientX > catCenterX + 24) {
+        stageEl.style.transform = 'scaleX(1)';
+      }
+    });
 
+    // 逗猫模式：在页面空白处点击任意位置，黑狸小碎步快跑到达，沿途踩下梅花爪印
+    document.addEventListener('click', (e) => {
+      if (!isAwake || catToy.hidden || isWalking || isTouching) return;
       const target = e.target;
       if (target && typeof target.closest === 'function') {
         if (target.closest('a, button, input, textarea, select, .card, .modal, .toy-hub-wrap, .floating-beast-toy, .floating-muyu-toy, .floating-cat-toy, .fortune-wheel-modal')) {
@@ -1089,36 +1291,51 @@
       }
 
       const rect = catToy.getBoundingClientRect();
-      const catCenterX = rect.left + rect.width / 2;
-      const catCenterY = rect.top + rect.height / 2;
-      const dist = Math.hypot(e.clientX - catCenterX, e.clientY - catCenterY);
+      const catW = rect.width;
+      const catH = rect.height;
+      const startCenterX = rect.left + catW / 2;
+      const startCenterY = rect.top + catH / 2;
 
-      if (dist > 50 && dist < 500) {
-        lastStepTime = now;
-        stepCount++;
+      const targetX = Math.min(Math.max(16, e.clientX - catW / 2), window.innerWidth - catW - 16);
+      const targetY = Math.min(Math.max(40, e.clientY - catH / 2), window.innerHeight - catH - 16);
 
-        bodyImg.src = '/assets/cat-stretch.png?v=20261020a';
+      const dist = Math.hypot(targetX - rect.left, targetY - rect.top);
+      if (dist < 20) return;
 
-        const angle = Math.atan2(e.clientY - catCenterY, e.clientX - catCenterX);
-        const step = 18;
-        const newLeft = Math.min(Math.max(10, rect.left + Math.cos(angle) * step), window.innerWidth - rect.width - 10);
-        const newTop = Math.min(Math.max(40, rect.top + Math.sin(angle) * step), window.innerHeight - rect.height - 10);
+      isWalking = true;
+      catToy.classList.add('is-walking');
+      bodyImg.src = '/assets/cat-stretch.png?v=20261020b';
 
-        dropPawPrint(window.scrollX + catCenterX, window.scrollY + catCenterY);
-
-        catToy.style.left = `${newLeft}px`;
-        catToy.style.top = `${newTop}px`;
-        savePos(newLeft, newTop);
-
-        setTimeout(() => {
-          if (isAwake) {
-            bodyImg.src = '/assets/cat-awake.png?v=20261020a';
-          }
-        }, 320);
-
-        clearTimeout(awakeTimer);
-        awakeTimer = setTimeout(setSleepState, 6000);
+      // 跑动朝向
+      if (targetX < rect.left) {
+        stageEl.style.transform = 'scaleX(-1)';
+      } else {
+        stageEl.style.transform = 'scaleX(1)';
       }
+
+      // 起步爪印
+      dropPawPrint(window.scrollX + startCenterX, window.scrollY + startCenterY);
+
+      // 中途与终点爪印
+      setTimeout(() => {
+        dropPawPrint(window.scrollX + (startCenterX + targetX + catW / 2) / 2, window.scrollY + (startCenterY + targetY + catH / 2) / 2);
+      }, 220);
+
+      catToy.style.left = `${targetX}px`;
+      catToy.style.top = `${targetY}px`;
+      savePos(targetX, targetY);
+
+      setTimeout(() => {
+        dropPawPrint(window.scrollX + targetX + catW / 2, window.scrollY + targetY + catH / 2);
+        catToy.classList.remove('is-walking');
+        isWalking = false;
+        if (isAwake) {
+          bodyImg.src = '/assets/cat-awake.png?v=20261020b';
+        }
+      }, 460);
+
+      clearTimeout(awakeTimer);
+      awakeTimer = setTimeout(setSleepState, 12000);
     });
 
     if (closeBtn) {
@@ -1135,7 +1352,6 @@
       catToy.style.display = 'block';
       restorePosition();
       setSleepState();
-
       stageEl.classList.remove('bounce');
       void stageEl.offsetWidth;
       stageEl.classList.add('bounce');

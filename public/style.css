@@ -2513,6 +2513,60 @@ html.dark-theme .fan-illust-item {
   60% { transform: translateX(-4px) rotate(-2deg); }
   80% { transform: translateX(4px) rotate(2deg); }
 }
+
+/* 傲娇点眼镜歪斜与甩头扶正 */
+.beast-stage.tilt .beast-body-img {
+  animation: beastGlassesTilt 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+@keyframes beastGlassesTilt {
+  0% { transform: rotate(0deg); }
+  25% { transform: rotate(13deg) translateY(2px) scale(0.97); }
+  55% { transform: rotate(13deg) translateY(2px) scale(0.97); }
+  75% { transform: rotate(-5deg); }
+  100% { transform: rotate(0deg); }
+}
+
+/* 戳金币转运弹跳 */
+.beast-stage.coin-spin .beast-body-img {
+  animation: beastCoinBounce 0.4s ease;
+}
+@keyframes beastCoinBounce {
+  0% { transform: scale(1); }
+  30% { transform: scale(0.92, 1.08) rotate(-3deg); }
+  60% { transform: scale(1.06, 0.95) rotate(2deg); }
+  100% { transform: scale(1); }
+}
+
+/* 金币吉语签 (朱砂方印弹出) */
+.beast-fortune-sign {
+  position: absolute;
+  top: -18px;
+  right: 8px;
+  background: var(--ochre);
+  border: 1.5px solid #7c331b;
+  color: #fff8f0;
+  font-family: var(--serif);
+  font-size: 14px;
+  font-weight: 700;
+  width: 24px;
+  height: 24px;
+  border-radius: 2px;
+  box-shadow: 1.5px 1.5px 0 var(--ink), inset 0 0 1px rgba(0,0,0,0.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+  z-index: 12;
+  animation: beastFortuneSignPop 2s cubic-bezier(0.18, 0.89, 0.32, 1.28) forwards;
+}
+@keyframes beastFortuneSignPop {
+  0% { opacity: 0; transform: translateY(6px) scale(0.4) rotate(-10deg); }
+  15% { opacity: 1; transform: translateY(-8px) scale(1.15) rotate(4deg); }
+  30% { opacity: 1; transform: translateY(-6px) scale(1) rotate(0deg); }
+  75% { opacity: 1; transform: translateY(-6px) scale(1); }
+  100% { opacity: 0; transform: translateY(-18px) scale(0.85); }
+}
+
 .beast-bubble-hint {
   position: absolute;
   top: -14px;
@@ -2564,10 +2618,15 @@ html.dark-theme .fan-illust-item {
   opacity: 1;
 }
 
-/* 镇压青玉光晕环 */
+/* 镇压青玉光晕环 (分类栏与搜索框) */
 .section.beast-glow, .pinned-section.beast-glow {
   box-shadow: 0 0 0 3px rgba(38, 70, 55, 0.45), 0 0 16px rgba(38, 70, 55, 0.28) !important;
   transition: box-shadow 0.25s ease;
+}
+.search-box.beast-glow {
+  box-shadow: 0 0 0 2.5px var(--green), 0 0 14px rgba(38, 70, 55, 0.35) !important;
+  border-color: var(--green) !important;
+  transition: box-shadow 0.25s ease, border-color 0.25s ease;
 }
 
 /* 6.2 案头卧黑狸 (.floating-cat-toy) */
@@ -2585,9 +2644,20 @@ html.dark-theme .fan-illust-item {
   cursor: grabbing;
   transition: none;
 }
+.floating-cat-toy.is-dragging .cat-body-img {
+  /* 抓住后颈皮：液体猫纵向拉伸 */
+  transform: scale(0.85, 1.15);
+  transition: transform 0.15s ease;
+}
+.floating-cat-toy.is-walking {
+  transition: left 0.45s cubic-bezier(0.25, 1, 0.5, 1), top 0.45s cubic-bezier(0.25, 1, 0.5, 1) !important;
+  cursor: pointer;
+}
 .cat-stage {
   position: relative;
   width: 100%;
+  transform-origin: center bottom;
+  transition: transform 0.16s ease;
 }
 .cat-body-img {
   width: 100%;
@@ -2599,6 +2669,47 @@ html.dark-theme .fan-illust-item {
 }
 .cat-stage.bounce .cat-body-img {
   transform: scale(1.08, 0.92);
+}
+
+/* 揉肚皮软糯微回弹 */
+.cat-stage.tummy-squish .cat-body-img {
+  animation: catTummySquish 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+@keyframes catTummySquish {
+  0% { transform: scale(1); }
+  40% { transform: scale(1.12, 0.88); }
+  75% { transform: scale(0.96, 1.04); }
+  100% { transform: scale(1); }
+}
+
+/* 盘睡发呆耳部微动 */
+.cat-stage.ear-twitch .cat-body-img {
+  animation: catEarTwitch 0.45s ease;
+}
+@keyframes catEarTwitch {
+  0%, 100% { transform: rotate(0deg); }
+  25% { transform: rotate(-3.5deg); }
+  50% { transform: rotate(3.5deg); }
+  75% { transform: rotate(-1.5deg); }
+}
+
+/* 盘睡打鼾小气泡 */
+.cat-snooze-bubble {
+  position: absolute;
+  top: -6px;
+  left: 20px;
+  font-family: var(--serif);
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--muted);
+  pointer-events: none;
+  animation: catSnoozeFloat 2.2s ease-out forwards;
+}
+@keyframes catSnoozeFloat {
+  0% { opacity: 0; transform: translateY(2px) scale(0.6); }
+  25% { opacity: 0.85; transform: translateY(-4px) scale(1); }
+  70% { opacity: 0.85; transform: translateY(-12px) scale(1.1); }
+  100% { opacity: 0; transform: translateY(-20px) scale(0.8); }
 }
 .cat-heart-icon {
   position: absolute;
