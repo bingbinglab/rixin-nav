@@ -2230,26 +2230,26 @@ html.dark-theme .toy-hub-btn {
 .toy-hub-wrap.is-open .fan-item:nth-child(5) { transition-delay: 0.10s; }
 
 /* 桌面端坐标 (五件同席 · 双弧错落) */
-/* 单弧扇形 R=150 等角排开: 特许盘(6°), 木鱼(25°), 黑狸(44°), 镇纸兽(63°), 闲章(82°) */
+/* 单弧扇形 R=112 贴钮排开: 特许盘(2°), 木鱼(24°), 黑狸(45°), 镇纸兽(67°), 闲章(88°) */
 .fan-wheel-item {
-  --tx: -149px;
-  --ty: -16px;
+  --tx: -112px;
+  --ty: -4px;
 }
 .fan-muyu-item {
-  --tx: -136px;
-  --ty: -63px;
+  --tx: -102px;
+  --ty: -46px;
 }
 .fan-cat-item {
-  --tx: -108px;
-  --ty: -104px;
+  --tx: -79px;
+  --ty: -79px;
 }
 .fan-beast-item {
-  --tx: -68px;
-  --ty: -134px;
+  --tx: -44px;
+  --ty: -103px;
 }
 .fan-seal-item {
-  --tx: -21px;
-  --ty: -149px;
+  --tx: -4px;
+  --ty: -112px;
 }
 }
 
@@ -3182,26 +3182,26 @@ body.seal-stamping-mode {
     height: 48px;
   }
   /* 手机端双弧紧凑散开 (总半径 <= 82px) */
-  /* 单弧扇形 R=118 等角排开: 特许盘(8°), 木鱼(28°), 黑狸(47°), 镇纸兽(67°), 闲章(86°) */
+  /* 单弧扇形 R=108 贴钮排开: 特许盘(0°), 木鱼(23°), 黑狸(46°), 镇纸兽(69°), 闲章(92°) */
   .fan-wheel-item {
-    --tx: -117px;
-    --ty: -16px;
+    --tx: -108px;
+    --ty: 0px;
   }
   .fan-muyu-item {
-    --tx: -104px;
-    --ty: -55px;
+    --tx: -99px;
+    --ty: -42px;
   }
   .fan-cat-item {
-    --tx: -80px;
-    --ty: -86px;
+    --tx: -75px;
+    --ty: -78px;
   }
   .fan-beast-item {
-    --tx: -46px;
-    --ty: -109px;
+    --tx: -39px;
+    --ty: -101px;
   }
   .fan-seal-item {
-    --tx: -8px;
-    --ty: -118px;
+    --tx: 4px;
+    --ty: -108px;
   }
 
   /* 手机端尺寸微调 */
