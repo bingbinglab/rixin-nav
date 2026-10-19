@@ -39,7 +39,7 @@
 
 ### 同步与备份
 
-- Floccus 双向同步（可选）：浏览器装了 Floccus 插件后，书签和本站互通——哪边加站，另一边出现；哪边删站，另一边跟着删。防误删有三道：来源标记（手工加的站首次同步前不受浏览器影响，合流后由置顶豁免与熔断保护）、删除墓碑、单次变动过多自动熔断
+- Floccus 双向同步（可选）：浏览器装了 Floccus 插件后，书签和本站互通——哪边加站，另一边出现；哪边删站，另一边跟着删。防误删有三道：来源标记（手工加的站首次同步前不受浏览器影响，合流后由置顶豁免与熔断保护）、删除墓碑、单次变动过多自动熔断。用之前先在后台设置中心配好一个 WebDAV（比如坚果云），同步文件就存在那里
 - WebDAV 备份：后台一键备份和恢复；备份主文件之外另有 4 个按周轮换的槽位，主文件损坏时从槽位恢复
 
 ### 浏览
@@ -48,6 +48,7 @@
 - 站内搜不到时不死胡同：可转 Bing / Google / GitHub 外搜（三个引擎可在后台设置里勾选开关），按回车走当前选中的引擎，默认 Bing
 - A–Z 字母索引，方向键按版面行列选卡：↑↓ 跨行移动（记得住你原来在哪一列），←→ 逐个流转
 - 二级分类，左侧索引滚动跟随高亮；手机上换成顶部横排
+- 卡片右上角可一键复制网址；支持 PWA，能把本站安装到桌面或手机主屏幕，像应用一样独立窗口打开
 - 夜间主题「沉墨」，报头按钮切换，记住选择；紧凑、舒适两种密度
 - 接口不可用时用本地快照渲染，页面不会白屏
 
@@ -58,7 +59,7 @@
 ```
 帮我部署这个项目：https://github.com/bingbinglab/rixin-nav
 1. 克隆仓库，读 README 的「快速开始」一节照着做；
-2. 用 wrangler 在我的 Cloudflare 账号里建 D1 数据库，执行 schema.sql 建表（想要演示数据再执行 schema-seed.sql），再建一个 KV 命名空间；
+2. 用 wrangler 在我的 Cloudflare 账号里建 D1 数据库，执行 schema.sql 建表（想要演示数据再执行 schema-seed.sql），再建一个 KV 命名空间，并把新建的 D1 数据库 ID 与 KV 命名空间 ID 回填进仓库根目录 wrangler.toml 的占位符处；
 3. 部署到 Cloudflare Pages：输出目录 public，绑定 D1 为 NAV_DB、KV 为 NAV_KV；
 4. 部署完把访问地址告诉我。
 需要登录授权时停下来喊我；ADMIN_PASSWORD 环境变量我自己在 Cloudflare 后台设，不要替我设。
@@ -72,11 +73,11 @@
 
 **1. 建数据库**
 
-在 D1 里新建一个数据库，打开它的 Console，把仓库根目录的 `schema.sql` 粘贴执行。想先看效果，再执行 `schema-seed.sql`，会灌入 50 个演示站点（就是在线演示里那一批）。然后在 KV 里新建一个命名空间。
+在 D1 里新建一个数据库，打开它的 Console，把仓库根目录的 `schema.sql` 粘贴执行。想先看效果，再执行 `schema-seed.sql`，会灌入 50 个演示站点（就是在线演示里那一批）。第一次部署建议先灌上，看完效果再去后台慢慢换成自己的；如果只建空表，前台会先显示内置的示例书签，等你在后台加上第一条自己的书签，就自动切换成你的数据。然后在 KV 里新建一个命名空间。
 
 **2. 部署**
 
-Pages 里选 Connect to Git 连接这个仓库：构建命令留空，输出目录填 `public`。部署完成后进项目 Settings，加两条绑定——D1 绑为 `NAV_DB`，KV 绑为 `NAV_KV`；再加一个环境变量 `ADMIN_PASSWORD`，值是你的后台口令，自己设。绑完重新部署一次生效。
+Pages 里选 Connect to Git 连接这个仓库：构建命令留空，输出目录填 `public`。部署完成后进项目 Settings，加两条绑定——D1 绑为 `NAV_DB`，KV 绑为 `NAV_KV`；再加一个环境变量 `ADMIN_PASSWORD`，值是你的后台口令，自己设。绑完要重新部署一次才生效——到项目的 Deployments 标签页，在最新一条部署右侧点 `...` 选 Retry deployment。
 
 环境变量只需要这一个。站名、AI 密钥、WebDAV 账号这些都进后台设置中心，不写进代码，也不会提交到 Git。
 
@@ -105,7 +106,7 @@ schema-seed.sql   50 条演示数据
 
 ## 可选组件
 
-Floccus 定时同步 Worker：每 12 小时自动对账一次，部署方法见 [workers/floccus-sync/README.md](workers/floccus-sync/README.md)。不用它的话，在后台手动点同步也一样。
+Floccus 定时同步 Worker：每 12 小时自动对账一次，部署方法见 [workers/floccus-sync/README.md](workers/floccus-sync/README.md)。不用它的话，在后台手动点同步也一样。部署它之前，先在 Pages 项目的环境变量里加一个 `ADMIN_API_TOKEN`（自己设一串长随机字符即可），Worker 靠它调用本站接口。
 
 演示站定时重置 Worker：如果你也对外开一个公开演示站，可以部署 [demo-reset-worker/worker.js](demo-reset-worker/worker.js)——一个带定时触发的 Worker，每天两次把演示数据清回种子状态，并把设置恢复成 KV 里 `factory_settings_v1` 键存的出厂快照。部署时给它绑演示站的 D1（绑定名 `DB`）和 KV（绑定名 `KV`）即可，在线演示站用的就是它。
 

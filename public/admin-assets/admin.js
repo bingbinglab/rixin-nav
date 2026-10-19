@@ -1094,6 +1094,8 @@ function renderSites() {
 
 // --- 批量操作浮动栏 ---
 function updateBulkBar(visibleSites = []) {
+  // 批量栏显隐会改变回顶按钮的避让高度，而避让只在滚动时重算，这里主动触发一次
+  requestAnimationFrame(() => window.dispatchEvent(new Event("scroll")));
   let bar = $("bulkBar");
   if (!bar) {
     bar = document.createElement("div");
@@ -1912,6 +1914,8 @@ $("linkCheckBtn").onclick = async () => {
       });
     }
   } catch (e) {
+    box.style.display = "none";
+    box.innerHTML = "";
     $("toolMsg").textContent = "巡检中断：" + e.message;
     toast("巡检中断：" + e.message, true);
     btn.disabled = false;
@@ -1923,7 +1927,13 @@ $("linkCheckBtn").onclick = async () => {
   bad.forEach(({ s, r }) => {
     if (r.status === "dead" && (r.code === 404 || r.code === 410)) {
       try {
-        recheck.push({ id: s.id, url: new URL(s.url).origin + "/", kind: "root" });
+        const u = new URL(s.url);
+        if (u.pathname === "/" && !u.search && !u.hash) {
+          // 书签本身就是站点根域，没有「页面没了站点还在」一说，原网址重测即可
+          recheck.push({ id: s.id, url: s.url, kind: "retry" });
+        } else {
+          recheck.push({ id: s.id, url: u.origin + "/", kind: "root" });
+        }
       } catch {}
     } else if ((r.status === "dead" && r.code === 0) || r.status === "error") {
       recheck.push({ id: s.id, url: s.url, kind: "retry" });
@@ -1995,6 +2005,23 @@ $("linkCheckBtn").onclick = async () => {
           toast("已删除");
           const row = box.querySelector(`[data-lc="${id}"]`);
           if (row) row.remove();
+          const rowsLeft = box.querySelectorAll(".lc-item");
+          const headSpan = box.querySelector(".lc-head span");
+          if (headSpan) {
+            if (!rowsLeft.length) {
+              headSpan.textContent = "全部处理完成";
+            } else {
+              let d = 0, e2 = 0;
+              rowsLeft.forEach((it) => {
+                const b = it.querySelector(".lc-badge");
+                if (!b) return;
+                if (b.classList.contains("dead")) d++;
+                else if (b.textContent.trim() === "未检") e2++;
+              });
+              const w = rowsLeft.length - d - e2;
+              headSpan.textContent = `失联 ${d} 条 · 异常 ${w} 条${e2 ? ` · 未检 ${e2} 条` : ""}`;
+            }
+          }
           load();
         } catch (e) {
           toast("删除失败：" + e.message, true);

@@ -316,6 +316,21 @@ html.dark-theme .icon-box { background: var(--card); }
   margin: 0;
 }
 
+@media (min-width: 561px) {
+  /* 桌面分类名截断：长名不再刺穿相邻列；改名表单在窄列内折行 */
+  .cattable td.cname { overflow: hidden; }
+  .cattable .cname-text {
+    display: inline-block;
+    max-width: calc(100% - 28px);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    vertical-align: middle;
+  }
+  .cname-inline-wrap { flex-wrap: wrap; }
+  .cname-inline-input { flex: 1 1 100%; width: auto; min-width: 0; }
+}
+
 /* 响应式与移动端 Tab & 触控调序 (P15 & P16) */
 @media (max-width: 900px) {
   /* P15: 药丸 Tab 导航 */
@@ -996,3 +1011,10 @@ html.dark-theme .dup-warn {
 .lc-url { font-size: 12px; color: var(--muted); word-break: break-all; margin-top: 4px; }
 .lc-actions { display: flex; gap: 8px; margin-top: 8px; flex-wrap: wrap; }
 .lc-actions .mini { min-height: 34px; display: inline-flex; align-items: center; text-decoration: none; }
+
+@media (max-width: 380px) {
+  /* 极窄屏：分类卡操作钮略收，给中间的排序区让位 */
+  .cattable .cat-col-act { gap: 4px !important; }
+  .cattable .cat-col-act .mini { padding: 3px 6px !important; }
+  .cattable .cat-col-sort { gap: 4px !important; }
+}
