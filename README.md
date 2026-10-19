@@ -69,30 +69,35 @@
 
 ## 手动部署
 
-想自己动手也行。需要一个 Cloudflare 账号，免费版即可。四步：
+想自己动手也行。需要一个 Cloudflare 账号，免费版即可，全程在控制台点鼠标：
 
-**1. 建数据库**
+### 第一步：建数据库
 
-进 Cloudflare 控制台，左侧点 存储和数据库（Storage & Databases）→ D1 数据库（D1 SQL Database），点 创建数据库（Create database），名字随意。建好后点进这个数据库，打开 控制台（Console）标签页，把仓库根目录的 `schema.sql` 粘贴进去执行建表。想先看效果，再执行 `schema-seed.sql`，会灌入 50 个演示站点（就是在线演示里那一批）。第一次部署建议先灌上，看完效果再去后台慢慢换成自己的；如果只建空表，前台会先显示内置的示例书签，等你在后台加上第一条自己的书签，就自动切换成你的数据。
+1. 登录 Cloudflare 控制台，左侧点 **存储和数据库（Storage & Databases）** → **D1 数据库（D1 SQL Database）**，点 **创建数据库（Create database）**，名字随意；
+2. 点进刚建好的数据库，打开 **控制台（Console）** 标签页：
+   - 把仓库根目录的 `schema.sql` 粘贴进去，执行建表；
+   - 想先看效果，再把 `schema-seed.sql` 粘贴执行，灌入 50 个演示站点（就是在线演示里那一批）。第一次部署建议先灌上，看完效果再去后台慢慢换成自己的；如果只建空表，前台会先显示内置的示例书签，等你在后台加上第一条自己的书签，就自动切换成你的数据；
+3. 回到 **存储和数据库（Storage & Databases）** → **KV**，点 **创建命名空间（Create namespace）**，名字随意。
 
-再回到 存储和数据库（Storage & Databases）→ KV，点 创建命名空间（Create namespace），名字随意。
+### 第二步：部署到 Pages
 
-**2. 部署到 Pages**
+1. 点 **Workers 和 Pages（Workers & Pages）** → **创建应用程序（Create application）** → **Pages** → **连接到 Git（Connect to Git）**，选中这个仓库；
+2. 构建设置这样填：
+   - **框架预设（Framework preset）**：选 无（None）
+   - **构建命令（Build command）**：留空
+   - **构建输出目录（Build output directory）**：填 `public`
+3. 点 **保存并部署（Save and Deploy）**，等第一次部署完成。
 
-选 Workers 和 Pages（Workers & Pages）→ 创建应用程序（Create application）→ Pages → 连接到 Git（Connect to Git），选中这个仓库。构建设置这样填：框架预设（Framework preset）选 无（None），构建命令（Build command）留空，构建输出目录（Build output directory）填 `public`。点 保存并部署（Save and Deploy）。
+### 第三步：绑定与设置口令
 
-**3. 绑库和设口令**
-
-部署完进这个项目的 设置（Settings）：
-
-- 绑定（Bindings）里加两条：D1 数据库绑为 `NAV_DB`（选第 1 步建的库），KV 命名空间绑为 `NAV_KV`（选第 1 步建的命名空间）；
-- 环境变量（Environment variables）里加一个 `ADMIN_PASSWORD`，值是你的后台口令，自己设。
-
-绑完要重新部署一次才生效：到 部署（Deployments）标签页，在最新一条部署右侧点 `...`，选 重试部署（Retry deployment）。
+1. 进入这个项目的 **设置（Settings）**：
+   - **绑定（Bindings）**：加一条 D1 数据库绑定，变量名填 `NAV_DB`，选第一步建的库；再加一条 KV 命名空间绑定，变量名填 `NAV_KV`，选第一步建的命名空间；
+   - **环境变量（Environment variables）**：加一个 `ADMIN_PASSWORD`，值是你的后台口令，自己设；
+2. **关键一步**：绑完要重新部署一次才生效——点 **部署（Deployments）** 标签页，在最新一条部署右侧点 `...`，选 **重试部署（Retry deployment）**。
 
 环境变量只需要这一个。站名、AI 密钥、WebDAV 账号这些都进后台设置中心，不写进代码，也不会提交到 Git。
 
-**4. 打开**
+### 第四步：进入后台
 
 访问 Pages 给的地址，点报头右上角的「门牌」，或直接进 `/admin`，用口令登录。站名在后台「站点与品牌设置」里改。
 
