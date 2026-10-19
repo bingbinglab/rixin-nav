@@ -14,7 +14,7 @@
     "convertio.co", "deepl.com", "deepseek.com", "developer.mozilla.org", "dianping.com",
     "dingtalk.com", "docs.qq.com", "douban.com", "doubao.com", "dribbble.com",
     "feishu.cn", "figma.com", "github.com", "hellofont.cn", "huxiu.com",
-    "icourse163.org", "ithome.com", "jd.com", "kimi.com", "linux.do",
+    "icourse163.org", "ithome.com", "jd.com", "kimi.com", "linux.do", "movie.douban.com",
     "music.163.com", "notion.so", "pomofocus.io", "runoob.com", "smallpdf.com",
     "smzdm.com", "sspai.com", "stackoverflow.com", "study.163.com", "taobao.com",
     "thepaper.cn", "tinypng.com", "unsplash.com", "uutool.cn", "v.qq.com",
