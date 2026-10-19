@@ -2118,262 +2118,86 @@ html.dark-theme .shortcut-row kbd {
 .ext-btn.ext-active { background: var(--ink, #333); color: var(--paper, #f7f2e7); }
 
 /* ==========================================================================
-   日新辑览 · 站内小玩意儿三件套（闲章 ＋ 日课签 ＋ 活字盒）
-   纯前端装饰与闲趣微交互，零破坏既有布局
+   日新辑览 · 站内小玩意儿三件套（前台页脚区集中落点 · 返工重做版）
+   1. 今日签 (Daily Oracle Slip) - 竹木签身、功能在脸上
+   2. 随便逛逛 (Random Wander) - 素钮直达、钮旁浮出站名小签
+   3. 朱砂闲章 (Leisure Seal) - 看得见的石钮印身本体
    ========================================================================== */
 
-/* 1. 朱砂闲章 (Leisure Seal) */
-.leisure-seal-btn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  height: 32px;
-  padding: 0 10px;
-  background: var(--box-bg);
-  border: 1.5px solid var(--ochre);
-  color: var(--ochre);
-  cursor: pointer;
-  font-family: var(--serif);
-  font-size: 13px;
-  font-weight: 700;
-  letter-spacing: 2px;
-  text-indent: 2px;
-  border-radius: 2px;
-  transition: all .18s ease;
-  user-select: none;
-}
-.leisure-seal-btn:hover {
-  background: var(--ochre);
-  color: var(--paper);
-  box-shadow: 2px 2px 0 var(--ink);
-  transform: translateY(-1px);
-}
-.leisure-seal-btn.seal-active {
-  background: var(--ochre);
-  color: var(--paper);
-  box-shadow: inset 1px 1px 2px rgba(0,0,0,0.3), 2px 2px 0 var(--ink);
-}
-body.seal-stamping-mode {
-  cursor: crosshair;
-}
-
-/* 闲章光标跟随预览 */
-.leisure-seal-follower {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 32px;
-  height: 32px;
-  margin-left: -16px;
-  margin-top: -16px;
-  border: 1.5px dashed var(--ochre);
-  background: rgba(158, 71, 42, 0.15);
-  color: var(--ochre);
+/* 0. 前台页脚小玩意儿收拢区 (Play Dock) */
+.dock-section {
+  margin: 48px auto 20px;
+  padding: 18px 16px;
+  border-top: 1px dashed var(--border-line);
   display: flex;
   align-items: center;
   justify-content: center;
-  font-family: var(--serif);
-  font-size: 12px;
-  font-weight: 700;
-  pointer-events: none;
-  z-index: 9999;
-  opacity: 0;
-  transition: opacity .15s ease;
-  border-radius: 2px;
 }
-.leisure-seal-follower.visible {
-  opacity: 0.85;
-}
-@media (hover: none) {
-  .leisure-seal-follower { display: none !important; }
+.dock-inner {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  flex-wrap: wrap;
 }
 
-/* 闲章提示条 */
-.leisure-seal-hint-bar {
-  position: fixed;
-  bottom: 24px;
-  left: 50%;
-  transform: translateX(-50%) translateY(10px);
-  background: var(--card);
-  border: 1.5px solid var(--ochre);
-  color: var(--ink);
-  box-shadow: 3px 3px 0 var(--ink);
-  padding: 6px 14px;
-  font-size: 13px;
-  font-family: var(--sans);
+/* 1. 今日签 (Daily Oracle Slip) */
+.daily-slip-toy {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  height: 36px;
+  padding: 0 12px 0 10px;
+  background: #ede4d4;
+  border: 1.5px solid var(--ink);
+  box-shadow: 2.5px 2.5px 0 var(--ink);
   border-radius: 3px;
-  z-index: 9998;
-  opacity: 0;
-  pointer-events: none;
-  transition: opacity .2s ease, transform .2s ease;
-  white-space: nowrap;
-}
-.leisure-seal-hint-bar.visible {
-  opacity: 1;
-  transform: translateX(-50%) translateY(0);
-}
-.leisure-seal-hint-bar kbd {
-  background: var(--paper);
-  border: 1px solid var(--border-line);
-  padding: 1px 5px;
-  border-radius: 2px;
-  font-family: var(--mono);
-}
-
-/* 页面落印印记 */
-.leisure-seal-stamp {
-  position: absolute;
-  width: 54px;
-  height: 54px;
-  margin-left: -27px;
-  margin-top: -27px;
-  pointer-events: none;
-  z-index: 100;
-  transform: rotate(var(--stamp-rotate, 0deg));
-  user-select: none;
-  animation: sealSinkIn 0.35s cubic-bezier(0.18, 0.89, 0.32, 1.28) forwards;
-}
-.leisure-seal-stamp.fading {
-  opacity: 0;
-  transform: rotate(var(--stamp-rotate, 0deg)) scale(0.92);
-  transition: opacity .5s ease, transform .5s ease;
-}
-.stamp-border {
-  width: 100%;
-  height: 100%;
-  border: 2px solid var(--ochre);
-  background: var(--ochre);
-  color: var(--paper);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  box-sizing: border-box;
-  padding: 2px;
-  box-shadow: inset 0 0 1px rgba(0,0,0,0.4), 0 0 1px rgba(158, 71, 42, 0.4);
-  border-radius: 2px;
-}
-.stamp-inner-text {
-  font-family: var(--serif);
-  font-size: 20px;
-  font-weight: 700;
-  letter-spacing: 2px;
-  text-indent: 2px;
-  color: #fff8f0;
-  text-shadow: 0 0 1px rgba(0,0,0,0.25);
-  writing-mode: vertical-rl;
-}
-@keyframes sealSinkIn {
-  0% {
-    transform: rotate(var(--stamp-rotate, 0deg)) scale(1.22);
-    opacity: 0.96;
-    filter: drop-shadow(0 0 4px rgba(158, 71, 42, 0.4));
-  }
-  60% {
-    transform: rotate(var(--stamp-rotate, 0deg)) scale(0.98);
-    opacity: 0.92;
-  }
-  100% {
-    transform: rotate(var(--stamp-rotate, 0deg)) scale(1);
-    opacity: 0.86;
-    filter: drop-shadow(0 0 0.5px rgba(158, 71, 42, 0.2));
-  }
-}
-
-/* 2. 退堂日课签 (Daily Oracle) */
-.daily-sign-badge {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  height: 22px;
-  padding: 0 7px;
-  background: var(--box-bg);
-  border: 1px solid var(--ochre);
-  color: var(--ochre);
-  font-family: var(--serif);
-  font-size: 11px;
-  font-weight: 700;
-  border-radius: 2px;
   cursor: pointer;
-  letter-spacing: 1px;
-  transition: all .15s ease;
   user-select: none;
-}
-.daily-sign-badge:hover {
-  background: var(--ochre);
-  color: var(--paper);
-}
-
-.daily-sign-box {
-  margin: 12px 0 6px;
-  background: var(--paper);
-  border: 1.5px dashed var(--border-line);
-  border-radius: 4px;
-  padding: 8px 10px;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 8px;
-  transition: all .2s ease;
-  user-select: none;
-}
-.daily-sign-box:hover {
-  border-style: solid;
-  border-color: var(--ochre);
-  background: var(--box-bg);
-  transform: translateY(-1px);
-}
-.daily-sign-casket {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  width: 100%;
-}
-.sign-tassel {
-  width: 6px;
-  height: 14px;
-  background: var(--ochre);
-  border-radius: 1px;
-  position: relative;
-}
-.sign-tassel::after {
-  content: "";
-  position: absolute;
-  top: 14px;
-  left: 1px;
-  width: 4px;
-  height: 6px;
-  border-bottom: 2px dotted var(--ochre);
-}
-.sign-label {
-  font-family: var(--serif);
-  font-size: 13px;
-  font-weight: 700;
+  transition: transform .16s ease, box-shadow .16s ease, border-color .16s ease;
   color: var(--ink);
-  letter-spacing: 1px;
 }
-.sign-pull-hint {
-  font-family: var(--mono);
-  font-size: 11px;
-  color: var(--muted);
-  background: var(--card);
-  padding: 1px 5px;
-  border: 1px solid var(--border-line);
-  border-radius: 2px;
-  margin-left: auto;
+html.dark-theme .daily-slip-toy {
+  background: #23201d;
+  border-color: var(--border-line);
+  box-shadow: 2.5px 2.5px 0 #050404;
 }
-
-/* 晃盒回怼动画与木牌提示 */
-@keyframes casketShake {
+.daily-slip-toy:hover {
+  transform: translateY(-2px);
+  border-color: var(--ochre);
+  box-shadow: 2.5px 2.5px 0 var(--ochre);
+}
+.daily-slip-toy.shake {
+  animation: slipShake .35s ease;
+}
+@keyframes slipShake {
   0%, 100% { transform: translateX(0); }
   20%, 60% { transform: translateX(-4px); }
   40%, 80% { transform: translateX(4px); }
 }
-.daily-sign-box.shake,
-.daily-sign-badge.shake {
-  animation: casketShake .35s ease;
+.slip-toy-thread {
+  width: 4px;
+  height: 16px;
+  background: var(--ochre);
+  border-radius: 1px;
+  flex-shrink: 0;
+}
+.slip-toy-title {
+  font-family: var(--serif);
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  text-indent: 2px;
+}
+.slip-toy-tag {
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--muted);
+  border-left: 1px solid var(--border-line);
+  padding-left: 6px;
 }
 
+/* 晃盒回怼木牌提示 */
 .daily-sign-refusal-toast {
   position: fixed;
   top: 80px;
@@ -2543,91 +2367,350 @@ body.seal-stamping-mode {
   letter-spacing: 1px;
 }
 
-/* 3. 百衲活字盒 (Movable Type Roller) */
-.type-shuffle-btn {
+/* 2. 随便逛逛 (Random Wander) */
+.random-wander-wrap {
+  position: relative;
+  display: inline-flex;
+}
+.random-wander-btn {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  height: 42px;
-  padding: 0 10px;
+  gap: 7px;
+  height: 36px;
+  padding: 0 14px;
   background: var(--box-bg);
-  border: 1.5px solid var(--border-line);
-  border-radius: 4px;
+  border: 1.5px solid var(--ink);
+  box-shadow: 2.5px 2.5px 0 var(--ink);
+  border-radius: 2px;
   cursor: pointer;
-  user-select: none;
-  transition: border-color .15s ease, box-shadow .15s ease;
-  flex-shrink: 0;
-}
-.type-shuffle-btn:hover {
-  border-color: var(--ochre);
-  box-shadow: 2px 2px 0 var(--card-shadow);
-}
-.type-roller-track {
-  display: flex;
-  gap: 2.5px;
-}
-.type-char {
-  width: 22px;
-  height: 25px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  background: var(--paper);
-  border: 1px solid var(--border-line);
   font-family: var(--serif);
-  font-size: 13px;
+  font-size: 13.5px;
   font-weight: 700;
   color: var(--ink);
-  border-radius: 2px;
-  box-shadow: inset 0 1px 0 rgba(255,255,255,0.7);
-  transition: transform .08s ease;
+  letter-spacing: 1px;
+  transition: transform .16s ease, box-shadow .16s ease, border-color .16s ease, color .16s ease;
+  user-select: none;
 }
-html.dark-theme .type-char {
-  box-shadow: inset 0 1px 0 rgba(255,255,255,0.1);
+html.dark-theme .random-wander-btn {
+  border-color: var(--border-line);
+  box-shadow: 2.5px 2.5px 0 #050404;
 }
-.type-shuffle-tag {
-  font-size: 11px;
-  font-family: var(--mono);
-  color: var(--muted);
-  background: var(--paper);
-  padding: 1px 5px;
-  border: 1px solid var(--border-line);
-  border-radius: 2px;
+.random-wander-btn:hover {
+  transform: translateY(-2px);
+  border-color: var(--ochre);
+  color: var(--ochre);
+  box-shadow: 2.5px 2.5px 0 var(--ochre);
 }
-.type-shuffle-btn.rolling .type-char {
-  animation: typeCharFlip .12s infinite;
-}
-@keyframes typeCharFlip {
-  0% { transform: rotateX(0deg); }
-  50% { transform: rotateX(85deg); color: var(--ochre); }
-  100% { transform: rotateX(0deg); }
+.wander-btn-icon {
+  color: var(--ochre);
+  font-size: 12px;
 }
 
-/* 活字盒命中卡片金色聚焦脉冲 */
-.card.card-gold-pulse {
-  outline: 2.5px solid var(--ochre) !important;
-  box-shadow: 0 0 0 4px rgba(158, 71, 42, 0.22), 4px 4px 0 var(--ink) !important;
-  transform: translateY(-3px) !important;
-  transition: transform .25s cubic-bezier(0.2, 0, 0.2, 1), box-shadow .25s ease, outline .25s ease !important;
+/* 随便逛逛浮出的小签 */
+.random-site-popover {
+  position: absolute;
+  bottom: calc(100% + 10px);
+  left: 50%;
+  transform: translateX(-50%) translateY(8px);
+  width: 290px;
+  background: var(--paper);
+  border: 2px solid var(--ink);
+  box-shadow: 5px 5px 0 var(--ink);
+  border-radius: 3px;
+  padding: 12px 14px;
+  z-index: 1000;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity .18s ease, transform .18s ease;
+}
+html.dark-theme .random-site-popover {
+  box-shadow: 5px 5px 0 #050404;
+}
+.random-site-popover.visible {
+  opacity: 1;
+  pointer-events: auto;
+  transform: translateX(-50%) translateY(0);
+}
+.popover-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px dashed var(--border-line);
+  padding-bottom: 6px;
+  margin-bottom: 8px;
+}
+.popover-badge {
+  font-family: var(--serif);
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--ochre);
+  letter-spacing: 1px;
+}
+.popover-close-btn {
+  background: none;
+  border: none;
+  font-size: 14px;
+  color: var(--muted);
+  cursor: pointer;
+  padding: 0 4px;
+}
+.popover-close-btn:hover { color: var(--ochre); }
+
+.popover-body {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  text-decoration: none;
+  color: inherit;
+}
+.popover-body:hover .popover-site-name {
+  color: var(--ochre);
+}
+.popover-site-name {
+  font-family: var(--serif);
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--ink);
+  transition: color .15s ease;
+}
+.popover-site-desc {
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--muted);
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.popover-site-foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 4px;
+  padding-top: 5px;
+  border-top: 1px solid var(--border-line);
+}
+.popover-site-host {
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--muted);
+}
+.popover-site-go {
+  font-family: var(--serif);
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--ochre);
+}
+
+/* 3. 朱砂闲章 (Leisure Seal - 石钮印身本体) */
+.leisure-stamp-toy {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  height: 36px;
+  padding: 0 14px 0 10px;
+  background: var(--box-bg);
+  border: 1.5px solid var(--ink);
+  box-shadow: 2.5px 2.5px 0 var(--ink);
+  border-radius: 2px;
+  cursor: pointer;
+  user-select: none;
+  transition: transform .16s ease, box-shadow .16s ease, border-color .16s ease, background-color .16s ease;
+  color: var(--ink);
+}
+html.dark-theme .leisure-stamp-toy {
+  border-color: var(--border-line);
+  box-shadow: 2.5px 2.5px 0 #050404;
+}
+.leisure-stamp-toy:hover {
+  transform: translateY(-2px);
+  border-color: var(--ochre);
+  box-shadow: 2.5px 2.5px 0 var(--ochre);
+}
+.leisure-stamp-toy.seal-active {
+  background: var(--ochre);
+  color: var(--paper);
+  border-color: var(--ochre);
+  box-shadow: inset 1px 1px 2px rgba(0,0,0,0.25), 2.5px 2.5px 0 var(--ink);
+}
+.stamp-toy-stone {
+  width: 14px;
+  height: 18px;
+  background: var(--green);
+  border: 1px solid var(--ink);
+  border-radius: 2px 2px 0 0;
+  position: relative;
+  flex-shrink: 0;
+  box-sizing: border-box;
+}
+.stamp-toy-stone::after {
+  content: "";
+  position: absolute;
+  bottom: -3px;
+  left: -1px;
+  width: 14px;
+  height: 3px;
+  background: var(--ochre);
+  border: 1px solid var(--ink);
+  border-top: none;
+}
+.leisure-stamp-toy.seal-active .stamp-toy-stone {
+  border-color: var(--paper);
+}
+.leisure-stamp-toy.seal-active .stamp-toy-stone::after {
+  border-color: var(--paper);
+}
+.stamp-toy-text {
+  font-family: var(--serif);
+  font-size: 13.5px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  text-indent: 2px;
+}
+
+body.seal-stamping-mode {
+  cursor: crosshair;
+}
+
+/* 闲章光标跟随预览 */
+.leisure-seal-follower {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 32px;
+  height: 32px;
+  margin-left: -16px;
+  margin-top: -16px;
+  border: 1.5px dashed var(--ochre);
+  background: rgba(158, 71, 42, 0.15);
+  color: var(--ochre);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--serif);
+  font-size: 12px;
+  font-weight: 700;
+  pointer-events: none;
+  z-index: 9999;
+  opacity: 0;
+  transition: opacity .15s ease;
+  border-radius: 2px;
+}
+.leisure-seal-follower.visible {
+  opacity: 0.85;
+}
+@media (hover: none) {
+  .leisure-seal-follower { display: none !important; }
+}
+
+/* 闲章提示条 */
+.leisure-seal-hint-bar {
+  position: fixed;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%) translateY(10px);
+  background: var(--card);
+  border: 1.5px solid var(--ochre);
+  color: var(--ink);
+  box-shadow: 3px 3px 0 var(--ink);
+  padding: 6px 14px;
+  font-size: 13px;
+  font-family: var(--sans);
+  border-radius: 3px;
+  z-index: 9998;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity .2s ease, transform .2s ease;
+  white-space: nowrap;
+}
+.leisure-seal-hint-bar.visible {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
+.leisure-seal-hint-bar kbd {
+  background: var(--paper);
+  border: 1px solid var(--border-line);
+  padding: 1px 5px;
+  border-radius: 2px;
+  font-family: var(--mono);
+}
+
+/* 页面落印印记 */
+.leisure-seal-stamp {
+  position: absolute;
+  width: 54px;
+  height: 54px;
+  margin-left: -27px;
+  margin-top: -27px;
+  pointer-events: none;
+  z-index: 100;
+  transform: rotate(var(--stamp-rotate, 0deg));
+  user-select: none;
+  animation: sealSinkIn 0.35s cubic-bezier(0.18, 0.89, 0.32, 1.28) forwards;
+}
+.leisure-seal-stamp.fading {
+  opacity: 0;
+  transform: rotate(var(--stamp-rotate, 0deg)) scale(0.92);
+  transition: opacity .5s ease, transform .5s ease;
+}
+.stamp-border {
+  width: 100%;
+  height: 100%;
+  border: 2px solid var(--ochre);
+  background: var(--ochre);
+  color: var(--paper);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  padding: 2px;
+  box-shadow: inset 0 0 1px rgba(0,0,0,0.4), 0 0 1px rgba(158, 71, 42, 0.4);
+  border-radius: 2px;
+}
+.stamp-inner-text {
+  font-family: var(--serif);
+  font-size: 20px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  text-indent: 2px;
+  color: #fff8f0;
+  text-shadow: 0 0 1px rgba(0,0,0,0.25);
+  writing-mode: vertical-rl;
+}
+@keyframes sealSinkIn {
+  0% {
+    transform: rotate(var(--stamp-rotate, 0deg)) scale(1.22);
+    opacity: 0.96;
+    filter: drop-shadow(0 0 4px rgba(158, 71, 42, 0.4));
+  }
+  60% {
+    transform: rotate(var(--stamp-rotate, 0deg)) scale(0.98);
+    opacity: 0.92;
+  }
+  100% {
+    transform: rotate(var(--stamp-rotate, 0deg)) scale(1);
+    opacity: 0.86;
+    filter: drop-shadow(0 0 0.5px rgba(158, 71, 42, 0.2));
+  }
 }
 
 /* 手机端精细化兼容 */
 @media (max-width: 540px) {
-  .leisure-seal-btn {
-    height: 36px;
-    padding: 0 8px;
-    font-size: 12px;
+  .dock-section {
+    margin: 32px auto 16px;
+    padding: 14px 10px;
   }
-  .type-shuffle-btn {
-    height: 44px;
-    padding: 0 6px;
+  .dock-inner {
+    gap: 10px;
   }
-  .type-char {
-    width: 20px;
-    height: 22px;
-    font-size: 12px;
+  .daily-slip-toy,
+  .random-wander-btn,
+  .leisure-stamp-toy {
+    height: 38px;
+    padding: 0 10px;
+    font-size: 13px;
   }
-  .type-shuffle-tag {
-    display: none;
+  .random-site-popover {
+    width: 270px;
   }
 }
