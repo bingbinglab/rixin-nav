@@ -414,6 +414,28 @@ html.dark-theme .icon-box { background: var(--card); }
   .sites-tbl .site-check-col input[type="checkbox"] { width: 18px; height: 18px; }
   .sites-tbl .site-icon-col { grid-area: icon; width: auto; min-width: 0; }
   .sites-tbl .site-main-col { grid-area: main; }
+
+  /* 标题行固定网格：标题独占一行（过长截断）、徽章恒在第二行，长短名互不影响 */
+  .sites-tbl .site-head {
+    display: grid;
+    grid-template-columns: auto auto minmax(0, 1fr);
+    grid-template-areas:
+      "handle title title"
+      "handle pin priv";
+    column-gap: 6px;
+    row-gap: 4px;
+    align-items: center;
+  }
+  .sites-tbl .site-head .drag-handle { grid-area: handle; align-self: start; margin-right: 0; }
+  .sites-tbl .site-title {
+    grid-area: title;
+    min-width: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .sites-tbl .site-head .badge[data-tpin] { grid-area: pin; justify-self: start; }
+  .sites-tbl .site-head .badge[data-tpriv] { grid-area: priv; justify-self: start; }
   .sites-tbl .col-sort {
     grid-area: sort; width: auto;
     display: flex; gap: 8px; margin-top: 8px;
