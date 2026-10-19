@@ -1442,6 +1442,11 @@ body:has(.modal-overlay:not([hidden])) {
 }
 
 /* ---------- 7. 移动端浮动回到顶部按钮 ---------- */
+/* 扇面展开时回顶钮让位（淡出、不可点，收起扇面自动回来） */
+body:has(.toy-hub-wrap.is-open) .float-top-btn {
+  opacity: 0 !important;
+  pointer-events: none !important;
+}
 .float-top-btn {
   position: fixed;
   right: 28px;
