@@ -131,7 +131,7 @@ select.inline { width: auto; padding: 4px 6px; font-size: 13px; }
 .tblwrap { overflow-x: auto; }
 .tblwrap-fit { overflow-x: visible; }
 .cattable { min-width: 0; width: 100%; table-layout: fixed; }
-.cattable th:nth-child(1) { width: 104px; }
+.cattable th:nth-child(1) { width: 132px; }
 .cattable th:nth-child(2) { width: 40px; }
 .cattable th:nth-child(3) { width: 98px; }
 .cattable th:nth-child(4) { width: 38px; }

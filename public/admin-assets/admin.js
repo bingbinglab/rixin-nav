@@ -468,7 +468,7 @@ function renderCats() {
         return `<tr draggable="true" data-cat-id="${c.id}" data-pid="${c.parent_id || 0}" class="${kidCls}">
           <td class="cname cat-col-name">
             <span class="drag-handle" title="按住拖拽排序">⠿</span>
-            <b class="cname-text">${esc(c.name)}</b>
+            <b class="cname-text" title="${esc(c.name)}">${esc(c.name)}</b>
           </td>
           <td class="cat-col-count"><span class="cat-count-badge">${counts[c.id] || 0}</span></td>
           <td class="cat-col-parent">
@@ -1973,6 +1973,7 @@ $("linkCheckBtn").onclick = async () => {
   const warnN = bad.length - deadN - errN;
   const head = `<div class="lc-head"><span>失联 ${deadN} 条 · 异常 ${warnN} 条${errN ? ` · 未检 ${errN} 条` : ""}</span><button type="button" class="mini ghost" id="lcCloseBtn">关闭</button></div>`;
   $("toolMsg").textContent = `巡检完成：共 ${sites.length} 条，存活 ${sites.length - bad.length} 条，失联 ${deadN} 条，异常 ${warnN} 条${errN ? `，未检 ${errN} 条` : ""}。`;
+  box.dataset.lcAlive = sites.length - bad.length;
   toast("死链巡检完成");
   if (!bad.length) {
     box.innerHTML = head + `<p class="muted" style="margin:0">全部站点都能连上，没有死链。</p>`;
@@ -2007,20 +2008,27 @@ $("linkCheckBtn").onclick = async () => {
           if (row) row.remove();
           const rowsLeft = box.querySelectorAll(".lc-item");
           const headSpan = box.querySelector(".lc-head span");
+          let d = 0, e2 = 0;
+          rowsLeft.forEach((it) => {
+            const bd = it.querySelector(".lc-badge");
+            if (!bd) return;
+            if (bd.classList.contains("dead")) d++;
+            else if (bd.textContent.trim() === "未检") e2++;
+          });
+          const w = rowsLeft.length - d - e2;
           if (headSpan) {
-            if (!rowsLeft.length) {
-              headSpan.textContent = "全部处理完成";
-            } else {
-              let d = 0, e2 = 0;
-              rowsLeft.forEach((it) => {
-                const b = it.querySelector(".lc-badge");
-                if (!b) return;
-                if (b.classList.contains("dead")) d++;
-                else if (b.textContent.trim() === "未检") e2++;
-              });
-              const w = rowsLeft.length - d - e2;
-              headSpan.textContent = `失联 ${d} 条 · 异常 ${w} 条${e2 ? ` · 未检 ${e2} 条` : ""}`;
-            }
+            headSpan.textContent = rowsLeft.length
+              ? `失联 ${d} 条 · 异常 ${w} 条${e2 ? ` · 未检 ${e2} 条` : ""}`
+              : "全部处理完成";
+          }
+          if (!rowsLeft.length && !box.querySelector(".lc-empty")) {
+            box.insertAdjacentHTML("beforeend", `<p class="lc-empty muted" style="margin:12px 0 0;text-align:center">清单已清空，本轮巡检发现的问题都处理完了。</p>`);
+          }
+          // 工具卡上的巡检汇总还停在完成时的数字时，跟着面板一起扣减（被别的工具覆盖过就不动）
+          const tm = $("toolMsg");
+          if (tm && box.dataset.lcAlive !== undefined && tm.textContent.startsWith("巡检完成")) {
+            const alive = +box.dataset.lcAlive;
+            tm.textContent = `巡检完成：共 ${alive + rowsLeft.length} 条，存活 ${alive} 条，失联 ${d} 条，异常 ${w} 条${e2 ? `，未检 ${e2} 条` : ""}。`;
           }
           load();
         } catch (e) {
