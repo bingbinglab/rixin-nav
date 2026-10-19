@@ -94,6 +94,28 @@ export function passwordMatches(input, expected) {
   return diff === 0;
 }
 
+export function normalizeUrl(raw) {
+  let u = String(raw || "").trim();
+  if (!u) return "";
+  if (!/^https?:\/\//i.test(u) && !/^[a-z][a-z0-9+.-]*:\/\//i.test(u)) {
+    u = "https://" + u.replace(/^\/+/, "");
+  }
+  try {
+    const parsed = new URL(u);
+    let path = parsed.pathname;
+    if (path.length > 1 && path.endsWith("/")) {
+      path = path.slice(0, -1);
+    }
+    let out = parsed.origin + (path === "/" ? "" : path) + parsed.search + parsed.hash;
+    if (out.endsWith("/")) {
+      out = out.slice(0, -1);
+    }
+    return out;
+  } catch (_) {
+    return u.replace(/\/+$/, "");
+  }
+}
+
 export function cleanSite(body) {
   const name = String(body.name || "").trim();
   let url = String(body.url || "").trim();

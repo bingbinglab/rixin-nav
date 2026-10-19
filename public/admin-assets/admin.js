@@ -134,66 +134,105 @@ function normalizeUrlInput(u) {
   return "https://" + t.replace(/^\/+/, "");
 }
 
+function normalizeUrl(raw) {
+  let u = String(raw || "").trim();
+  if (!u) return "";
+  if (!/^https?:\/\//i.test(u) && !/^[a-z][a-z0-9+.-]*:\/\//i.test(u)) {
+    u = "https://" + u.replace(/^\/+/, "");
+  }
+  try {
+    const parsed = new URL(u);
+    let path = parsed.pathname;
+    if (path.length > 1 && path.endsWith("/")) {
+      path = path.slice(0, -1);
+    }
+    let out = parsed.origin + (path === "/" ? "" : path) + parsed.search + parsed.hash;
+    if (out.endsWith("/")) {
+      out = out.slice(0, -1);
+    }
+    return out;
+  } catch (_) {
+    return u.replace(/\/+$/, "");
+  }
+}
+
 // --- 书签导入预览口径比对与弹窗 ---
 function previewBookmarkImport(rawSites, rawCats = []) {
-  const existingUrls = new Set((data.sites || []).map((s) => String(s.url || "").trim()));
-  const existingCatNames = new Set((data.categories || []).map((c) => String(c.name || "").trim()));
+  const existingCatNames = (data.categories || []).map((c) => String(c.name || "").trim()).filter(Boolean);
+  const existingCatSet = new Set(existingCatNames);
+  const existingUrls = new Set((data.sites || []).map((s) => normalizeUrl(s.url)).filter(Boolean));
 
-  let skipped = 0;
-  let added = 0;
-  const newCatNames = new Set();
-  const byCatCount = {};
+  const items = [];
   const seenBatchUrls = new Set();
-
-  for (const raw of rawSites) {
-    const name = String(raw.name || "").trim();
-    const url = String(raw.url || "").trim();
-    if (!name || !/^https?:\/\//i.test(url)) {
-      skipped++;
-      continue;
-    }
-    if (existingUrls.has(url)) {
-      skipped++;
-      continue;
-    }
-    if (seenBatchUrls.has(url)) {
-      skipped++;
-      continue;
-    }
-    seenBatchUrls.add(url);
-    added++;
-
-    const cat = String(raw.category || "未分类").trim() || "未分类";
-    byCatCount[cat] = (byCatCount[cat] || 0) + 1;
-    if (!existingCatNames.has(cat)) {
-      newCatNames.add(cat);
-    }
-
-    const parent = String(raw.parent_category || raw.parent || "").trim();
-    if (parent && !existingCatNames.has(parent)) {
-      newCatNames.add(parent);
-    }
-  }
+  const fileCatNames = new Set();
+  const categoryParents = new Map();
 
   if (Array.isArray(rawCats)) {
     for (const c of rawCats) {
       const cName = String((c && c.name) || "").trim();
-      if (cName && !existingCatNames.has(cName)) newCatNames.add(cName);
       const pName = String((c && c.parent) || "").trim();
-      if (pName && !existingCatNames.has(pName)) newCatNames.add(pName);
+      if (cName) fileCatNames.add(cName);
+      if (pName) fileCatNames.add(pName);
+      if (cName && pName) categoryParents.set(cName, pName);
     }
   }
 
+  for (const raw of rawSites) {
+    const name = String(raw.name || "").trim();
+    const rawUrl = String(raw.url || "").trim();
+    const normUrl = normalizeUrl(rawUrl);
+    const cat = String(raw.category || "未分类").trim() || "未分类";
+    const parent = String(raw.parent_category || raw.parent || categoryParents.get(cat) || "").trim();
+    if (cat && parent) {
+      categoryParents.set(cat, parent);
+    }
+    if (cat) fileCatNames.add(cat);
+    if (parent) fileCatNames.add(parent);
+
+    const isInvalid = !name || !/^https?:\/\//i.test(normUrl);
+    let isDup = false;
+    let isExists = false;
+
+    if (!isInvalid) {
+      if (existingUrls.has(normUrl)) {
+        isExists = true;
+      } else if (seenBatchUrls.has(normUrl)) {
+        isDup = true;
+      } else {
+        seenBatchUrls.add(normUrl);
+      }
+    }
+
+    items.push({
+      name,
+      url: rawUrl,
+      desc: String(raw.desc || "").trim().slice(0, 40),
+      category: cat,
+      parent_category: parent,
+      icon: String(raw.icon || "").trim(),
+      pinned: Boolean(raw.pinned),
+      private: Boolean(raw.private || raw.is_private),
+      normUrl,
+      isExists,
+      isDup,
+      isInvalid,
+      checked: !isExists && !isDup && !isInvalid,
+    });
+  }
+
+  const catOptions = Array.from(new Set([...existingCatNames, ...fileCatNames]));
+  if (!catOptions.includes("未分类")) catOptions.push("未分类");
+
   return {
-    totalParsed: rawSites.length,
-    added,
-    skipped,
-    newCategories: Array.from(newCatNames),
-    byCatCount,
+    items,
+    rawCats,
+    existingCatSet,
+    catOptions,
+    categoryParents,
   };
 }
 
-function showImportPreviewModal(summary) {
+function showImportPreviewModal(previewData) {
   return new Promise((resolve) => {
     let mask = $("previewModal");
     if (!mask) {
@@ -214,35 +253,241 @@ function showImportPreviewModal(summary) {
     const bodyEl = $("previewBody");
     const okBtn = $("previewOkBtn");
     const cancelBtn = $("previewCancelBtn");
-
-    let catCountHtml = Object.entries(summary.byCatCount || {})
-      .map(([cat, count]) => `<span class="preview-cat-tag">${esc(cat)} <b>(${count})</b></span>`)
-      .join("") || '<span class="muted">无条目</span>';
-
-    let newCatsHtml = (summary.newCategories || []).length
-      ? (summary.newCategories || []).map((c) => `<span class="preview-cat-tag new-cat">＋ ${esc(c)}</span>`).join("")
-      : '<span class="muted">无（均已存在）</span>';
+    const { items, rawCats, existingCatSet, catOptions, categoryParents } = previewData;
 
     bodyEl.innerHTML = `
       <div class="preview-stats-grid">
         <div class="preview-stat-box">
-          <div class="preview-stat-num add">+${summary.added}</div>
+          <div class="preview-stat-num add" id="prevStatAdded">+0</div>
           <div class="preview-stat-label">预计新增</div>
         </div>
         <div class="preview-stat-box">
-          <div class="preview-stat-num skip">${summary.skipped}</div>
-          <div class="preview-stat-label">重复或跳过</div>
+          <div class="preview-stat-num update" id="prevStatOverwrite">0</div>
+          <div class="preview-stat-label">覆盖更新</div>
         </div>
         <div class="preview-stat-box">
-          <div class="preview-stat-num">${summary.newCategories.length}</div>
+          <div class="preview-stat-num skip" id="prevStatSkipped">0</div>
+          <div class="preview-stat-label">跳过</div>
+        </div>
+        <div class="preview-stat-box">
+          <div class="preview-stat-num" id="prevStatNewCats">0</div>
           <div class="preview-stat-label">将新建分类</div>
         </div>
       </div>
-      <div class="preview-section-title">将新建分类 (${summary.newCategories.length} 个)：</div>
-      <div class="preview-cat-tags">${newCatsHtml}</div>
-      <div class="preview-section-title">新增条目分类分布：</div>
-      <div class="preview-cat-tags">${catCountHtml}</div>
+      <div class="preview-section-title">将新建分类 (<span id="prevNewCatsCount">0</span> 个)：</div>
+      <div class="preview-cat-tags" id="prevNewCatsContainer"></div>
+      <div class="preview-toolbar">
+        <div class="preview-toolbar-left">
+          <label class="preview-toggle-label" title="开启后，已存在条目可被勾选，导入时更新名称、简介与分类，保留原排序与置顶">
+            <input type="checkbox" id="prevOverwriteToggle"> 覆盖已存在条目
+          </label>
+          <button type="button" class="mini ghost" id="prevSelectAllBtn">全选</button>
+          <button type="button" class="mini ghost" id="prevDeselectAllBtn">全不选</button>
+        </div>
+        <div class="preview-toolbar-right">
+          <span class="preview-bulk-label">全部改到：</span>
+          <select id="prevBulkCatSelect" class="inline mini">
+            ${catOptions.map((c) => `<option value="${esc(c)}">${esc(c)}</option>`).join("")}
+          </select>
+          <button type="button" class="mini ghost" id="prevBulkCatBtn">应用</button>
+        </div>
+      </div>
+      <div class="preview-section-title">导入条目清单 (${items.length} 条)：</div>
+      <div class="preview-items-table-wrap">
+        <div class="preview-items-list" id="prevItemsList"></div>
+      </div>
     `;
+
+    const statAddedEl = $("prevStatAdded");
+    const statOverwriteEl = $("prevStatOverwrite");
+    const statSkippedEl = $("prevStatSkipped");
+    const statNewCatsEl = $("prevStatNewCats");
+    const newCatsCountEl = $("prevNewCatsCount");
+    const newCatsContainerEl = $("prevNewCatsContainer");
+    const overwriteToggleEl = $("prevOverwriteToggle");
+    const selectAllBtnEl = $("prevSelectAllBtn");
+    const deselectAllBtnEl = $("prevDeselectAllBtn");
+    const bulkCatSelectEl = $("prevBulkCatSelect");
+    const bulkCatBtnEl = $("prevBulkCatBtn");
+    const itemsListEl = $("prevItemsList");
+
+    const renderItems = () => {
+      const isOverwrite = overwriteToggleEl.checked;
+      itemsListEl.innerHTML = items
+        .map((item, idx) => {
+          let badgeHtml = "";
+          if (item.isInvalid) {
+            badgeHtml = '<span class="preview-badge invalid">无效</span>';
+          } else if (item.isDup) {
+            badgeHtml = '<span class="preview-badge dup">文件中重复</span>';
+          } else if (item.isExists) {
+            badgeHtml = '<span class="preview-badge exists">已存在</span>';
+          }
+
+          const isChkDisabled = item.isInvalid || item.isDup || (item.isExists && !isOverwrite);
+          const isChecked = Boolean(item.checked && !isChkDisabled);
+
+          const catOptsHtml = catOptions
+            .map((c) => `<option value="${esc(c)}" ${c === item.category ? "selected" : ""}>${esc(c)}</option>`)
+            .join("");
+
+          return `
+            <div class="preview-item-row" data-idx="${idx}">
+              <div class="preview-item-chk-wrap">
+                <input type="checkbox" class="preview-item-chk" data-idx="${idx}" ${isChecked ? "checked" : ""} ${isChkDisabled ? "disabled" : ""}>
+              </div>
+              <div class="preview-item-info">
+                <div class="preview-item-header">
+                  <span class="preview-item-name" title="${esc(item.name)}">${esc(item.name)}</span>
+                  ${badgeHtml}
+                </div>
+                <div class="preview-item-url" title="${esc(item.url)}">${esc(item.url)}</div>
+              </div>
+              <div class="preview-item-cat-wrap">
+                <select class="preview-item-cat mini" data-idx="${idx}">
+                  ${catOptsHtml}
+                </select>
+              </div>
+            </div>
+          `;
+        })
+        .join("");
+    };
+
+    const recompute = () => {
+      const isOverwrite = overwriteToggleEl.checked;
+      let added = 0;
+      let overwrite = 0;
+      let skipped = 0;
+      const activeNewCats = new Set();
+
+      items.forEach((item) => {
+        if (item.isInvalid || item.isDup) {
+          skipped++;
+          return;
+        }
+        if (item.isExists) {
+          if (!isOverwrite) {
+            skipped++;
+            return;
+          }
+          if (item.checked) {
+            overwrite++;
+          } else {
+            skipped++;
+            return;
+          }
+        } else {
+          if (item.checked) {
+            added++;
+          } else {
+            skipped++;
+            return;
+          }
+        }
+
+        const cat = item.category;
+        if (cat && !existingCatSet.has(cat)) activeNewCats.add(cat);
+        const parent = item.parent_category;
+        if (parent && !existingCatSet.has(parent)) activeNewCats.add(parent);
+      });
+
+      if (Array.isArray(rawCats)) {
+        for (const c of rawCats) {
+          const cName = String((c && c.name) || "").trim();
+          if (cName && !existingCatSet.has(cName)) activeNewCats.add(cName);
+          const pName = String((c && c.parent) || "").trim();
+          if (pName && !existingCatSet.has(pName)) activeNewCats.add(pName);
+        }
+      }
+
+      statAddedEl.textContent = "+" + added;
+      statOverwriteEl.textContent = String(overwrite);
+      statSkippedEl.textContent = String(skipped);
+      statNewCatsEl.textContent = String(activeNewCats.size);
+      newCatsCountEl.textContent = String(activeNewCats.size);
+
+      const newCatsArr = Array.from(activeNewCats);
+      newCatsContainerEl.innerHTML = newCatsArr.length
+        ? newCatsArr.map((c) => `<span class="preview-cat-tag new-cat">＋ ${esc(c)}</span>`).join("")
+        : '<span class="muted">无（均已存在）</span>';
+
+      const totalActive = added + overwrite;
+      okBtn.textContent = totalActive > 0 ? `确认导入 (${totalActive} 条)` : "确认导入";
+      okBtn.disabled = totalActive === 0;
+    };
+
+    renderItems();
+    recompute();
+
+    itemsListEl.onchange = (e) => {
+      const idx = Number(e.target.dataset.idx);
+      if (Number.isNaN(idx) || !items[idx]) return;
+
+      if (e.target.matches(".preview-item-chk")) {
+        items[idx].checked = e.target.checked;
+        recompute();
+      } else if (e.target.matches(".preview-item-cat")) {
+        const val = e.target.value;
+        items[idx].category = val;
+        if (categoryParents.has(val)) {
+          items[idx].parent_category = categoryParents.get(val);
+        } else if (!existingCatSet.has(val)) {
+          items[idx].parent_category = "";
+        }
+        recompute();
+      }
+    };
+
+    overwriteToggleEl.onchange = () => {
+      const isOverwrite = overwriteToggleEl.checked;
+      items.forEach((item) => {
+        if (item.isExists && !isOverwrite) {
+          item.checked = false;
+        }
+      });
+      renderItems();
+      recompute();
+    };
+
+    selectAllBtnEl.onclick = () => {
+      const isOverwrite = overwriteToggleEl.checked;
+      items.forEach((item) => {
+        if (!item.isInvalid && !item.isDup && (!item.isExists || isOverwrite)) {
+          item.checked = true;
+        }
+      });
+      renderItems();
+      recompute();
+    };
+
+    deselectAllBtnEl.onclick = () => {
+      items.forEach((item) => {
+        item.checked = false;
+      });
+      renderItems();
+      recompute();
+    };
+
+    bulkCatBtnEl.onclick = () => {
+      const chosen = bulkCatSelectEl.value;
+      if (!chosen) return;
+      let count = 0;
+      items.forEach((item) => {
+        if (item.checked && !item.isInvalid && !item.isDup && (!item.isExists || overwriteToggleEl.checked)) {
+          item.category = chosen;
+          if (categoryParents.has(chosen)) {
+            item.parent_category = categoryParents.get(chosen);
+          } else if (!existingCatSet.has(chosen)) {
+            item.parent_category = "";
+          }
+          count++;
+        }
+      });
+      renderItems();
+      recompute();
+      toast(`已将勾选的 ${count} 条目标分类改为「${chosen}」`);
+    };
 
     mask.style.display = "flex";
 
@@ -250,16 +495,46 @@ function showImportPreviewModal(summary) {
       mask.style.display = "none";
       okBtn.onclick = null;
       cancelBtn.onclick = null;
+      itemsListEl.onchange = null;
+      overwriteToggleEl.onchange = null;
+      selectAllBtnEl.onclick = null;
+      deselectAllBtnEl.onclick = null;
+      bulkCatBtnEl.onclick = null;
       window.removeEventListener("keydown", onKeyDown);
       resolve(result);
     };
 
     const onKeyDown = (e) => {
-      if (e.key === "Escape") cleanup(false);
+      if (e.key === "Escape") cleanup(null);
     };
 
-    okBtn.onclick = () => cleanup(true);
-    cancelBtn.onclick = () => cleanup(false);
+    okBtn.onclick = () => {
+      const isOverwrite = overwriteToggleEl.checked;
+      const selectedSites = items
+        .filter((item) => item.checked && !item.isInvalid && !item.isDup && (!item.isExists || isOverwrite))
+        .map((item) => ({
+          name: item.name,
+          url: item.url,
+          desc: item.desc || "",
+          category: item.category,
+          parent_category: item.parent_category || "",
+          icon: item.icon || "",
+          pinned: item.pinned ? 1 : 0,
+          private: item.private ? 1 : 0,
+        }));
+
+      if (!selectedSites.length) {
+        toast("未勾选任何要导入的书签", true);
+        return;
+      }
+
+      cleanup({
+        sites: selectedSites,
+        overwrite: isOverwrite,
+      });
+    };
+
+    cancelBtn.onclick = () => cleanup(null);
     window.addEventListener("keydown", onKeyDown);
     okBtn.focus();
   });
@@ -2071,31 +2346,55 @@ $("importBtn").onclick = () => {
       }
 
       // 导入预览比对
-      const summary = previewBookmarkImport(payload.sites, payload.categories || []);
-      const confirmed = await showImportPreviewModal(summary);
-      if (!confirmed) {
+      const previewData = previewBookmarkImport(payload.sites, payload.categories || []);
+      const result = await showImportPreviewModal(previewData);
+      if (!result) {
         toast("已取消导入");
         $("importFile").value = "";
         return;
       }
 
-      $("msg").textContent = "正在恢复 JSON 备份…";
-      toast("正在恢复 JSON 备份…");
-      try {
-        const j = await api("/api/admin/import-json", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(payload),
-        });
-        const resMsg = "JSON 恢复完成：新增 " + j.added + " 条，跳过已有 " + j.skipped + " 条";
-        $("msg").textContent = resMsg;
-        toast(resMsg);
-        load();
-      } catch (e) {
-        $("msg").textContent = "恢复出错：" + e.message;
-        toast("恢复出错：" + e.message, true);
-      } finally {
-        $("importFile").value = "";
+      if (result.overwrite) {
+        $("msg").textContent = "正在覆盖导入 JSON 备份…";
+        toast("正在覆盖导入 JSON 备份…");
+        try {
+          const j = await api("/api/admin/import", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ sites: result.sites, overwrite: true }),
+          });
+          let resMsg = "JSON 导入完成：新增 " + j.added + " 条";
+          if (j.updated) resMsg += "，覆盖更新 " + j.updated + " 条";
+          resMsg += "，跳过 " + j.skipped + " 条";
+          $("msg").textContent = resMsg;
+          toast(resMsg);
+          load();
+        } catch (e) {
+          $("msg").textContent = "导入出错：" + e.message;
+          toast("导入出错：" + e.message, true);
+        } finally {
+          $("importFile").value = "";
+        }
+      } else {
+        $("msg").textContent = "正在恢复 JSON 备份…";
+        toast("正在恢复 JSON 备份…");
+        try {
+          payload.sites = result.sites;
+          const j = await api("/api/admin/import-json", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload),
+          });
+          const resMsg = "JSON 恢复完成：新增 " + j.added + " 条，跳过已有 " + j.skipped + " 条";
+          $("msg").textContent = resMsg;
+          toast(resMsg);
+          load();
+        } catch (e) {
+          $("msg").textContent = "恢复出错：" + e.message;
+          toast("恢复出错：" + e.message, true);
+        } finally {
+          $("importFile").value = "";
+        }
       }
     };
     reader.readAsText(f);
@@ -2147,21 +2446,25 @@ $("importBtn").onclick = () => {
       }
 
       // 导入预览比对
-      const summary = previewBookmarkImport(items);
-      const confirmed = await showImportPreviewModal(summary);
-      if (!confirmed) {
+      const previewData = previewBookmarkImport(items);
+      const result = await showImportPreviewModal(previewData);
+      if (!result) {
         toast("已取消导入");
         $("importFile").value = "";
         return;
       }
 
+      $("msg").textContent = "正在批量导入书签…";
+      toast("正在批量导入书签…");
       try {
         const j = await api("/api/admin/import", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ sites: items }),
+          body: JSON.stringify({ sites: result.sites, overwrite: result.overwrite }),
         });
-        const resMsg = "导入完成：新增 " + j.added + " 条，跳过重复 " + j.skipped + " 条";
+        let resMsg = "导入完成：新增 " + j.added + " 条";
+        if (j.updated) resMsg += "，覆盖更新 " + j.updated + " 条";
+        resMsg += "，跳过 " + j.skipped + " 条";
         $("msg").textContent = resMsg;
         toast(resMsg);
         load();
