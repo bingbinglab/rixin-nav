@@ -512,13 +512,10 @@
       }
     }
 
-    stageEl.addEventListener('mousedown', onPointerDown);
-    window.addEventListener('mousemove', onPointerMove);
-    window.addEventListener('mouseup', onPointerUp);
-
-    stageEl.addEventListener('touchstart', onPointerDown, { passive: true });
-    window.addEventListener('touchmove', onPointerMove, { passive: false });
-    window.addEventListener('touchend', onPointerUp);
+    // 统一指针事件：鼠标与触摸共用一套，避免触摸端合成鼠标事件导致敲击计数双跳
+    stageEl.addEventListener('pointerdown', onPointerDown);
+    window.addEventListener('pointermove', onPointerMove);
+    window.addEventListener('pointerup', onPointerUp);
 
     // 唤出木鱼公开调度
     summonFloatingMuyu = function () {

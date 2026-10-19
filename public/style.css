@@ -2464,6 +2464,7 @@ html.dark-theme .random-site-popover {
   position: relative;
   width: 175px;
   height: 115px;
+  touch-action: none;
 }
 .muyu-body-img {
   position: absolute;
