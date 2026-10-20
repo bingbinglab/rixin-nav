@@ -117,7 +117,7 @@
     const ctx = getAudioCtx();
     if (!ctx) return;
     muyuAudioLoading = true;
-    fetch('/assets/muyu.mp3?v=20261020b')
+    fetch('/assets/muyu.mp3?v=20261020d')
       .then(res => res.arrayBuffer())
       .then(buf => ctx.decodeAudioData(buf))
       .then(decoded => {
@@ -148,7 +148,7 @@
     } else {
       // 首次加载未完成或降级时的 HTML5 Audio 回退
       try {
-        const a = new Audio('/assets/muyu.mp3?v=20261020b');
+        const a = new Audio('/assets/muyu.mp3?v=20261020d');
         a.playbackRate = pitch;
         a.play().catch(() => {});
       } catch (_) {}
@@ -260,22 +260,22 @@
     osc.stop(t + 0.022);
   }
 
-  // 0.8 金丝眼镜轻拨歪斜音效：极短的高音金丝金属微鸣 (2200Hz -> 1800Hz)
-  function playGlassesClickSound() {
+  // 0.8 镇纸兽轻戳轻响：温润柔和微响
+  function playBeastPokeSound() {
     const ctx = getAudioCtx();
     if (!ctx) return;
     const t = ctx.currentTime;
     const osc = ctx.createOscillator();
     const gain = ctx.createGain();
-    osc.type = 'triangle';
-    osc.frequency.setValueAtTime(2200, t);
-    osc.frequency.exponentialRampToValueAtTime(1800, t + 0.05);
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(320, t);
+    osc.frequency.exponentialRampToValueAtTime(110, t + 0.04);
     gain.gain.setValueAtTime(0.08, t);
-    gain.gain.exponentialRampToValueAtTime(0.001, t + 0.06);
+    gain.gain.exponentialRampToValueAtTime(0.001, t + 0.045);
     osc.connect(gain);
     gain.connect(ctx.destination);
     osc.start(t);
-    osc.stop(t + 0.06);
+    osc.stop(t + 0.045);
   }
 
   // 0.9 镇纸兽金币转运音效：金石铜铃清脆共鸣 (520Hz + 1040Hz)
@@ -697,6 +697,7 @@
   function initPaperweightBeast() {
     const beastToy = document.getElementById('floatingBeastToy');
     const stageEl = document.getElementById('beastStage');
+    const bodyImg = document.getElementById('beastBodyImg');
     const closeBtn = document.getElementById('beastCloseBtn');
     const bubbleHint = document.getElementById('beastBubbleHint');
     const fortuneSign = document.getElementById('beastFortuneSign');
@@ -704,7 +705,7 @@
     const searchBox = document.querySelector('.search-box');
     const searchInput = document.getElementById('searchInput');
 
-    if (!beastToy || !stageEl) return;
+    if (!beastToy || !stageEl || !bodyImg) return;
 
     const BEAST_REPLIES = [
       '放肆！',
@@ -715,8 +716,65 @@
     ];
     const FORTUNE_CHARS = ['稳', '吉', '镇', '发', '安', '顺', '定', '亨'];
 
+    const BEAST_FRAMES = {
+      default: '/assets/beast.png?v=20261020d',
+      sit: '/assets/beast-sit.png?v=20261020d',
+      drag: '/assets/beast-drag.png?v=20261020d',
+      scorn: '/assets/beast-scorn.png?v=20261020d',
+      coin: '/assets/beast-coin.png?v=20261020d',
+      sneeze: '/assets/beast-sneeze.png?v=20261020d',
+      rest: '/assets/beast-rest.png?v=20261020d'
+    };
+
     let origPlaceholder = '';
     let isSnappedToSearch = false;
+    let isSnappedToSection = false;
+    let activeAnimTimer = null;
+    let restTimer = null;
+    let isDragging = false;
+    let startX = 0;
+    let startY = 0;
+    let initialLeft = 0;
+    let initialTop = 0;
+    let movedDistance = 0;
+    let clickTimestamps = [];
+
+    function setBeastFrame(frameName) {
+      if (bodyImg && BEAST_FRAMES[frameName]) {
+        bodyImg.src = BEAST_FRAMES[frameName];
+      }
+    }
+
+    function getBaseFrame() {
+      return (isSnappedToSearch || isSnappedToSection) ? 'sit' : 'default';
+    }
+
+    function resetRestTimer() {
+      clearTimeout(restTimer);
+      if (beastToy.hidden || beastToy.style.display === 'none') return;
+      restTimer = setTimeout(() => {
+        if (!isDragging && !activeAnimTimer) {
+          setBeastFrame('rest');
+        }
+      }, 20000);
+    }
+
+    function restoreBaseFrame() {
+      clearTimeout(activeAnimTimer);
+      activeAnimTimer = null;
+      setBeastFrame(getBaseFrame());
+      resetRestTimer();
+    }
+
+    function playTempFrame(frameName, durationMs, onDone) {
+      clearTimeout(activeAnimTimer);
+      setBeastFrame(frameName);
+      activeAnimTimer = setTimeout(() => {
+        activeAnimTimer = null;
+        if (typeof onDone === 'function') onDone();
+        restoreBaseFrame();
+      }, durationMs);
+    }
 
     function getDefaultPos() {
       const w = beastToy.offsetWidth || 92;
@@ -756,6 +814,8 @@
     }
 
     restorePosition();
+    setBeastFrame(getBaseFrame());
+    resetRestTimer();
 
     function showBubble(text) {
       if (!bubbleHint) return;
@@ -784,17 +844,18 @@
       setTimeout(() => { fortuneSign.hidden = true; }, 2000);
     }
 
-    function triggerGlassesTilt() {
-      playGlassesClickSound();
-      stageEl.classList.remove('tilt');
+    function triggerPokeScorn() {
+      playBeastPokeSound();
+      stageEl.classList.remove('squash');
       void stageEl.offsetWidth;
-      stageEl.classList.add('tilt');
-      setTimeout(() => stageEl.classList.remove('tilt'), 450);
+      stageEl.classList.add('squash');
+      setTimeout(() => stageEl.classList.remove('squash'), 160);
 
       const reply = BEAST_REPLIES[Math.floor(Math.random() * BEAST_REPLIES.length)];
       setTimeout(() => {
         showBubble(reply);
-      }, 200);
+      }, 150);
+      playTempFrame('scorn', 900);
     }
 
     function clearSearchSnap() {
@@ -805,19 +866,15 @@
           searchInput.placeholder = origPlaceholder;
         }
       }
+      isSnappedToSection = false;
     }
-
-    // 拖动与摸头判定
-    let isDragging = false;
-    let startX = 0;
-    let startY = 0;
-    let initialLeft = 0;
-    let initialTop = 0;
-    let movedDistance = 0;
-    let clickTimestamps = [];
 
     function onPointerDown(e) {
       if (e.target.closest('#beastCloseBtn')) return;
+      resetRestTimer();
+      if (bodyImg.src.includes('beast-rest')) {
+        setBeastFrame(getBaseFrame());
+      }
       isDragging = true;
       movedDistance = 0;
       startX = e.clientX || (e.touches && e.touches[0].clientX) || 0;
@@ -843,6 +900,10 @@
       movedDistance = Math.hypot(dx, dy);
 
       if (movedDistance > 5) {
+        clearTimeout(activeAnimTimer);
+        activeAnimTimer = null;
+        setBeastFrame('drag');
+
         const w = beastToy.offsetWidth || 92;
         const h = beastToy.offsetHeight || 92;
         const maxX = Math.max(10, window.innerWidth - w - 10);
@@ -865,6 +926,8 @@
         try { beastToy.releasePointerCapture(e.pointerId); } catch (_) {}
       }
 
+      resetRestTimer();
+
       if (movedDistance <= 5) {
         const clientX = e.clientX || (e.touches && e.touches[0].clientX) || 0;
         const clientY = e.clientY || (e.touches && e.touches[0].clientY) || 0;
@@ -875,34 +938,23 @@
         // 判定 1: 背上金币区域 (右侧中段，对准图上金币: relX >= 0.70 && relY 0.38~0.72)
         if (relX >= 0.70 && relY >= 0.38 && relY <= 0.72) {
           showFortuneSign();
+          playTempFrame('coin', 2000);
           return;
         }
 
-        // 判定 2: 鼻尖金丝圆镜区域 (面部正中偏上: relX 0.32~0.68, relY 0.38~0.68)
-        if (relX >= 0.32 && relX <= 0.68 && relY >= 0.38 && relY <= 0.68) {
-          triggerGlassesTilt();
-          return;
-        }
-
-        // 判定 3: 摸头压扁回弹与 1 秒 3 击小喷嚏「静气」
-        stageEl.classList.remove('squash');
-        void stageEl.offsetWidth;
-        stageEl.classList.add('squash');
-        setTimeout(() => stageEl.classList.remove('squash'), 160);
-
+        // 判定 2: 戳身/面部反应与 1 秒 3 击小喷嚏「静气」
         const now = Date.now();
         clickTimestamps.push(now);
         clickTimestamps = clickTimestamps.filter(t => now - t <= 1000);
         if (clickTimestamps.length >= 3) {
           clickTimestamps = [];
-          stageEl.classList.remove('sneeze');
-          void stageEl.offsetWidth;
-          stageEl.classList.add('sneeze');
-          setTimeout(() => stageEl.classList.remove('sneeze'), 380);
           showBubble('静气');
+          playTempFrame('sneeze', 480);
+        } else {
+          triggerPokeScorn();
         }
       } else {
-        // 拖动判定区
+        // 拖动释放判定区
         const beastRect = beastToy.getBoundingClientRect();
         const beastCenterX = beastRect.left + beastRect.width / 2;
         const beastCenterY = beastRect.top + beastRect.height / 2;
@@ -930,6 +982,7 @@
             stageEl.classList.add('squash');
             setTimeout(() => stageEl.classList.remove('squash'), 180);
             playBeastSnapSound();
+            setBeastFrame('sit');
             return;
           }
         }
@@ -948,6 +1001,7 @@
 
         if (hitHead) {
           clearSearchSnap();
+          isSnappedToSection = true;
           const hr = hitHead.getBoundingClientRect();
           const targetLeft = Math.min(Math.max(10, hr.right - beastRect.width - 20), window.innerWidth - beastRect.width - 10);
           const targetTop = hr.top - beastRect.height + 16;
@@ -962,6 +1016,7 @@
           setTimeout(() => stageEl.classList.remove('squash'), 180);
 
           playBeastSnapSound();
+          setBeastFrame('sit');
 
           const sec = hitHead.closest('.section, .pinned-section') || hitHead.parentElement;
           if (sec) {
@@ -974,6 +1029,7 @@
           clearSearchSnap();
           const r = beastToy.getBoundingClientRect();
           savePos(r.left, r.top);
+          setBeastFrame('default');
         }
       }
     }
@@ -992,6 +1048,7 @@
       beastToy.style.top = `${def.top}px`;
       savePos(def.left, def.top);
 
+      restoreBaseFrame();
       stageEl.classList.remove('squash');
       void stageEl.offsetWidth;
       stageEl.classList.add('squash');
@@ -1002,6 +1059,8 @@
       closeBtn.addEventListener('click', (e) => {
         e.stopPropagation();
         clearSearchSnap();
+        clearTimeout(restTimer);
+        clearTimeout(activeAnimTimer);
         beastToy.hidden = true;
         beastToy.style.display = 'none';
       });
@@ -1011,6 +1070,7 @@
       beastToy.hidden = false;
       beastToy.style.display = 'block';
       restorePosition();
+      restoreBaseFrame();
 
       stageEl.classList.remove('squash');
       void stageEl.offsetWidth;
@@ -1019,9 +1079,6 @@
     };
   }
 
-  // ==========================================
-    // 5.2 案头卧黑狸 (Desk Cat Toy) 控制器
-  // ==========================================
   function initDeskCat() {
     const catToy = document.getElementById('floatingCatToy');
     const stageEl = document.getElementById('catStage');
@@ -1032,11 +1089,22 @@
 
     if (!catToy || !stageEl || !bodyImg) return;
 
+    const CAT_FRAMES = {
+      sleep: '/assets/cat-sleep.png?v=20261020d',
+      awake: '/assets/cat-awake.png?v=20261020d',
+      stretch: '/assets/cat-stretch.png?v=20261020d',
+      belly: '/assets/cat-belly.png?v=20261020d',
+      run: '/assets/cat-run.png?v=20261020d',
+      peek: '/assets/cat-peek.png?v=20261020d',
+      lift: '/assets/cat-lift.png?v=20261020d'
+    };
+
     let isAwake = false;
     let awakeTimer = null;
     let activePawPrints = [];
-    const MAX_PAWS = 8;
+    const MAX_PAWS = 12;
     let isWalking = false;
+    let isWakingUp = false;
 
     function getDefaultPos() {
       const w = catToy.offsetWidth || 96;
@@ -1080,8 +1148,9 @@
     function setSleepState() {
       isAwake = false;
       isWalking = false;
+      isWakingUp = false;
       catToy.classList.remove('is-walking');
-      bodyImg.src = '/assets/cat-sleep.png?v=20261020b';
+      bodyImg.src = CAT_FRAMES.sleep;
       if (heartIcon) heartIcon.hidden = true;
       stageEl.style.transform = 'scaleX(1)';
     }
@@ -1092,10 +1161,11 @@
         awakeTimer = setTimeout(setSleepState, 12000);
         return;
       }
-      isAwake = true;
-      isWalking = false;
-      bodyImg.src = '/assets/cat-awake.png?v=20261020b';
+      if (isWakingUp) return;
+      isWakingUp = true;
 
+      // 唤醒瞬间：先 cat-peek.png 约 0.8 秒，再进原流程（伸懒腰 cat-stretch → cat-awake）
+      bodyImg.src = CAT_FRAMES.peek;
       playCatPurrSound();
 
       if (heartIcon) {
@@ -1106,8 +1176,25 @@
         setTimeout(() => { heartIcon.hidden = true; }, 1800);
       }
 
-      clearTimeout(awakeTimer);
-      awakeTimer = setTimeout(setSleepState, 12000);
+      setTimeout(() => {
+        if (catToy.hidden || catToy.style.display === 'none') {
+          isWakingUp = false;
+          return;
+        }
+        bodyImg.src = CAT_FRAMES.stretch;
+        setTimeout(() => {
+          if (catToy.hidden || catToy.style.display === 'none') {
+            isWakingUp = false;
+            return;
+          }
+          isWakingUp = false;
+          isAwake = true;
+          isWalking = false;
+          bodyImg.src = CAT_FRAMES.awake;
+          clearTimeout(awakeTimer);
+          awakeTimer = setTimeout(setSleepState, 12000);
+        }, 450);
+      }, 800);
     }
 
     function dropPawPrint(pageX, pageY) {
@@ -1135,7 +1222,7 @@
 
     // 盘睡发呆动作定时器（每隔 24 秒耳动或打鼾气泡）
     setInterval(() => {
-      if (isAwake || catToy.hidden || catToy.style.display === 'none') return;
+      if (isAwake || isWakingUp || catToy.hidden || catToy.style.display === 'none') return;
       if (Math.random() < 0.5) {
         stageEl.classList.remove('ear-twitch');
         void stageEl.offsetWidth;
@@ -1206,7 +1293,7 @@
 
       const elapsed = Date.now() - touchStartTime;
       // 轻抚下巴或抚摸 0.35s 且横向位移 > 20px 即可快速唤醒
-      if (!isAwake && ((reversals >= 2 && strokeDistance > 30) || (elapsed >= 350 && strokeDistance > 25))) {
+      if (!isAwake && !isWakingUp && ((reversals >= 2 && strokeDistance > 30) || (elapsed >= 350 && strokeDistance > 25))) {
         setAwakeState();
       }
 
@@ -1214,6 +1301,9 @@
       const totalDy = clientY - startY;
       if (Math.hypot(totalDx, totalDy) > 15 && reversals <= 1) {
         catToy.classList.add('is-dragging');
+        // 拖动期间：cat-lift.png
+        bodyImg.src = CAT_FRAMES.lift;
+
         const w = catToy.offsetWidth || 96;
         const h = catToy.offsetHeight || 96;
         const maxX = Math.max(10, window.innerWidth - w - 10);
@@ -1228,6 +1318,7 @@
     function onPointerUp(e) {
       if (!isTouching) return;
       isTouching = false;
+      const wasDragging = catToy.classList.contains('is-dragging');
       catToy.classList.remove('is-dragging');
       if (e.pointerId && typeof catToy.releasePointerCapture === 'function') {
         try { catToy.releasePointerCapture(e.pointerId); } catch (_) {}
@@ -1237,15 +1328,27 @@
       if (totalMoved > 15 && reversals <= 1) {
         const r = catToy.getBoundingClientRect();
         savePos(r.left, r.top);
+        // 松手恢复拖前状态帧
+        if (isAwake) {
+          bodyImg.src = CAT_FRAMES.awake;
+        } else {
+          bodyImg.src = CAT_FRAMES.sleep;
+        }
       } else if (totalMoved <= 5) {
-        if (!isAwake) {
-          // 睡态轻点：柔和揉肚皮回弹并伴随轻柔呼噜
+        if (!isAwake && !isWakingUp) {
+          // 睡态单击揉肚皮期间：cat-belly.png，揉完恢复 cat-sleep
+          bodyImg.src = CAT_FRAMES.belly;
           stageEl.classList.remove('tummy-squish');
           void stageEl.offsetWidth;
           stageEl.classList.add('tummy-squish');
-          setTimeout(() => stageEl.classList.remove('tummy-squish'), 350);
           playCatSoftPurrSound();
-        } else {
+          setTimeout(() => {
+            stageEl.classList.remove('tummy-squish');
+            if (!isAwake && !isWakingUp && !isTouching && !isWalking) {
+              bodyImg.src = CAT_FRAMES.sleep;
+            }
+          }, 450);
+        } else if (isAwake) {
           // 醒态轻点：微小弹动刷新活跃计时
           stageEl.classList.remove('bounce');
           void stageEl.offsetWidth;
@@ -1270,7 +1373,7 @@
 
     // 醒来后光标视线追踪 (左右翻转大金眼)
     document.addEventListener('pointermove', (e) => {
-      if (!isAwake || catToy.hidden || isWalking || isTouching) return;
+      if (!isAwake || isWakingUp || catToy.hidden || isWalking || isTouching) return;
       const rect = catToy.getBoundingClientRect();
       const catCenterX = rect.left + rect.width / 2;
       if (e.clientX < catCenterX - 24) {
@@ -1282,7 +1385,7 @@
 
     // 逗猫模式：在页面空白处点击任意位置，黑狸小碎步快跑到达，沿途踩下梅花爪印
     document.addEventListener('click', (e) => {
-      if (!isAwake || catToy.hidden || isWalking || isTouching) return;
+      if (!isAwake || isWakingUp || catToy.hidden || isWalking || isTouching) return;
       const target = e.target;
       if (target && typeof target.closest === 'function') {
         if (target.closest('a, button, input, textarea, select, .card, .modal, .toy-hub-wrap, .floating-beast-toy, .floating-muyu-toy, .floating-cat-toy, .fortune-wheel-modal')) {
@@ -1304,7 +1407,8 @@
 
       isWalking = true;
       catToy.classList.add('is-walking');
-      bodyImg.src = '/assets/cat-stretch.png?v=20261020b';
+      // 疾跑移动期间：cat-run.png，到达后恢复 cat-awake
+      bodyImg.src = CAT_FRAMES.run;
 
       // 跑动朝向
       if (targetX < rect.left) {
@@ -1330,7 +1434,7 @@
         catToy.classList.remove('is-walking');
         isWalking = false;
         if (isAwake) {
-          bodyImg.src = '/assets/cat-awake.png?v=20261020b';
+          bodyImg.src = CAT_FRAMES.awake;
         }
       }, 460);
 
@@ -1352,6 +1456,7 @@
       catToy.style.display = 'block';
       restorePosition();
       setSleepState();
+
       stageEl.classList.remove('bounce');
       void stageEl.offsetWidth;
       stageEl.classList.add('bounce');
@@ -1359,7 +1464,6 @@
     };
   }
 
-  // ==========================================
   // 5.3 今日特许盘 (Fortune Wheel Toy) 控制器
   // ==========================================
   function initFortuneWheel() {
