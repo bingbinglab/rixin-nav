@@ -2476,7 +2476,7 @@ html.dark-theme .fan-illust-item {
 .floating-beast-toy {
   position: fixed;
   z-index: 95;
-  width: 132px;
+  width: 148px;
   cursor: grab;
   user-select: none;
   touch-action: none;
@@ -3382,7 +3382,7 @@ body.seal-stamping-mode {
 
   /* 手机端新三件自适应 */
   .floating-beast-toy {
-    width: 114px;
+    width: 128px;
   }
   .floating-cat-toy {
     width: 106px;
