@@ -117,7 +117,7 @@
     const ctx = getAudioCtx();
     if (!ctx) return;
     muyuAudioLoading = true;
-    fetch('/assets/muyu.mp3?v=20261021f')
+    fetch('/assets/muyu.mp3?v=20261021g')
       .then(res => res.arrayBuffer())
       .then(buf => ctx.decodeAudioData(buf))
       .then(decoded => {
@@ -148,7 +148,7 @@
     } else {
       // 首次加载未完成或降级时的 HTML5 Audio 回退
       try {
-        const a = new Audio('/assets/muyu.mp3?v=20261021f');
+        const a = new Audio('/assets/muyu.mp3?v=20261021g');
         a.playbackRate = pitch;
         a.play().catch(() => {});
       } catch (_) {}
@@ -695,13 +695,13 @@
     const FORTUNE_CHARS = ['稳', '吉', '镇', '发', '安', '顺', '定', '亨'];
 
     const BEAST_FRAMES = {
-      default: '/assets/beast.png?v=20261021f',
-      sit: '/assets/beast-sit.png?v=20261021f',
-      drag: '/assets/beast-drag.png?v=20261021f',
-      scorn: '/assets/beast-scorn.png?v=20261021f',
-      coin: '/assets/beast-coin.png?v=20261021f',
-      sneeze: '/assets/beast-sneeze.png?v=20261021f',
-      rest: '/assets/beast-rest.png?v=20261021f'
+      default: '/assets/beast.webp?v=20261021g',
+      sit: '/assets/beast-sit.webp?v=20261021g',
+      drag: '/assets/beast-drag.webp?v=20261021g',
+      scorn: '/assets/beast-scorn.webp?v=20261021g',
+      coin: '/assets/beast-coin.webp?v=20261021g',
+      sneeze: '/assets/beast-sneeze.webp?v=20261021g',
+      rest: '/assets/beast-rest.webp?v=20261021g'
     };
     // 预加载全部帧图，避免首次换帧时等下载（探头/提溜等短帧会被跳过）
     Object.values(BEAST_FRAMES).forEach((u) => { const i = new Image(); i.src = u; });
@@ -1060,13 +1060,13 @@
     if (!catToy || !stageEl || !bodyImg) return;
 
     const CAT_FRAMES = {
-      sleep: '/assets/cat-sleep.png?v=20261021f',
-      awake: '/assets/cat-awake.png?v=20261021f',
-      stretch: '/assets/cat-stretch.png?v=20261021f',
-      belly: '/assets/cat-belly.png?v=20261021f',
-      run: '/assets/cat-run.png?v=20261021f',
-      peek: '/assets/cat-peek.png?v=20261021f',
-      lift: '/assets/cat-lift.png?v=20261021f'
+      sleep: '/assets/cat-sleep.webp?v=20261021g',
+      awake: '/assets/cat-awake.webp?v=20261021g',
+      stretch: '/assets/cat-stretch.webp?v=20261021g',
+      belly: '/assets/cat-belly.webp?v=20261021g',
+      run: '/assets/cat-run.webp?v=20261021g',
+      peek: '/assets/cat-peek.webp?v=20261021g',
+      lift: '/assets/cat-lift.webp?v=20261021g'
     };
     // 预加载全部帧图，避免首次换帧时等下载（探头仅停 1.1 秒，等图必错过）
     Object.values(CAT_FRAMES).forEach((u) => { const i = new Image(); i.src = u; });
@@ -1136,7 +1136,7 @@
       if (isWakingUp) return;
       isWakingUp = true;
 
-      // 唤醒瞬间：先 cat-peek.png 约 1.1 秒，再进原流程（伸懒腰 cat-stretch → cat-awake）
+      // 唤醒瞬间：先 cat-peek.webp 约 1.1 秒，再进原流程（伸懒腰 cat-stretch → cat-awake）
       bodyImg.src = CAT_FRAMES.peek;
       playCatPurrSound();
 
@@ -1278,7 +1278,7 @@
       if (!isDraggingCat && !isWakingUp && totalDist > 15 && reversals <= 1 && (elapsed > 250 || totalDist > 45)) {
         isDraggingCat = true;
         catToy.classList.add('is-dragging');
-        // 拖动期间：cat-lift.png
+        // 拖动期间：cat-lift.webp
         bodyImg.src = CAT_FRAMES.lift;
       }
       if (isDraggingCat) {
@@ -1315,7 +1315,7 @@
         }
       } else if (totalMoved <= 5) {
         if (!isAwake && !isWakingUp) {
-          // 睡态单击揉肚皮期间：cat-belly.png，揉完恢复 cat-sleep
+          // 睡态单击揉肚皮期间：cat-belly.webp，揉完恢复 cat-sleep
           bodyImg.src = CAT_FRAMES.belly;
           stageEl.classList.remove('tummy-squish');
           void stageEl.offsetWidth;
@@ -1386,7 +1386,7 @@
 
       isWalking = true;
       catToy.classList.add('is-walking');
-      // 疾跑移动期间：cat-run.png，到达后恢复 cat-awake
+      // 疾跑移动期间：cat-run.webp，到达后恢复 cat-awake
       bodyImg.src = CAT_FRAMES.run;
 
       // 跑动朝向
