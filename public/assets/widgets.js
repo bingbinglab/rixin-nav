@@ -117,7 +117,7 @@
     const ctx = getAudioCtx();
     if (!ctx) return;
     muyuAudioLoading = true;
-    fetch('/assets/muyu.mp3?v=20261021a')
+    fetch('/assets/muyu.mp3?v=20261021b')
       .then(res => res.arrayBuffer())
       .then(buf => ctx.decodeAudioData(buf))
       .then(decoded => {
@@ -148,7 +148,7 @@
     } else {
       // 首次加载未完成或降级时的 HTML5 Audio 回退
       try {
-        const a = new Audio('/assets/muyu.mp3?v=20261021a');
+        const a = new Audio('/assets/muyu.mp3?v=20261021b');
         a.playbackRate = pitch;
         a.play().catch(() => {});
       } catch (_) {}
@@ -194,52 +194,29 @@
     } catch (_) {}
   }
 
-  // 0.6 案头卧黑狸呼噜音效：约 55Hz 振荡＋增益呼吸包络（~2.5秒，低音量平缓呼吸）
+  // 0.6 案头卧黑狸唤醒轻叫：短促柔和的上扬小喵声（不用低频轰鸣）
   let activePurrStop = null;
   function playCatPurrSound() {
     const ctx = getAudioCtx();
     if (!ctx) return;
     if (activePurrStop) {
       try { activePurrStop(); } catch (_) {}
+      activePurrStop = null;
     }
     const t = ctx.currentTime;
-    const duration = 2.5;
-
     const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
     osc.type = 'sine';
-    osc.frequency.setValueAtTime(55, t);
-
-    // 微弱低频调频产生呼噜颗粒
-    const lfo = ctx.createOscillator();
-    const lfoGain = ctx.createGain();
-    lfo.frequency.setValueAtTime(24, t);
-    lfoGain.gain.setValueAtTime(6, t);
-    lfo.connect(osc.frequency);
-
-    const masterGain = ctx.createGain();
-    masterGain.gain.setValueAtTime(0.001, t);
-    // 第一轮呼噜起伏
-    masterGain.gain.linearRampToValueAtTime(0.12, t + 0.3);
-    masterGain.gain.linearRampToValueAtTime(0.04, t + 1.1);
-    // 第二轮呼噜起伏
-    masterGain.gain.linearRampToValueAtTime(0.14, t + 1.6);
-    masterGain.gain.linearRampToValueAtTime(0.001, t + duration);
-
-    osc.connect(masterGain);
-    masterGain.connect(ctx.destination);
-
-    lfo.start(t);
+    osc.frequency.setValueAtTime(540, t);
+    osc.frequency.exponentialRampToValueAtTime(880, t + 0.09);
+    osc.frequency.exponentialRampToValueAtTime(660, t + 0.2);
+    gain.gain.setValueAtTime(0.001, t);
+    gain.gain.linearRampToValueAtTime(0.05, t + 0.03);
+    gain.gain.exponentialRampToValueAtTime(0.001, t + 0.22);
+    osc.connect(gain);
+    gain.connect(ctx.destination);
     osc.start(t);
-    lfo.stop(t + duration);
-    osc.stop(t + duration);
-
-    activePurrStop = () => {
-      try {
-        masterGain.gain.setValueAtTime(0.001, ctx.currentTime);
-        osc.stop();
-        lfo.stop();
-      } catch (_) {}
-    };
+    osc.stop(t + 0.24);
   }
 
   // 0.7 今日特许盘齿轮哒哒声：短冲脉冲高频木齿撞击
@@ -297,22 +274,31 @@
     });
   }
 
-  // 0.10 睡猫轻揉短呼噜：柔和短促微气流
+  // 0.10 睡猫轻揉短呼噜：150Hz 三角波＋23Hz 振幅调制，轻而短（0.7 秒），不走低频
   function playCatSoftPurrSound() {
     const ctx = getAudioCtx();
     if (!ctx) return;
     const t = ctx.currentTime;
     const osc = ctx.createOscillator();
+    osc.type = 'triangle';
+    osc.frequency.setValueAtTime(150, t);
+    const am = ctx.createOscillator();
+    am.type = 'sine';
+    am.frequency.setValueAtTime(23, t);
+    const amGain = ctx.createGain();
+    amGain.gain.setValueAtTime(0.014, t);
     const gain = ctx.createGain();
-    osc.type = 'sine';
-    osc.frequency.setValueAtTime(52, t);
     gain.gain.setValueAtTime(0.001, t);
-    gain.gain.linearRampToValueAtTime(0.08, t + 0.12);
-    gain.gain.linearRampToValueAtTime(0.001, t + 0.35);
+    gain.gain.linearRampToValueAtTime(0.032, t + 0.1);
+    gain.gain.linearRampToValueAtTime(0.001, t + 0.7);
+    am.connect(amGain);
+    amGain.connect(gain.gain);
     osc.connect(gain);
     gain.connect(ctx.destination);
     osc.start(t);
-    osc.stop(t + 0.35);
+    am.start(t);
+    osc.stop(t + 0.72);
+    am.stop(t + 0.72);
   }
 
   // ==========================================
@@ -717,14 +703,16 @@
     const FORTUNE_CHARS = ['稳', '吉', '镇', '发', '安', '顺', '定', '亨'];
 
     const BEAST_FRAMES = {
-      default: '/assets/beast.png?v=20261021a',
-      sit: '/assets/beast-sit.png?v=20261021a',
-      drag: '/assets/beast-drag.png?v=20261021a',
-      scorn: '/assets/beast-scorn.png?v=20261021a',
-      coin: '/assets/beast-coin.png?v=20261021a',
-      sneeze: '/assets/beast-sneeze.png?v=20261021a',
-      rest: '/assets/beast-rest.png?v=20261021a'
+      default: '/assets/beast.png?v=20261021b',
+      sit: '/assets/beast-sit.png?v=20261021b',
+      drag: '/assets/beast-drag.png?v=20261021b',
+      scorn: '/assets/beast-scorn.png?v=20261021b',
+      coin: '/assets/beast-coin.png?v=20261021b',
+      sneeze: '/assets/beast-sneeze.png?v=20261021b',
+      rest: '/assets/beast-rest.png?v=20261021b'
     };
+    // 预加载全部帧图，避免首次换帧时等下载（探头/提溜等短帧会被跳过）
+    Object.values(BEAST_FRAMES).forEach((u) => { const i = new Image(); i.src = u; });
 
     let origPlaceholder = '';
     let isSnappedToSearch = false;
@@ -1090,14 +1078,16 @@
     if (!catToy || !stageEl || !bodyImg) return;
 
     const CAT_FRAMES = {
-      sleep: '/assets/cat-sleep.png?v=20261021a',
-      awake: '/assets/cat-awake.png?v=20261021a',
-      stretch: '/assets/cat-stretch.png?v=20261021a',
-      belly: '/assets/cat-belly.png?v=20261021a',
-      run: '/assets/cat-run.png?v=20261021a',
-      peek: '/assets/cat-peek.png?v=20261021a',
-      lift: '/assets/cat-lift.png?v=20261021a'
+      sleep: '/assets/cat-sleep.png?v=20261021b',
+      awake: '/assets/cat-awake.png?v=20261021b',
+      stretch: '/assets/cat-stretch.png?v=20261021b',
+      belly: '/assets/cat-belly.png?v=20261021b',
+      run: '/assets/cat-run.png?v=20261021b',
+      peek: '/assets/cat-peek.png?v=20261021b',
+      lift: '/assets/cat-lift.png?v=20261021b'
     };
+    // 预加载全部帧图，避免首次换帧时等下载（探头仅停 1.1 秒，等图必错过）
+    Object.values(CAT_FRAMES).forEach((u) => { const i = new Image(); i.src = u; });
 
     let isAwake = false;
     let awakeTimer = null;
@@ -1164,7 +1154,7 @@
       if (isWakingUp) return;
       isWakingUp = true;
 
-      // 唤醒瞬间：先 cat-peek.png 约 0.8 秒，再进原流程（伸懒腰 cat-stretch → cat-awake）
+      // 唤醒瞬间：先 cat-peek.png 约 1.1 秒，再进原流程（伸懒腰 cat-stretch → cat-awake）
       bodyImg.src = CAT_FRAMES.peek;
       playCatPurrSound();
 
@@ -1194,7 +1184,7 @@
           clearTimeout(awakeTimer);
           awakeTimer = setTimeout(setSleepState, 12000);
         }, 450);
-      }, 800);
+      }, 1100);
     }
 
     function dropPawPrint(pageX, pageY) {
@@ -1239,6 +1229,7 @@
 
     // 拖动与抚摸抓痒判定
     let isTouching = false;
+    let isDraggingCat = false;
     let startX = 0;
     let startY = 0;
     let lastX = 0;
@@ -1292,18 +1283,21 @@
       lastY = clientY;
 
       const elapsed = Date.now() - touchStartTime;
-      // 轻抚下巴或抚摸 0.35s 且横向位移 > 20px 即可快速唤醒
-      if (!isAwake && !isWakingUp && ((reversals >= 2 && strokeDistance > 30) || (elapsed >= 350 && strokeDistance > 25))) {
+      // 轻抚下巴或抚摸 0.35s 且横向位移 > 20px 即可快速唤醒（已进入拖拽则不再判定抚摸）
+      if (!isDraggingCat && !isAwake && !isWakingUp && ((reversals >= 2 && strokeDistance > 30) || (elapsed >= 350 && strokeDistance > 25))) {
         setAwakeState();
       }
 
       const totalDx = clientX - startX;
       const totalDy = clientY - startY;
-      if (Math.hypot(totalDx, totalDy) > 15 && reversals <= 1) {
+      // 拖拽一旦咬合就锁存：手指微抖造成的方向反转不再中断跟随（断流根源）
+      if (!isDraggingCat && Math.hypot(totalDx, totalDy) > 15 && reversals <= 1) {
+        isDraggingCat = true;
         catToy.classList.add('is-dragging');
         // 拖动期间：cat-lift.png
         bodyImg.src = CAT_FRAMES.lift;
-
+      }
+      if (isDraggingCat) {
         const w = catToy.offsetWidth || 96;
         const h = catToy.offsetHeight || 96;
         const maxX = Math.max(10, window.innerWidth - w - 10);
@@ -1318,14 +1312,15 @@
     function onPointerUp(e) {
       if (!isTouching) return;
       isTouching = false;
-      const wasDragging = catToy.classList.contains('is-dragging');
+      const wasDragging = isDraggingCat || catToy.classList.contains('is-dragging');
+      isDraggingCat = false;
       catToy.classList.remove('is-dragging');
       if (e.pointerId && typeof catToy.releasePointerCapture === 'function') {
         try { catToy.releasePointerCapture(e.pointerId); } catch (_) {}
       }
 
       const totalMoved = Math.hypot(lastX - startX, lastY - startY);
-      if (totalMoved > 15 && reversals <= 1) {
+      if (wasDragging) {
         const r = catToy.getBoundingClientRect();
         savePos(r.left, r.top);
         // 松手恢复拖前状态帧

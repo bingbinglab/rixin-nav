@@ -2305,7 +2305,7 @@ html.dark-theme .fan-illust-item {
 .floating-muyu-toy {
   position: fixed;
   z-index: 95;
-  width: 134px;
+  width: 148px;
   cursor: grab;
   user-select: none;
   touch-action: none;
@@ -2316,15 +2316,15 @@ html.dark-theme .fan-illust-item {
 }
 .muyu-stage {
   position: relative;
-  width: 134px;
-  height: 88px;
+  width: 148px;
+  height: 97px;
   touch-action: none;
 }
 .muyu-body-img {
   position: absolute;
-  left: 7px;
-  top: 18px;
-  width: 89px;
+  left: 8px;
+  top: 20px;
+  width: 99px;
   height: auto;
   transform-origin: bottom center;
   transition: transform 0.05s ease;
@@ -2332,18 +2332,18 @@ html.dark-theme .fan-illust-item {
 }
 .muyu-mallet-img {
   position: absolute;
-  right: 4px;
-  top: 22px;
-  width: 47px;
+  right: 24px;
+  top: -4px;
+  width: 52px;
   height: auto;
-  transform-origin: 15% 85%;
-  transform: rotate(30deg);
+  transform-origin: 50% 50%;
+  transform: rotate(-32deg);
   transition: transform 0.05s cubic-bezier(0.18, 0.89, 0.32, 1.28);
   pointer-events: none;
 }
 /* 敲击动效 */
 .muyu-stage.hit .muyu-mallet-img {
-  transform: translate(-12px, 14px) rotate(36deg);
+  transform: translate(-6px, 12px) rotate(-4deg);
 }
 .muyu-stage.hit .muyu-body-img {
   transform: scale(1.05, 0.92);
@@ -2477,7 +2477,7 @@ html.dark-theme .fan-illust-item {
 .floating-beast-toy {
   position: fixed;
   z-index: 95;
-  width: 92px;
+  width: 104px;
   cursor: grab;
   user-select: none;
   touch-action: none;
@@ -2633,7 +2633,7 @@ html.dark-theme .fan-illust-item {
 .floating-cat-toy {
   position: fixed;
   z-index: 94;
-  width: 96px;
+  width: 108px;
   cursor: grab;
   user-select: none;
   touch-action: none;
@@ -2929,47 +2929,56 @@ html.dark-theme .wheel-panel-card {
   transform: none !important;
 }
 
-/* 命中特许签弹层：底部浮现，避开右侧立签与中央盘面 */
+/* 命中特许签弹层：小签横贴托盘下缘，不遮盘面 */
 .wheel-result-slip {
   position: absolute;
-  bottom: 8px;
+  bottom: 46px;
   left: 50%;
   transform: translateX(-50%);
-  width: calc(100% - 24px);
+  width: auto;
+  max-width: 88%;
+  display: flex;
+  align-items: center;
+  gap: 10px;
   background: var(--paper);
   border: 2px solid var(--ochre);
-  box-shadow: 4px 4px 0 var(--ochre);
+  box-shadow: 3px 3px 0 var(--ochre);
   border-radius: 3px;
-  padding: 10px 10px 12px;
-  text-align: center;
+  padding: 7px 12px;
   z-index: 20;
   animation: slipPopIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
+.wheel-result-slip[hidden] {
+  display: none;
+}
 @keyframes slipPopIn {
-  0% { opacity: 0; transform: translate(-50%, -50%) scale(0.7); }
-  100% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+  0% { opacity: 0; transform: translateX(-50%) translateY(6px) scale(0.85); }
+  100% { opacity: 1; transform: translateX(-50%) translateY(0) scale(1); }
 }
 .slip-seal-stamp {
   display: inline-block;
-  width: 26px;
-  height: 26px;
-  line-height: 24px;
+  flex: none;
+  width: 22px;
+  height: 22px;
+  line-height: 20px;
+  text-align: center;
   border: 2px solid var(--ochre);
   color: var(--ochre);
   font-family: var(--serif);
-  font-size: 16px;
+  font-size: 14px;
   font-weight: 800;
   border-radius: 3px;
-  margin-bottom: 8px;
+  margin-bottom: 0;
   transform: rotate(-5deg);
 }
 .slip-prize-text {
   font-family: var(--serif);
-  font-size: 16px;
+  font-size: 15px;
   font-weight: 700;
   color: var(--ink);
   letter-spacing: 1px;
-  margin-bottom: 12px;
+  margin-bottom: 0;
+  white-space: nowrap;
 }
 .slip-accept-btn {
   background: var(--ochre);
@@ -3361,20 +3370,20 @@ body.seal-stamping-mode {
     top: 15px;
   }
   .muyu-mallet-img {
-    width: 40px;
-    top: 18px;
-    right: 3px;
+    width: 44px;
+    top: -3px;
+    right: 20px;
   }
   .muyu-stage.hit .muyu-mallet-img {
-    transform: translate(-10px, 12px) rotate(36deg);
+    transform: translate(-5px, 10px) rotate(-4deg);
   }
 
   /* 手机端新三件自适应 */
   .floating-beast-toy {
-    width: 80px;
+    width: 90px;
   }
   .floating-cat-toy {
-    width: 84px;
+    width: 94px;
   }
   .fortune-wheel-modal {
     right: 14px;
