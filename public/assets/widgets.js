@@ -117,7 +117,7 @@
     const ctx = getAudioCtx();
     if (!ctx) return;
     muyuAudioLoading = true;
-    fetch('/assets/muyu.mp3?v=20261021c')
+    fetch('/assets/muyu.mp3?v=20261021d')
       .then(res => res.arrayBuffer())
       .then(buf => ctx.decodeAudioData(buf))
       .then(decoded => {
@@ -148,7 +148,7 @@
     } else {
       // 首次加载未完成或降级时的 HTML5 Audio 回退
       try {
-        const a = new Audio('/assets/muyu.mp3?v=20261021c');
+        const a = new Audio('/assets/muyu.mp3?v=20261021d');
         a.playbackRate = pitch;
         a.play().catch(() => {});
       } catch (_) {}
@@ -274,31 +274,23 @@
     });
   }
 
-  // 0.10 睡猫轻揉短呼噜：150Hz 三角波＋23Hz 振幅调制，轻而短（0.7 秒），不走低频
+  // 0.10 揉肚皮轻应声：短滑音「呜」一声（500→380Hz，0.16 秒），与唤醒轻喵同族，不再合成呼噜
   function playCatSoftPurrSound() {
     const ctx = getAudioCtx();
     if (!ctx) return;
     const t = ctx.currentTime;
     const osc = ctx.createOscillator();
     osc.type = 'triangle';
-    osc.frequency.setValueAtTime(150, t);
-    const am = ctx.createOscillator();
-    am.type = 'sine';
-    am.frequency.setValueAtTime(23, t);
-    const amGain = ctx.createGain();
-    amGain.gain.setValueAtTime(0.014, t);
+    osc.frequency.setValueAtTime(500, t);
+    osc.frequency.exponentialRampToValueAtTime(380, t + 0.15);
     const gain = ctx.createGain();
     gain.gain.setValueAtTime(0.001, t);
-    gain.gain.linearRampToValueAtTime(0.032, t + 0.1);
-    gain.gain.linearRampToValueAtTime(0.001, t + 0.7);
-    am.connect(amGain);
-    amGain.connect(gain.gain);
+    gain.gain.linearRampToValueAtTime(0.028, t + 0.03);
+    gain.gain.linearRampToValueAtTime(0.001, t + 0.16);
     osc.connect(gain);
     gain.connect(ctx.destination);
     osc.start(t);
-    am.start(t);
-    osc.stop(t + 0.72);
-    am.stop(t + 0.72);
+    osc.stop(t + 0.18);
   }
 
   // ==========================================
@@ -612,7 +604,7 @@
       const dy = clientY - startY;
       movedDistance = Math.hypot(dx, dy);
 
-      if (movedDistance > 5) {
+      if (movedDistance > 10) {
         const maxX = Math.max(10, window.innerWidth - 165);
         const maxY = Math.max(10, window.innerHeight - 140);
         const newX = Math.min(Math.max(10, initialLeft + dx), maxX);
@@ -703,13 +695,13 @@
     const FORTUNE_CHARS = ['稳', '吉', '镇', '发', '安', '顺', '定', '亨'];
 
     const BEAST_FRAMES = {
-      default: '/assets/beast.png?v=20261021c',
-      sit: '/assets/beast-sit.png?v=20261021c',
-      drag: '/assets/beast-drag.png?v=20261021c',
-      scorn: '/assets/beast-scorn.png?v=20261021c',
-      coin: '/assets/beast-coin.png?v=20261021c',
-      sneeze: '/assets/beast-sneeze.png?v=20261021c',
-      rest: '/assets/beast-rest.png?v=20261021c'
+      default: '/assets/beast.png?v=20261021d',
+      sit: '/assets/beast-sit.png?v=20261021d',
+      drag: '/assets/beast-drag.png?v=20261021d',
+      scorn: '/assets/beast-scorn.png?v=20261021d',
+      coin: '/assets/beast-coin.png?v=20261021d',
+      sneeze: '/assets/beast-sneeze.png?v=20261021d',
+      rest: '/assets/beast-rest.png?v=20261021d'
     };
     // 预加载全部帧图，避免首次换帧时等下载（探头/提溜等短帧会被跳过）
     Object.values(BEAST_FRAMES).forEach((u) => { const i = new Image(); i.src = u; });
@@ -887,7 +879,7 @@
       const dy = clientY - startY;
       movedDistance = Math.hypot(dx, dy);
 
-      if (movedDistance > 5) {
+      if (movedDistance > 10) {
         clearTimeout(activeAnimTimer);
         activeAnimTimer = null;
         setBeastFrame('drag');
@@ -916,7 +908,11 @@
 
       resetRestTimer();
 
-      if (movedDistance <= 5) {
+      if (movedDistance <= 10) {
+        // 10px 内算点击：恢复按下时的位置，连续点按不再把兽一点点推走
+        beastToy.style.left = `${initialLeft}px`;
+        beastToy.style.top = `${initialTop}px`;
+        setBeastFrame(getBaseFrame());
         const clientX = e.clientX || (e.touches && e.touches[0].clientX) || 0;
         const clientY = e.clientY || (e.touches && e.touches[0].clientY) || 0;
         const rect = stageEl.getBoundingClientRect();
@@ -937,7 +933,7 @@
         if (clickTimestamps.length >= 3) {
           clickTimestamps = [];
           showBubble('静气');
-          playTempFrame('sneeze', 480);
+          playTempFrame('sneeze', 650);
         } else {
           triggerPokeScorn();
         }
@@ -1078,13 +1074,13 @@
     if (!catToy || !stageEl || !bodyImg) return;
 
     const CAT_FRAMES = {
-      sleep: '/assets/cat-sleep.png?v=20261021c',
-      awake: '/assets/cat-awake.png?v=20261021c',
-      stretch: '/assets/cat-stretch.png?v=20261021c',
-      belly: '/assets/cat-belly.png?v=20261021c',
-      run: '/assets/cat-run.png?v=20261021c',
-      peek: '/assets/cat-peek.png?v=20261021c',
-      lift: '/assets/cat-lift.png?v=20261021c'
+      sleep: '/assets/cat-sleep.png?v=20261021d',
+      awake: '/assets/cat-awake.png?v=20261021d',
+      stretch: '/assets/cat-stretch.png?v=20261021d',
+      belly: '/assets/cat-belly.png?v=20261021d',
+      run: '/assets/cat-run.png?v=20261021d',
+      peek: '/assets/cat-peek.png?v=20261021d',
+      lift: '/assets/cat-lift.png?v=20261021d'
     };
     // 预加载全部帧图，避免首次换帧时等下载（探头仅停 1.1 秒，等图必错过）
     Object.values(CAT_FRAMES).forEach((u) => { const i = new Image(); i.src = u; });
@@ -1192,7 +1188,7 @@
       paw.className = 'cat-paw-print';
       paw.style.left = `${pageX}px`;
       paw.style.top = `${pageY}px`;
-      paw.innerHTML = '<svg viewBox="0 0 24 24" width="18" height="18"><ellipse cx="12" cy="15" rx="5" ry="4" fill="#f4c2a7"/><circle cx="6" cy="8" r="2.2" fill="#f4c2a7"/><circle cx="10" cy="5.5" r="2.2" fill="#f4c2a7"/><circle cx="14" cy="5.5" r="2.2" fill="#f4c2a7"/><circle cx="18" cy="8" r="2.2" fill="#f4c2a7"/></svg>';
+      paw.innerHTML = '<svg viewBox="0 0 24 24" width="20" height="20"><ellipse cx="12" cy="15" rx="5" ry="4" fill="#a05c2c"/><circle cx="6" cy="8" r="2.2" fill="#a05c2c"/><circle cx="10" cy="5.5" r="2.2" fill="#a05c2c"/><circle cx="14" cy="5.5" r="2.2" fill="#a05c2c"/><circle cx="18" cy="8" r="2.2" fill="#a05c2c"/></svg>';
       document.body.appendChild(paw);
       activePawPrints.push(paw);
 
@@ -1290,8 +1286,10 @@
 
       const totalDx = clientX - startX;
       const totalDy = clientY - startY;
+      const totalDist = Math.hypot(totalDx, totalDy);
       // 拖拽一旦咬合就锁存：手指微抖造成的方向反转不再中断跟随（断流根源）
-      if (!isDraggingCat && Math.hypot(totalDx, totalDy) > 15 && reversals <= 1) {
+      // 前 250ms 先让抚摸判定抢先（来回摸是唤醒手势），除非位移 >45px 是果断拖走；唤醒中不再咬合
+      if (!isDraggingCat && !isWakingUp && totalDist > 15 && reversals <= 1 && (elapsed > 250 || totalDist > 45)) {
         isDraggingCat = true;
         catToy.classList.add('is-dragging');
         // 拖动期间：cat-lift.png
