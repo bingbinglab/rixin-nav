@@ -117,7 +117,7 @@
     const ctx = getAudioCtx();
     if (!ctx) return;
     muyuAudioLoading = true;
-    fetch('/assets/muyu.mp3?v=20261021b')
+    fetch('/assets/muyu.mp3?v=20261021c')
       .then(res => res.arrayBuffer())
       .then(buf => ctx.decodeAudioData(buf))
       .then(decoded => {
@@ -148,7 +148,7 @@
     } else {
       // 首次加载未完成或降级时的 HTML5 Audio 回退
       try {
-        const a = new Audio('/assets/muyu.mp3?v=20261021b');
+        const a = new Audio('/assets/muyu.mp3?v=20261021c');
         a.playbackRate = pitch;
         a.play().catch(() => {});
       } catch (_) {}
@@ -703,13 +703,13 @@
     const FORTUNE_CHARS = ['稳', '吉', '镇', '发', '安', '顺', '定', '亨'];
 
     const BEAST_FRAMES = {
-      default: '/assets/beast.png?v=20261021b',
-      sit: '/assets/beast-sit.png?v=20261021b',
-      drag: '/assets/beast-drag.png?v=20261021b',
-      scorn: '/assets/beast-scorn.png?v=20261021b',
-      coin: '/assets/beast-coin.png?v=20261021b',
-      sneeze: '/assets/beast-sneeze.png?v=20261021b',
-      rest: '/assets/beast-rest.png?v=20261021b'
+      default: '/assets/beast.png?v=20261021c',
+      sit: '/assets/beast-sit.png?v=20261021c',
+      drag: '/assets/beast-drag.png?v=20261021c',
+      scorn: '/assets/beast-scorn.png?v=20261021c',
+      coin: '/assets/beast-coin.png?v=20261021c',
+      sneeze: '/assets/beast-sneeze.png?v=20261021c',
+      rest: '/assets/beast-rest.png?v=20261021c'
     };
     // 预加载全部帧图，避免首次换帧时等下载（探头/提溜等短帧会被跳过）
     Object.values(BEAST_FRAMES).forEach((u) => { const i = new Image(); i.src = u; });
@@ -1078,13 +1078,13 @@
     if (!catToy || !stageEl || !bodyImg) return;
 
     const CAT_FRAMES = {
-      sleep: '/assets/cat-sleep.png?v=20261021b',
-      awake: '/assets/cat-awake.png?v=20261021b',
-      stretch: '/assets/cat-stretch.png?v=20261021b',
-      belly: '/assets/cat-belly.png?v=20261021b',
-      run: '/assets/cat-run.png?v=20261021b',
-      peek: '/assets/cat-peek.png?v=20261021b',
-      lift: '/assets/cat-lift.png?v=20261021b'
+      sleep: '/assets/cat-sleep.png?v=20261021c',
+      awake: '/assets/cat-awake.png?v=20261021c',
+      stretch: '/assets/cat-stretch.png?v=20261021c',
+      belly: '/assets/cat-belly.png?v=20261021c',
+      run: '/assets/cat-run.png?v=20261021c',
+      peek: '/assets/cat-peek.png?v=20261021c',
+      lift: '/assets/cat-lift.png?v=20261021c'
     };
     // 预加载全部帧图，避免首次换帧时等下载（探头仅停 1.1 秒，等图必错过）
     Object.values(CAT_FRAMES).forEach((u) => { const i = new Image(); i.src = u; });
