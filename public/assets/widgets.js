@@ -117,7 +117,7 @@
     const ctx = getAudioCtx();
     if (!ctx) return;
     muyuAudioLoading = true;
-    fetch('/assets/muyu.mp3?v=20261020d')
+    fetch('/assets/muyu.mp3?v=20261021a')
       .then(res => res.arrayBuffer())
       .then(buf => ctx.decodeAudioData(buf))
       .then(decoded => {
@@ -148,7 +148,7 @@
     } else {
       // 首次加载未完成或降级时的 HTML5 Audio 回退
       try {
-        const a = new Audio('/assets/muyu.mp3?v=20261020d');
+        const a = new Audio('/assets/muyu.mp3?v=20261021a');
         a.playbackRate = pitch;
         a.play().catch(() => {});
       } catch (_) {}
@@ -717,13 +717,13 @@
     const FORTUNE_CHARS = ['稳', '吉', '镇', '发', '安', '顺', '定', '亨'];
 
     const BEAST_FRAMES = {
-      default: '/assets/beast.png?v=20261020d',
-      sit: '/assets/beast-sit.png?v=20261020d',
-      drag: '/assets/beast-drag.png?v=20261020d',
-      scorn: '/assets/beast-scorn.png?v=20261020d',
-      coin: '/assets/beast-coin.png?v=20261020d',
-      sneeze: '/assets/beast-sneeze.png?v=20261020d',
-      rest: '/assets/beast-rest.png?v=20261020d'
+      default: '/assets/beast.png?v=20261021a',
+      sit: '/assets/beast-sit.png?v=20261021a',
+      drag: '/assets/beast-drag.png?v=20261021a',
+      scorn: '/assets/beast-scorn.png?v=20261021a',
+      coin: '/assets/beast-coin.png?v=20261021a',
+      sneeze: '/assets/beast-sneeze.png?v=20261021a',
+      rest: '/assets/beast-rest.png?v=20261021a'
     };
 
     let origPlaceholder = '';
@@ -1090,13 +1090,13 @@
     if (!catToy || !stageEl || !bodyImg) return;
 
     const CAT_FRAMES = {
-      sleep: '/assets/cat-sleep.png?v=20261020d',
-      awake: '/assets/cat-awake.png?v=20261020d',
-      stretch: '/assets/cat-stretch.png?v=20261020d',
-      belly: '/assets/cat-belly.png?v=20261020d',
-      run: '/assets/cat-run.png?v=20261020d',
-      peek: '/assets/cat-peek.png?v=20261020d',
-      lift: '/assets/cat-lift.png?v=20261020d'
+      sleep: '/assets/cat-sleep.png?v=20261021a',
+      awake: '/assets/cat-awake.png?v=20261021a',
+      stretch: '/assets/cat-stretch.png?v=20261021a',
+      belly: '/assets/cat-belly.png?v=20261021a',
+      run: '/assets/cat-run.png?v=20261021a',
+      peek: '/assets/cat-peek.png?v=20261021a',
+      lift: '/assets/cat-lift.png?v=20261021a'
     };
 
     let isAwake = false;
@@ -1524,7 +1524,7 @@
         // 三次减速缓动
         const ease = 1 - Math.pow(1 - progress, 3);
         const rot = startRot + extraRot * ease;
-        rotator.style.transform = `rotate(${rot}deg)`;
+        rotator.style.transform = `translate(-50%, -50%) rotate(${rot}deg)`;
 
         // 每隔约 32 度木齿撞击一声哒哒
         if (Math.abs(rot - lastTickAngle) >= 32) {

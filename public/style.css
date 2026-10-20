@@ -2332,18 +2332,18 @@ html.dark-theme .fan-illust-item {
 }
 .muyu-mallet-img {
   position: absolute;
-  right: 9px;
-  top: 10px;
+  right: 4px;
+  top: 22px;
   width: 47px;
   height: auto;
-  transform-origin: 80% 80%;
-  transform: rotate(8deg);
+  transform-origin: 15% 85%;
+  transform: rotate(30deg);
   transition: transform 0.05s cubic-bezier(0.18, 0.89, 0.32, 1.28);
   pointer-events: none;
 }
 /* 敲击动效 */
 .muyu-stage.hit .muyu-mallet-img {
-  transform: translate(-14px, 23px) rotate(12deg);
+  transform: translate(-12px, 14px) rotate(36deg);
 }
 .muyu-stage.hit .muyu-body-img {
   transform: scale(1.05, 0.92);
@@ -3362,11 +3362,11 @@ body.seal-stamping-mode {
   }
   .muyu-mallet-img {
     width: 40px;
-    top: 2px;
-    right: 2px;
+    top: 18px;
+    right: 3px;
   }
   .muyu-stage.hit .muyu-mallet-img {
-    transform: translate(-22px, 26px) rotate(12deg);
+    transform: translate(-10px, 12px) rotate(36deg);
   }
 
   /* 手机端新三件自适应 */
@@ -3385,20 +3385,8 @@ body.seal-stamping-mode {
     padding: 10px 12px 12px;
   }
   .wheel-stage {
-    width: 176px;
-    height: 192px;
-  }
-  .wheel-stand-img {
-    width: 150px;
-  }
-  .wheel-rotator {
-    width: 152px;
-    height: 152px;
-    margin-left: -76px;
-  }
-  .wheel-sector-label {
-    height: 76px;
-    padding-top: 16px;
+    width: 100%;
+    height: auto;
   }
   .wheel-label-text {
     font-size: 8.5px;
