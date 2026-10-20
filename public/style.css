@@ -2771,7 +2771,7 @@ html.dark-theme .fan-illust-item {
   100% { opacity: 0; transform: translate(-50%, -50%) scale(0.9); }
 }
 
-/* 6.3 今日特许盘 (.fortune-wheel-modal) */
+/* 6.3 今日特许盘 (.fortune-wheel-modal) · 双耳陶托盘合体 */
 .fortune-wheel-modal {
   position: fixed;
   right: 24px;
@@ -2781,7 +2781,7 @@ html.dark-theme .fan-illust-item {
 }
 .wheel-panel-card {
   position: relative;
-  width: 250px;
+  width: 270px;
   background: var(--paper);
   border: 2px solid var(--ink);
   box-shadow: 5px 5px 0 var(--ink);
@@ -2802,7 +2802,7 @@ html.dark-theme .wheel-panel-card {
   width: 100%;
   border-bottom: 1px dashed var(--border-line);
   padding-bottom: 6px;
-  margin-bottom: 10px;
+  margin-bottom: 8px;
 }
 .wheel-panel-title {
   font-family: var(--serif);
@@ -2822,39 +2822,26 @@ html.dark-theme .wheel-panel-card {
 .wheel-close-btn:hover { color: var(--ochre); }
 .wheel-stage {
   position: relative;
-  width: 200px;
-  height: 218px;
-  margin: 4px 0 10px;
+  width: 100%;
+  max-width: 242px;
+  margin: 2px 0 10px;
 }
-.wheel-stand-img {
-  position: absolute;
-  bottom: 0;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 172px;
+.wheel-tray-img {
+  width: 100%;
+  height: auto;
+  display: block;
   pointer-events: none;
 }
 .wheel-pointer {
-  position: absolute;
-  top: -2px;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 0;
-  height: 0;
-  border-left: 9px solid transparent;
-  border-right: 9px solid transparent;
-  border-top: 17px solid var(--ochre);
-  filter: drop-shadow(0 0 1.5px var(--ink)) drop-shadow(0 1.5px 1.5px rgba(39, 36, 34, 0.35));
-  z-index: 10;
-  pointer-events: none;
+  display: none !important;
 }
 .wheel-rotator {
   position: absolute;
-  left: 50%;
-  top: 4px;
-  width: 176px;
-  height: 176px;
-  margin-left: -88px;
+  left: 46.38%;
+  top: 47.90%;
+  transform: translate(-50%, -50%);
+  width: 36.90%;
+  aspect-ratio: 1 / 1;
   border-radius: 50%;
   cursor: pointer;
   z-index: 2;
@@ -2863,8 +2850,8 @@ html.dark-theme .wheel-panel-card {
   position: absolute;
   inset: 0;
   border-radius: 50%;
-  border: 2px solid var(--ink);
-  box-shadow: 0 0 0 9px #b87743, 0 0 0 11px var(--ink), inset 0 0 12px rgba(39, 36, 34, 0.18);
+  border: 1.5px solid var(--ink);
+  box-shadow: inset 0 0 8px rgba(39, 36, 34, 0.15), 0 0 1px rgba(39, 36, 34, 0.25);
   background:
     repeating-conic-gradient(from -22.5deg, rgba(39, 36, 34, 0.85) 0deg 1.5deg, transparent 1.5deg 45deg),
     conic-gradient(from -22.5deg, #f8f5ee 0deg 45deg, #e8ba8c 45deg 90deg, #f8f5ee 90deg 135deg, #e8ba8c 135deg 180deg, #f8f5ee 180deg 225deg, #e8ba8c 225deg 270deg, #f8f5ee 270deg 315deg, #e8ba8c 315deg 360deg);
@@ -2873,44 +2860,41 @@ html.dark-theme .wheel-panel-card {
   position: absolute;
   left: 50%;
   top: 50%;
-  width: 38px;
-  height: 38px;
-  margin: -19px 0 0 -19px;
+  width: 22%;
+  height: 22%;
+  transform: translate(-50%, -50%);
   border-radius: 50%;
   background: radial-gradient(circle at 35% 30%, #f0ca6e, #c89b3c 70%, #a67c2e);
-  border: 2px solid var(--ink);
+  border: 1.5px solid var(--ink);
   z-index: 3;
   pointer-events: none;
 }
 .wheel-sector-labels {
   position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
+  inset: 0;
   pointer-events: none;
 }
 .wheel-sector-label {
   position: absolute;
   top: 0;
   left: 50%;
-  width: 24px;
-  height: 88px;
-  margin-left: -12px;
+  width: 20px;
+  height: 50%;
+  margin-left: -10px;
   transform-origin: bottom center;
   display: flex;
   justify-content: center;
-  padding-top: 19px;
+  padding-top: 6px;
   box-sizing: border-box;
 }
 .wheel-label-text {
   font-family: var(--serif);
-  font-size: 9.5px;
+  font-size: 8.5px;
   font-weight: 700;
   color: var(--ink);
-  line-height: 1.15;
+  line-height: 1.1;
   writing-mode: vertical-rl;
-  letter-spacing: 0.5px;
+  letter-spacing: 0.2px;
 }
 .wheel-panel-actions {
   width: 100%;
@@ -2945,18 +2929,18 @@ html.dark-theme .wheel-panel-card {
   transform: none !important;
 }
 
-/* 命中特许签弹层 */
+/* 命中特许签弹层：底部浮现，避开右侧立签与中央盘面 */
 .wheel-result-slip {
   position: absolute;
-  top: 50%;
+  bottom: 8px;
   left: 50%;
-  transform: translate(-50%, -50%);
-  width: 190px;
+  transform: translateX(-50%);
+  width: calc(100% - 24px);
   background: var(--paper);
   border: 2px solid var(--ochre);
   box-shadow: 4px 4px 0 var(--ochre);
   border-radius: 3px;
-  padding: 16px 12px;
+  padding: 10px 10px 12px;
   text-align: center;
   z-index: 20;
   animation: slipPopIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
