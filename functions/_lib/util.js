@@ -61,12 +61,32 @@ export async function destroySession(request, env) {
   return sessionCookieHeader("", 0);
 }
 
+// 同源校验（纵深防御，给 SameSite=Lax 之外加第二道网）：仅对 Cookie 会话的写请求生效，
+// 机器令牌（Bearer）调用豁免。浏览器跨站 POST 必带 Origin，其 host 与本站 Host 不一致即拒绝；
+// 无 Origin 时退看 Referer；两者都无（非浏览器客户端直调）放行，不误伤脚本与自动化。
+export function originDenied(request) {
+  const method = (request.method || "GET").toUpperCase();
+  if (method === "GET" || method === "HEAD" || method === "OPTIONS") return false;
+  const host = request.headers.get("Host") || "";
+  if (!host) return false;
+  const source = request.headers.get("Origin") || request.headers.get("Referer");
+  if (!source) return false;
+  try {
+    return new URL(source).host !== host;
+  } catch {
+    return true;
+  }
+}
+
 // 未登录统一 401；绑定缺失统一 503，前台据此回退静态 data.js。
 // 除了网页登录的会话 Cookie，也认机器令牌：Authorization: Bearer <ADMIN_API_TOKEN>（助理自动化/验收用，可在 CF 环境变量里随时删除作废）。
 export async function requireAuth(context) {
   const { request, env } = context;
   if (!env.NAV_DB || !env.NAV_KV) return json({ error: "backend_not_configured" }, 503);
-  if (await hasSession(request, env)) return null;
+  if (await hasSession(request, env)) {
+    if (originDenied(request)) return json({ error: "forbidden_cross_origin" }, 403);
+    return null;
+  }
   const auth = request.headers.get("Authorization") || "";
   const token = auth.startsWith("Bearer ") ? auth.slice(7).trim() : "";
   if (token && env.ADMIN_API_TOKEN && passwordMatches(token, env.ADMIN_API_TOKEN)) return null;
