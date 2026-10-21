@@ -37,7 +37,7 @@ INSERT INTO sites (name, url, desc, category_id, icon, pinned, is_private, sort_
 INSERT INTO sites (name, url, desc, category_id, icon, pinned, is_private, sort_order) VALUES ('豆瓣电影', 'https://movie.douban.com', '电影评分与影评', 5, 'douban.com.png', 0, 0, 240);
 INSERT INTO sites (name, url, desc, category_id, icon, pinned, is_private, sort_order) VALUES ('腾讯视频', 'https://v.qq.com', '影视剧集与综艺', 5, 'v.qq.com.png', 0, 0, 250);
 INSERT INTO sites (name, url, desc, category_id, icon, pinned, is_private, sort_order) VALUES ('GitHub', 'https://github.com', '代码托管与开源社区', 6, 'github.com.png', 0, 0, 260);
-INSERT INTO sites (name, url, desc, category_id, icon, pinned, is_private, sort_order) VALUES ('日新辑览仓库', 'https://github.com/bingbinglab/rixin-nav', '本站开源源码', 6, 'github.com.png', 1, 0, 210);
+INSERT INTO sites (name, url, desc, category_id, icon, pinned, is_private, sort_order) VALUES ('日新辑览仓库', 'https://github.com/bingbinglab/rixin-nav', '本站开源源码', 6, 'github.com.png', 1, 0, 255);
 INSERT INTO sites (name, url, desc, category_id, icon, pinned, is_private, sort_order) VALUES ('MDN Web Docs', 'https://developer.mozilla.org', '前端开发技术文档', 6, 'developer.mozilla.org.png', 0, 0, 270);
 INSERT INTO sites (name, url, desc, category_id, icon, pinned, is_private, sort_order) VALUES ('Stack Overflow', 'https://stackoverflow.com', '编程问答与解决方案', 6, 'stackoverflow.com.png', 0, 0, 280);
 INSERT INTO sites (name, url, desc, category_id, icon, pinned, is_private, sort_order) VALUES ('Vercel', 'https://vercel.com', '前端部署与托管平台', 6, 'vercel.com.png', 0, 0, 290);
