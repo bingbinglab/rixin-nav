@@ -33,14 +33,21 @@ export async function onRequestPost(context) {
       return json({ error: "ids 包含重复的 ID" }, 400);
     }
 
-    const placeholders = cleanIds.map(() => "?").join(",");
+    // 存在性检查按 50 条切片查询：整表 IN 绑定全部 ID 会撞 D1 的 SQL 变量上限（批量删除同病，2026-10-21 实测）
+    async function selectInChunks(selectHead) {
+      const out = [];
+      for (let i = 0; i < cleanIds.length; i += 50) {
+        const chunk = cleanIds.slice(i, i + 50);
+        const ph = chunk.map(() => "?").join(",");
+        const rows = await env.NAV_DB.prepare(`${selectHead} (${ph})`).bind(...chunk).all();
+        out.push(...(rows.results || []));
+      }
+      return out;
+    }
 
     if (type === "site") {
       // 1. 严格检查全部 ID 是否存在，并按所属分类分组
-      const checkRows = await env.NAV_DB.prepare(
-        `SELECT id, category_id FROM sites WHERE id IN (${placeholders})`
-      ).bind(...cleanIds).all();
-      const results = checkRows.results || [];
+      const results = await selectInChunks("SELECT id, category_id FROM sites WHERE id IN");
       if (results.length !== cleanIds.length) {
         return json({ error: "存在不存在的 ID，整单拒绝" }, 400);
       }
@@ -64,10 +71,7 @@ export async function onRequestPost(context) {
     } else {
       // type === "category"
       // 1. 严格检查全部 ID 是否存在，并按 parent_id 分组
-      const checkRows = await env.NAV_DB.prepare(
-        `SELECT id, parent_id FROM category WHERE id IN (${placeholders})`
-      ).bind(...cleanIds).all();
-      const results = checkRows.results || [];
+      const results = await selectInChunks("SELECT id, parent_id FROM category WHERE id IN");
       if (results.length !== cleanIds.length) {
         return json({ error: "存在不存在的 ID，整单拒绝" }, 400);
       }
@@ -97,7 +101,10 @@ export async function onRequestPost(context) {
       env.NAV_DB.prepare(`UPDATE ${table} SET sort_order = ? WHERE id = ?`).bind((index + 1) * 10, id)
     );
 
-    await env.NAV_DB.batch(stmts);
+    // 与批量接口同口径：每 50 条一批执行，避免大分类排序时撞 D1 批量上限
+    for (let i = 0; i < stmts.length; i += 50) {
+      await env.NAV_DB.batch(stmts.slice(i, i + 50));
+    }
 
     return json({ ok: true, count: cleanIds.length });
   } catch (err) {

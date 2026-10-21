@@ -31,12 +31,18 @@ export async function onRequestPost(context) {
 
     // 1. 批量删除
     if (action === "delete") {
-      const placeholders = cleanIds.map(() => "?").join(",");
-      const floccusRows = (
-        await env.NAV_DB.prepare(
-          `SELECT url FROM sites WHERE id IN (${placeholders}) AND origin = 'floccus'`
-        ).bind(...cleanIds).all()
-      ).results;
+      // 前置查询同样按 50 条切片：整表 IN 绑定全部 ID 会撞 D1 的 SQL 变量上限（2026-10-21 实测 300 条必崩 500）
+      const floccusRows = [];
+      for (let i = 0; i < cleanIds.length; i += 50) {
+        const chunk = cleanIds.slice(i, i + 50);
+        const placeholders = chunk.map(() => "?").join(",");
+        const rows = (
+          await env.NAV_DB.prepare(
+            `SELECT url FROM sites WHERE id IN (${placeholders}) AND origin = 'floccus'`
+          ).bind(...chunk).all()
+        ).results;
+        if (rows) floccusRows.push(...rows);
+      }
 
       const stmts = cleanIds.map((id) =>
         env.NAV_DB.prepare("DELETE FROM sites WHERE id = ?").bind(id)
