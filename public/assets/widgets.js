@@ -1060,13 +1060,13 @@
     if (!catToy || !stageEl || !bodyImg) return;
 
     const CAT_FRAMES = {
-      sleep: '/assets/cat-sleep.webp?v=20261021g',
-      awake: '/assets/cat-awake.webp?v=20261021g',
-      stretch: '/assets/cat-stretch.webp?v=20261021g',
-      belly: '/assets/cat-belly.webp?v=20261021g',
-      run: '/assets/cat-run.webp?v=20261021g',
-      peek: '/assets/cat-peek.webp?v=20261021g',
-      lift: '/assets/cat-lift.webp?v=20261021g'
+      sleep: '/assets/cat-sleep.webp?v=20261025a',
+      awake: '/assets/cat-awake.webp?v=20261025a',
+      stretch: '/assets/cat-stretch.webp?v=20261025a',
+      belly: '/assets/cat-belly.webp?v=20261025a',
+      run: '/assets/cat-run.webp?v=20261025a',
+      peek: '/assets/cat-peek.webp?v=20261025a',
+      lift: '/assets/cat-lift.webp?v=20261025a'
     };
     // 预加载全部帧图，避免首次换帧时等下载（探头仅停 1.1 秒，等图必错过）
     Object.values(CAT_FRAMES).forEach((u) => { const i = new Image(); i.src = u; });
