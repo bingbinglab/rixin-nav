@@ -194,7 +194,7 @@
     } catch (_) {}
   }
 
-  // 0.6 案头卧黑狸唤醒轻叫：短促柔和的上扬小喵声（不用低频轰鸣）
+  // 0.6 可爱胖橘橘唤醒轻叫：短促柔和的上扬小喵声（不用低频轰鸣）
   let activePurrStop = null;
   function playCatPurrSound() {
     const ctx = getAudioCtx();
@@ -1362,7 +1362,7 @@
       }
     });
 
-    // 逗猫模式：在页面空白处点击任意位置，黑狸小碎步快跑到达，沿途踩下梅花爪印
+    // 逗猫模式：在页面空白处点击任意位置，可爱胖橘橘小碎步快跑到达，沿途踩下梅花爪印
     document.addEventListener('click', (e) => {
       if (!isAwake || isWakingUp || catToy.hidden || isWalking || isTouching) return;
       const target = e.target;

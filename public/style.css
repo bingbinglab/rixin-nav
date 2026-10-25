@@ -2230,7 +2230,7 @@ html.dark-theme .toy-hub-btn {
 .toy-hub-wrap.is-open .fan-item:nth-child(5) { transition-delay: 0.10s; }
 
 /* 桌面端坐标 (五件同席 · 双弧错落) */
-/* 单弧扇形 R=128 排开: 特许盘(0°), 木鱼(23°), 黑狸(46°), 镇纸兽(68°), 闲章(90°) */
+/* 单弧扇形 R=128 排开: 特许盘(0°), 木鱼(23°), 胖橘(46°), 镇纸兽(68°), 闲章(90°) */
 .fan-wheel-item {
   --tx: -128px;
   --ty: 0px;
@@ -2628,7 +2628,7 @@ html.dark-theme .fan-illust-item {
   transition: box-shadow 0.25s ease, border-color 0.25s ease;
 }
 
-/* 6.2 案头卧黑狸 (.floating-cat-toy) */
+/* 6.2 可爱胖橘橘 (.floating-cat-toy) */
 .floating-cat-toy {
   position: fixed;
   z-index: 94;
@@ -3309,7 +3309,7 @@ body.seal-stamping-mode {
     height: 48px;
   }
   /* 手机端双弧紧凑散开 (总半径 <= 82px) */
-  /* 单弧扇形 R=120 排开: 特许盘(0°), 木鱼(23°), 黑狸(46°), 镇纸兽(69°), 闲章(92°) */
+  /* 单弧扇形 R=120 排开: 特许盘(0°), 木鱼(23°), 胖橘(46°), 镇纸兽(69°), 闲章(92°) */
   .fan-wheel-item {
     --tx: -120px;
     --ty: 0px;
