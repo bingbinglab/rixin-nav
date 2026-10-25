@@ -2632,7 +2632,7 @@ html.dark-theme .fan-illust-item {
 .floating-cat-toy {
   position: fixed;
   z-index: 94;
-  width: 122px;
+  width: 100px;
   cursor: grab;
   user-select: none;
   touch-action: none;
@@ -3385,7 +3385,7 @@ body.seal-stamping-mode {
     width: 128px;
   }
   .floating-cat-toy {
-    width: 106px;
+    width: 88px;
   }
   .fortune-wheel-modal {
     right: 14px;
