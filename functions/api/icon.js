@@ -18,7 +18,16 @@ export async function onRequestGet(context) {
     return new Response("upstream unreachable", { status: 502 });
   }
   if (!res.ok) return new Response("not found", { status: 404 });
+  // 内容校验：谷歌对无图标域名可能回一张通用地球占位图（HTTP 200），不能当真图标：
+  // 命中已知占位图指纹时按 404 处理，让前端落到纸墨首字牌（指纹为该占位图字节的 SHA-256）。
+  const buf = await res.arrayBuffer();
+  const digest = await crypto.subtle.digest("SHA-256", buf);
+  const hex = [...new Uint8Array(digest)].map((b) => b.toString(16).padStart(2, "0")).join("");
+  const KNOWN_PLACEHOLDERS = new Set([
+    "5e91e47f4344fe1914cbbf8975775f14b2811fefd8f1572adc1e1c075b49c52c",
+  ]);
+  if (KNOWN_PLACEHOLDERS.has(hex)) return new Response("not found", { status: 404 });
   const headers = new Headers(res.headers);
   headers.set("Cache-Control", "public, max-age=604800, immutable");
-  return new Response(res.body, { status: 200, headers });
+  return new Response(buf, { status: 200, headers });
 }
