@@ -53,10 +53,10 @@
     let dataRemote = "";
 
     if (site.icon) {
-      src = "/icons/" + encodeURI(site.icon);
+      src = "/icons/" + encodeURI(site.icon) + "?v=20261030";
       dataRemote = remote;
     } else if (host && LOCAL_ICON_DOMAINS.has(host)) {
-      src = "/icons/" + host + ".png";
+      src = "/icons/" + host + ".png?v=20261030";
       dataRemote = remote;
     } else if (remote) {
       src = remote;
