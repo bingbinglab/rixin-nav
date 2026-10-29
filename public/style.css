@@ -3197,7 +3197,7 @@ body.seal-stamping-mode {
 }
 .leisure-seal-hint-bar {
   position: fixed;
-  bottom: 18px;
+  bottom: calc(18px + env(safe-area-inset-bottom, 0px));
   left: 50%;
   transform: translateX(-50%) translateY(8px);
   display: flex;
@@ -3223,6 +3223,7 @@ body.seal-stamping-mode {
   pointer-events: auto;
 }
 .seal-hint-close {
+  position: relative;
   width: 22px;
   height: 22px;
   border-radius: 50%;
@@ -3238,6 +3239,7 @@ body.seal-stamping-mode {
   padding: 0;
 }
 .seal-hint-close:hover { border-color: var(--ochre); color: var(--ochre); }
+.seal-hint-close::after { content: ""; position: absolute; inset: -9px; }
 .leisure-seal-stamp {
   position: absolute;
   width: 48px;
