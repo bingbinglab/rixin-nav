@@ -1888,6 +1888,39 @@ function checkUrlDup() {
 }
 
 // --- 表单、编辑与取消编辑 (P11, P15, P08+P17 站内确认) ---
+// --- 编辑弹窗：表单卡运行时移入/移回（同一节点，事件与状态原样保留） ---
+const editModalEl = $("editModal");
+const editModalSlotEl = $("editModalSlot");
+const formCardEl = document.querySelector('[data-tab-pane="tab-edit"]');
+const formHomePos = formCardEl ? { parent: formCardEl.parentNode, next: formCardEl.nextSibling } : null;
+function isEditModalOpen() { return !!editModalEl && editModalEl.style.display !== "none"; }
+function openEditModal() {
+  if (!editModalEl || !formCardEl) return;
+  if (formCardEl.parentNode !== editModalSlotEl) editModalSlotEl.appendChild(formCardEl);
+  editModalEl.style.display = "flex";
+  document.body.style.overflow = "hidden";
+}
+function closeEditModal() {
+  if (!editModalEl || !formCardEl || !isEditModalOpen()) return;
+  editModalEl.style.display = "none";
+  document.body.style.overflow = "";
+  if (formCardEl.parentNode === editModalSlotEl && formHomePos) {
+    if (formHomePos.next && formHomePos.next.parentNode === formHomePos.parent) formHomePos.parent.insertBefore(formCardEl, formHomePos.next);
+    else formHomePos.parent.appendChild(formCardEl);
+  }
+}
+function cancelFormFlow() {
+  const cm = $("confirmModal");
+  if (cm && cm.style.display !== "none") return;
+  $("resetBtn").click();
+}
+if (editModalEl) {
+  editModalEl.addEventListener("click", (e) => { if (e.target === editModalEl) cancelFormFlow(); });
+  document.addEventListener("keydown", (e) => { if (e.key === "Escape" && isEditModalOpen()) cancelFormFlow(); });
+  const cmb = $("editModalClose");
+  if (cmb) cmb.onclick = () => cancelFormFlow();
+}
+
 function edit(id) {
   const s = data.sites.find((x) => x.id === id);
   if (!s) return;
@@ -1905,9 +1938,8 @@ function edit(id) {
   $("formTitle").textContent = "编辑书签";
   $("resetBtn").textContent = "取消编辑";
   updateDescCount();
-  switchTab("tab-edit"); // P15: 编辑自动切至新增/编辑Tab
-  window.scrollTo({ top: 0, behavior: "smooth" });
-  const formCard = document.querySelector('[data-tab-pane="tab-edit"]');
+  openEditModal();
+  const formCard = formCardEl;
   if (formCard) {
     formCard.classList.remove("card-highlight");
     void formCard.offsetWidth;
@@ -1926,11 +1958,28 @@ $("resetBtn").onclick = () => {
   $("resetBtn").textContent = "清空表单";
   $("msg").textContent = "";
   updateDescCount();
+  closeEditModal();
   if (prevId) {
     switchTab("tab-sites");
     const row = document.querySelector('tr[data-site-id="' + prevId + '"]');
     if (row) row.scrollIntoView({ behavior: "smooth", block: "center" });
   }
+};
+
+// 「＋ 新增书签」：复位为新增状态后以弹窗打开表单
+const addSiteBtnEl = $("addSiteBtn");
+if (addSiteBtnEl) addSiteBtnEl.onclick = () => {
+  if (editingSiteId) { $("resetBtn").click(); }
+  else {
+    ["fId", "fSort", "fName", "fUrl", "fDesc", "fCat", "fIcon"].forEach((i) => ($(i).value = ""));
+    $("fPinned").checked = $("fPrivate").checked = false;
+    $("formTitle").textContent = "新增书签";
+    $("resetBtn").textContent = "清空表单";
+    $("msg").textContent = "";
+    clearUrlDupWarn();
+    updateDescCount();
+  }
+  openEditModal();
 };
 
 $("saveBtn").onclick = async () => {
@@ -1973,6 +2022,7 @@ $("saveBtn").onclick = async () => {
     const targetId = id ? +id : res && res.id ? +res.id : null;
     $("msg").textContent = id ? "已保存修改。" : "新书签已保存。";
     toast(id ? "书签修改已保存" : "新书签已保存");
+    closeEditModal();
     editingSiteId = null;
     clearUrlDupWarn();
     $("fId").value = "";

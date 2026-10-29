@@ -9,7 +9,7 @@ function getLoginHtml(siteTitle) {
 <html lang="zh-CN"><head><meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>${title} · 后台登录</title><link rel="icon" type="image/svg+xml" href="/favicon-2.svg"><link rel="icon" type="image/png" sizes="192x192" href="/icon-192-2.png">
-<link rel="stylesheet" href="/admin-assets/admin.css?v=20261019j">
+<link rel="stylesheet" href="/admin-assets/admin.css?v=20261030a">
 <style>
 body{display:flex;min-height:100vh;align-items:center;justify-content:center;padding:16px}
 form{background:var(--card);border:2px solid var(--ink);box-shadow:7px 7px 0 var(--card-shadow);padding:30px;width:340px;max-width:94vw}
@@ -50,7 +50,7 @@ function getAdminHtml(siteTitle) {
 <html lang="zh-CN"><head><meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>${title} · 后台管理</title><link rel="icon" type="image/svg+xml" href="/favicon-2.svg"><link rel="icon" type="image/png" sizes="192x192" href="/icon-192-2.png">
-<link rel="stylesheet" href="/admin-assets/admin.css?v=20261019j">
+<link rel="stylesheet" href="/admin-assets/admin.css?v=20261030a">
 <script>(function(){try{var t=localStorage.getItem('myNavTheme');if(!t&&window.matchMedia&&window.matchMedia('(prefers-color-scheme:dark)').matches)t='dark';if(t==='dark')document.documentElement.classList.add('dark-theme');}catch(e){}})();</script>
 </head>
 <body><div class="wrap">
@@ -186,12 +186,20 @@ function getAdminHtml(siteTitle) {
 
 <!-- Card 8: 全部书签 (右栏) -->
 <div class="col-right" data-tab-pane="tab-sites">
-<div class="card"><div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px"><h2><span class="chap">捌</span>全部书签</h2><div class="fold-controls" style="display:flex;gap:6px"><button class="ghost mini" type="button" id="foldAllBtn" title="全部折叠分类">全部折叠</button><button class="ghost mini" type="button" id="unfoldAllBtn" title="全部展开分类">全部展开</button></div></div><div class="searchbar"><input id="siteSearch" placeholder="过滤：打站名、网址或分类…"><button type="button" class="search-clear-btn" id="searchClearBtn" title="清空搜索" aria-label="清空搜索" style="display:none">×</button></div><div id="list">加载中…</div></div>
+<div class="card"><div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px"><h2><span class="chap">捌</span>全部书签</h2><div class="fold-controls" style="display:flex;gap:6px;align-items:center"><button class="primary mini" type="button" id="addSiteBtn">＋ 新增书签</button><button class="ghost mini" type="button" id="foldAllBtn" title="全部折叠分类">全部折叠</button><button class="ghost mini" type="button" id="unfoldAllBtn" title="全部展开分类">全部展开</button></div></div><div class="searchbar"><input id="siteSearch" placeholder="过滤：打站名、网址或分类…"><button type="button" class="search-clear-btn" id="searchClearBtn" title="清空搜索" aria-label="清空搜索" style="display:none">×</button></div><div id="list">加载中…</div></div>
 </div>
 </div>
 </div>
 </div>
 
+</div>
+
+<!-- 编辑书签弹窗：表单卡由 admin.js 运行时移入/移回 -->
+<div id="editModal" class="edit-modal-mask" style="display:none">
+  <div class="edit-modal-card">
+    <button type="button" id="editModalClose" class="edit-modal-close" title="关闭">×</button>
+    <div id="editModalSlot"></div>
+  </div>
 </div>
 
 <!-- P17: 统一样式站内确认弹窗模态框 -->
@@ -208,7 +216,7 @@ function getAdminHtml(siteTitle) {
 
 <!-- 外置客户端逻辑 -->
 <script src="/assets/icon.js?v=20261021h" defer></script>
-<script src="/admin-assets/admin.js?v=20261030a" defer></script>
+<script src="/admin-assets/admin.js?v=20261030b" defer></script>
 </body></html>`;
 }
 
