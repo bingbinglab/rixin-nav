@@ -1924,7 +1924,9 @@ function closeEditModal() {
 function cancelFormFlow() {
   const cm = $("confirmModal");
   if (cm && cm.style.display !== "none") return;
+  const wasEditing = !!editingSiteId;
   $("resetBtn").click();
+  if (!wasEditing) closeEditModal();
 }
 if (editModalEl) {
   editModalEl.addEventListener("click", (e) => { if (e.target === editModalEl) cancelFormFlow(); });
@@ -1971,7 +1973,7 @@ $("resetBtn").onclick = () => {
   $("msg").textContent = "";
   updateDescCount();
   const wasModal = isEditModalOpen();
-  closeEditModal();
+  if (prevId) closeEditModal();
   if (prevId) {
     switchTab("tab-sites");
     const row = document.querySelector('tr[data-site-id="' + prevId + '"]');
