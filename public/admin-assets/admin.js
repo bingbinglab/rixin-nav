@@ -1906,16 +1906,13 @@ function edit(id) {
   $("resetBtn").textContent = "取消编辑";
   updateDescCount();
   switchTab("tab-edit"); // P15: 编辑自动切至新增/编辑Tab
-  if (window.innerWidth <= 900) {
-    window.scrollTo({ top: 0, behavior: "smooth" });
-  } else {
-    const formCard = document.querySelector('[data-tab-pane="tab-edit"]');
-    if (formCard) {
-      formCard.classList.remove("card-highlight");
-      void formCard.offsetWidth;
-      formCard.classList.add("card-highlight");
-      setTimeout(() => formCard.classList.remove("card-highlight"), 1600);
-    }
+  window.scrollTo({ top: 0, behavior: "smooth" });
+  const formCard = document.querySelector('[data-tab-pane="tab-edit"]');
+  if (formCard) {
+    formCard.classList.remove("card-highlight");
+    void formCard.offsetWidth;
+    formCard.classList.add("card-highlight");
+    setTimeout(() => formCard.classList.remove("card-highlight"), 1600);
   }
 }
 
