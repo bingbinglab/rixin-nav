@@ -1902,7 +1902,7 @@ function openEditModal() {
   if (formCardEl.parentNode !== editModalSlotEl) editModalSlotEl.appendChild(formCardEl);
   editModalEl.style.display = "flex";
   const cancelBtnEl = $("cancelBtn");
-  if (cancelBtnEl) cancelBtnEl.hidden = !!editingSiteId;
+  if (cancelBtnEl) cancelBtnEl.style.display = editingSiteId ? "none" : "";
   const sbw = window.innerWidth - document.documentElement.clientWidth;
   if (sbw > 0) document.body.style.paddingRight = sbw + "px";
   document.body.style.overflow = "hidden";
@@ -1911,7 +1911,7 @@ function closeEditModal() {
   if (!editModalEl || !formCardEl || !isEditModalOpen()) return;
   editModalEl.style.display = "none";
   const cancelBtnEl2 = $("cancelBtn");
-  if (cancelBtnEl2) cancelBtnEl2.hidden = true;
+  if (cancelBtnEl2) cancelBtnEl2.style.display = "none";
   document.body.style.overflow = "";
   document.body.style.paddingRight = "";
   if (formCardEl.parentNode === editModalSlotEl && formHomePos) {

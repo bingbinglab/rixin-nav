@@ -80,7 +80,7 @@ function getAdminHtml(siteTitle) {
 <div><label>图标文件名（可空）</label><input id="fIcon" placeholder="如 doubao.com.png"></div></div>
 <label class="chk"><input type="checkbox" id="fPinned"> 置顶（常用常顾）</label>
 <label class="chk"><input type="checkbox" id="fPrivate"> 私密（未登录不可见）</label>
-<div class="form-actions-sticky"><button class="primary" id="saveBtn">保 存</button><button class="ghost" id="resetBtn" type="button">清空表单</button><button class="ghost" id="cancelBtn" type="button" hidden>取 消</button></div>
+<div class="form-actions-sticky"><button class="primary" id="saveBtn">保 存</button><button class="ghost" id="resetBtn" type="button">清空表单</button><button class="ghost" id="cancelBtn" type="button" style="display:none">取 消</button></div>
 <p class="msg" id="msg"></p></div>
 
 <!-- Card 2: 分类管理 -->
@@ -216,7 +216,7 @@ function getAdminHtml(siteTitle) {
 
 <!-- 外置客户端逻辑 -->
 <script src="/assets/icon.js?v=20261030a" defer></script>
-<script src="/admin-assets/admin.js?v=20261030f" defer></script>
+<script src="/admin-assets/admin.js?v=20261030g" defer></script>
 </body></html>`;
 }
 
