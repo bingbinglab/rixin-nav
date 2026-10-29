@@ -1901,6 +1901,8 @@ function openEditModal() {
   document.documentElement.style.overflowAnchor = "none";
   if (formCardEl.parentNode !== editModalSlotEl) editModalSlotEl.appendChild(formCardEl);
   editModalEl.style.display = "flex";
+  const cancelBtnEl = $("cancelBtn");
+  if (cancelBtnEl) cancelBtnEl.hidden = !!editingSiteId;
   const sbw = window.innerWidth - document.documentElement.clientWidth;
   if (sbw > 0) document.body.style.paddingRight = sbw + "px";
   document.body.style.overflow = "hidden";
@@ -1908,6 +1910,8 @@ function openEditModal() {
 function closeEditModal() {
   if (!editModalEl || !formCardEl || !isEditModalOpen()) return;
   editModalEl.style.display = "none";
+  const cancelBtnEl2 = $("cancelBtn");
+  if (cancelBtnEl2) cancelBtnEl2.hidden = true;
   document.body.style.overflow = "";
   document.body.style.paddingRight = "";
   if (formCardEl.parentNode === editModalSlotEl && formHomePos) {
@@ -1933,6 +1937,8 @@ if (editModalEl) {
   document.addEventListener("keydown", (e) => { if (e.key === "Escape" && isEditModalOpen()) cancelFormFlow(); });
   const cmb = $("editModalClose");
   if (cmb) cmb.onclick = () => cancelFormFlow();
+  const cnb = $("cancelBtn");
+  if (cnb) cnb.onclick = () => cancelFormFlow();
 }
 
 function edit(id) {
