@@ -1894,8 +1894,11 @@ const editModalSlotEl = $("editModalSlot");
 const formCardEl = document.querySelector('[data-tab-pane="tab-edit"]');
 const formHomePos = formCardEl ? { parent: formCardEl.parentNode, next: formCardEl.nextSibling } : null;
 function isEditModalOpen() { return !!editModalEl && editModalEl.style.display !== "none"; }
+let modalSavedScrollY = null;
 function openEditModal() {
   if (!editModalEl || !formCardEl) return;
+  if (!isEditModalOpen()) modalSavedScrollY = window.scrollY;
+  document.documentElement.style.overflowAnchor = "none";
   if (formCardEl.parentNode !== editModalSlotEl) editModalSlotEl.appendChild(formCardEl);
   editModalEl.style.display = "flex";
   const sbw = window.innerWidth - document.documentElement.clientWidth;
@@ -1910,6 +1913,12 @@ function closeEditModal() {
   if (formCardEl.parentNode === editModalSlotEl && formHomePos) {
     if (formHomePos.next && formHomePos.next.parentNode === formHomePos.parent) formHomePos.parent.insertBefore(formCardEl, formHomePos.next);
     else formHomePos.parent.appendChild(formCardEl);
+  }
+  const restoreY = modalSavedScrollY;
+  modalSavedScrollY = null;
+  document.documentElement.style.overflowAnchor = "";
+  if (restoreY !== null && Math.abs(window.scrollY - restoreY) > 2) {
+    window.scrollTo({ top: restoreY, behavior: "instant" });
   }
 }
 function cancelFormFlow() {
