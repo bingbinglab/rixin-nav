@@ -1898,12 +1898,15 @@ function openEditModal() {
   if (!editModalEl || !formCardEl) return;
   if (formCardEl.parentNode !== editModalSlotEl) editModalSlotEl.appendChild(formCardEl);
   editModalEl.style.display = "flex";
+  const sbw = window.innerWidth - document.documentElement.clientWidth;
+  if (sbw > 0) document.body.style.paddingRight = sbw + "px";
   document.body.style.overflow = "hidden";
 }
 function closeEditModal() {
   if (!editModalEl || !formCardEl || !isEditModalOpen()) return;
   editModalEl.style.display = "none";
   document.body.style.overflow = "";
+  document.body.style.paddingRight = "";
   if (formCardEl.parentNode === editModalSlotEl && formHomePos) {
     if (formHomePos.next && formHomePos.next.parentNode === formHomePos.parent) formHomePos.parent.insertBefore(formCardEl, formHomePos.next);
     else formHomePos.parent.appendChild(formCardEl);
@@ -1958,11 +1961,17 @@ $("resetBtn").onclick = () => {
   $("resetBtn").textContent = "清空表单";
   $("msg").textContent = "";
   updateDescCount();
+  const wasModal = isEditModalOpen();
   closeEditModal();
   if (prevId) {
     switchTab("tab-sites");
     const row = document.querySelector('tr[data-site-id="' + prevId + '"]');
-    if (row) row.scrollIntoView({ behavior: "smooth", block: "center" });
+    if (row && wasModal) {
+      row.classList.add("row-highlight");
+      setTimeout(() => row.classList.remove("row-highlight"), 1500);
+    } else if (row) {
+      row.scrollIntoView({ behavior: "smooth", block: "center" });
+    }
   }
 };
 
