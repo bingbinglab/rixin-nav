@@ -10,7 +10,7 @@
 <meta name="theme-color" content="#f8f5ee">
 <meta name="color-scheme" content="light dark">
 <link rel="manifest" href="/site.webmanifest">
-<link rel="stylesheet" href="style.css?v=20261030a">
+<link rel="stylesheet" href="style.css?v=20261105a">
 <link rel="stylesheet" href="fonts/noto-serif-sc/700.css">
 <link rel="stylesheet" href="fonts/noto-serif-sc/800.css">
 <link rel="stylesheet" href="fonts/noto-serif-sc/900.css">
@@ -79,6 +79,12 @@
     </button>
     <button id="privacyBtn" class="tool-btn" type="button" title="显示或隐藏标记为私密的站点" style="display: none;"><span>显示私密</span></button>
   </section>
+
+  <!-- 2.05 一言 (第三方公开接口驱动，拉不到整行不显示，不影响主站) -->
+  <div class="hitokoto-bar" id="hitokotoBar" hidden>
+    <span class="hitokoto-text" id="hitokotoText"></span>
+    <span class="hitokoto-from" id="hitokotoFrom"></span>
+  </div>
 
   <!-- 2.1 A-Z 快速字母条 (主控置前) + 快速定位说明 (置后) -->
   <div class="quick-loc-bar">
@@ -315,5 +321,6 @@
 <script src="/assets/icon.js?v=20261030a"></script>
 <script src="/assets/app.js?v=20261019c"></script>
 <script src="/assets/widgets.js?v=20261025b" defer></script>
+<script src="/assets/hitokoto.js?v=20261105a" defer></script>
 </body>
 </html>
