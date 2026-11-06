@@ -708,6 +708,41 @@ function switchTab(tabId) {
   });
 }
 
+// --- 方案一: 长页签页内目录（锚点跳转 + 滚动高亮） ---
+function initPaneNavs() {
+  document.querySelectorAll(".pane-nav").forEach((nav) => {
+    const links = Array.from(nav.querySelectorAll("a[data-anchor]"));
+    links.forEach((a) => {
+      a.addEventListener("click", (e) => {
+        e.preventDefault();
+        links.forEach((x) => x.classList.toggle("on", x === a));
+        const target = document.getElementById(a.dataset.anchor);
+        if (target) {
+          try {
+            target.scrollIntoView({ behavior: "smooth", block: "start" });
+          } catch (e) {}
+        }
+      });
+    });
+    if ("IntersectionObserver" in window && links.length) {
+      try {
+        const io = new IntersectionObserver(
+          (entries) => {
+            entries.forEach((en) => {
+              if (en.isIntersecting) links.forEach((x) => x.classList.toggle("on", x.dataset.anchor === en.target.id));
+            });
+          },
+          { rootMargin: "-130px 0px -55% 0px" }
+        );
+        links.forEach((a) => {
+          const t = document.getElementById(a.dataset.anchor);
+          if (t) io.observe(t);
+        });
+      } catch (e) {}
+    }
+  });
+}
+
 // --- P14: 简介字数计数 ---
 function updateDescCount() {
   const len = ($("fDesc").value || "").length;
@@ -729,6 +764,17 @@ function updateDescCount() {
   }
 }
 
+function clearSiteFilters() {
+  const inp = $("siteSearch");
+  if (inp) inp.value = "";
+  const sel = $("siteCatSel");
+  if (sel) sel.value = "";
+  const p1 = $("fltPinned");
+  if (p1) p1.checked = false;
+  const p2 = $("fltPrivate");
+  if (p2) p2.checked = false;
+}
+
 // --- 数据加载 ---
 async function load() {
   try {
@@ -740,6 +786,12 @@ async function load() {
   renderCats();
   renderSites();
   $("catList").innerHTML = data.categories.map((c) => `<option value="${esc(c.name)}">`).join("");
+  const catSel = $("siteCatSel");
+  if (catSel) {
+    const prevSel = catSel.value;
+    catSel.innerHTML = '<option value="">全部分类</option>' + data.categories.map((c) => `<option value="${esc(c.name)}">${esc(c.name)}</option>`).join("");
+    if (prevSel && data.categories.some((c) => c.name === prevSel)) catSel.value = prevSel;
+  }
   $("cParent").innerHTML =
     '<option value="0">（一级分类）</option>' +
     data.categories
@@ -1144,12 +1196,19 @@ function renderSites() {
 
   const rawKw = (($("siteSearch") || {}).value || "").trim();
   const kw = rawKw.toLowerCase();
-  const isSearching = !!kw;
+  const fltCat = (($("siteCatSel") || {}).value || "");
+  const fltPinned = !!(($("fltPinned") || {}).checked);
+  const fltPrivate = !!(($("fltPrivate") || {}).checked);
+  const fltActive = !!(fltCat || fltPinned || fltPrivate);
+  const isSearching = !!kw || fltActive;
   const byCat = {};
   const visibleSites = [];
 
   data.sites.forEach((s) => {
     if (kw && !(s.name + " " + s.url + " " + (s.desc || "") + " " + s.category).toLowerCase().includes(kw)) return;
+    if (fltCat && s.category !== fltCat) return;
+    if (fltPinned && !s.pinned) return;
+    if (fltPrivate && !s.is_private) return;
     visibleSites.push(s);
     (byCat[s.category] = byCat[s.category] || []).push(s);
   });
@@ -1165,7 +1224,7 @@ function renderSites() {
   const emptyHtml =
     data.sites.length === 0
       ? '<p class="muted">库里还没有书签。</p>'
-      : `<p class="muted">未找到包含『${esc(rawKw)}』的书签。<button type="button" class="mini ghost inline-reset" id="emptyResetBtn">清空筛选</button></p>`;
+      : `<p class="muted">${rawKw ? `未找到包含『${esc(rawKw)}』的书签。` : "没有符合当前筛选条件的书签。"}<button type="button" class="mini ghost inline-reset" id="emptyResetBtn">清空筛选</button></p>`;
 
   const searchClearBtn = $("searchClearBtn");
   if (searchClearBtn) {
@@ -1173,8 +1232,8 @@ function renderSites() {
     if (!searchClearBtn._bound) {
       searchClearBtn._bound = true;
       searchClearBtn.onclick = () => {
+        clearSiteFilters();
         const inp = $("siteSearch");
-        if (inp) inp.value = "";
         searchClearBtn.style.display = "none";
         renderSites();
         if (inp) inp.focus();
@@ -1258,13 +1317,20 @@ function renderSites() {
   const emptyResetBtn = $("emptyResetBtn");
   if (emptyResetBtn) {
     emptyResetBtn.onclick = () => {
+      clearSiteFilters();
       const inp = $("siteSearch");
-      if (inp) inp.value = "";
       const cb = $("searchClearBtn");
       if (cb) cb.style.display = "none";
       renderSites();
       if (inp) inp.focus();
     };
+  }
+
+  const fltCountEl = $("fltCount");
+  if (fltCountEl) {
+    fltCountEl.textContent = isSearching
+      ? `共 ${data.sites.length} 个 · 筛后 ${visibleSites.length} 个`
+      : `共 ${data.sites.length} 个`;
   }
 
   const moveSite = async (s, target) => {
@@ -3009,6 +3075,28 @@ function initAdmin() {
   switchTab("tab-sites"); // 默认展示「全部书签」
 
   $("siteSearch").addEventListener("input", () => renderSites());
+  ["siteCatSel", "fltPinned", "fltPrivate"].forEach((id) => {
+    const el = $(id);
+    if (el) el.addEventListener("change", () => renderSites());
+  });
+  const listEl = $("list");
+  let compactOn = true;
+  try {
+    const v = localStorage.getItem("adminCompact");
+    if (v !== null) compactOn = v === "1";
+  } catch (e) {}
+  if (listEl) listEl.classList.toggle("compact", compactOn);
+  const compactChk = $("fltCompact");
+  if (compactChk) {
+    compactChk.checked = compactOn;
+    compactChk.addEventListener("change", () => {
+      if (listEl) listEl.classList.toggle("compact", compactChk.checked);
+      try {
+        localStorage.setItem("adminCompact", compactChk.checked ? "1" : "0");
+      } catch (e) {}
+    });
+  }
+  initPaneNavs();
   $("fDesc").addEventListener("input", updateDescCount);
 
   // 18 网址实时查重

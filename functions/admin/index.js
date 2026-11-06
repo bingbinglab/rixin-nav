@@ -9,7 +9,7 @@ function getLoginHtml(siteTitle) {
 <html lang="zh-CN"><head><meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>${title} · 后台登录</title><link rel="icon" type="image/svg+xml" href="/favicon-2.svg"><link rel="icon" type="image/png" sizes="192x192" href="/icon-192-2.png">
-<link rel="stylesheet" href="/admin-assets/admin.css?v=20261030b">
+<link rel="stylesheet" href="/admin-assets/admin.css?v=20261106a">
 <style>
 body{display:flex;min-height:100vh;align-items:center;justify-content:center;padding:16px}
 form{background:var(--card);border:2px solid var(--ink);box-shadow:7px 7px 0 var(--card-shadow);padding:30px;width:340px;max-width:94vw}
@@ -50,7 +50,7 @@ function getAdminHtml(siteTitle) {
 <html lang="zh-CN"><head><meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>${title} · 后台管理</title><link rel="icon" type="image/svg+xml" href="/favicon-2.svg"><link rel="icon" type="image/png" sizes="192x192" href="/icon-192-2.png">
-<link rel="stylesheet" href="/admin-assets/admin.css?v=20261030b">
+<link rel="stylesheet" href="/admin-assets/admin.css?v=20261106a">
 <script>(function(){try{var t=localStorage.getItem('myNavTheme');if(!t&&window.matchMedia&&window.matchMedia('(prefers-color-scheme:dark)').matches)t='dark';if(t==='dark')document.documentElement.classList.add('dark-theme');}catch(e){}})();</script>
 </head>
 <body><div class="wrap">
@@ -93,7 +93,8 @@ function getAdminHtml(siteTitle) {
 <p class="msg" id="catMsg"></p></div>
 
 <!-- Card 3: WebDAV 备份与同步 (属于数据与备份) -->
-<div class="card" data-tab-pane="tab-data"><h2><span class="chap">叁</span>WebDAV 备份与同步 <span id="wdBadge" class="badge none">未配置</span></h2>
+<nav class="pane-nav" data-tab-pane="tab-data"><a href="#cardDav" data-anchor="cardDav" class="on">叁 · WebDAV 备份与同步</a><a href="#cardImport" data-anchor="cardImport">肆 · 导入与导出</a></nav>
+<div class="card" id="cardDav" data-tab-pane="tab-data"><h2><span class="chap">叁</span>WebDAV 备份与同步 <span id="wdBadge" class="badge none">未配置</span></h2>
 <div class="dav-action-btns" style="display:flex;gap:8px;flex-wrap:wrap;margin:4px 0 10px">
   <button class="ghost" id="davBackupBtn" type="button">备份到 WebDAV</button>
   <button class="ghost" id="davRestoreBtn" type="button">从 WebDAV 恢复</button>
@@ -122,7 +123,7 @@ function getAdminHtml(siteTitle) {
 </div></div>
 
 <!-- Card 4: 导入 / 导出 (属于数据与备份) -->
-<div class="card" data-tab-pane="tab-data"><h2><span class="chap">肆</span>导入 / 导出</h2>
+<div class="card" id="cardImport" data-tab-pane="tab-data"><h2><span class="chap">肆</span>导入 / 导出</h2>
 <input type="file" id="importFile" accept=".html,.htm,.json">
 <button class="ghost" id="importBtn" type="button">导入书签 (HTML / JSON)</button>
 <a href="/api/admin/export?format=json" class="btn ghost">导出 JSON</a>
@@ -130,7 +131,8 @@ function getAdminHtml(siteTitle) {
 <p class="muted">导入按网址去重；支持浏览器书签 HTML 与本站备份 JSON（文件夹/父级自动还原分类）。</p></div>
 
 <!-- Card 5: 站点与品牌设置 (属于设置与智能) -->
-<div class="card" data-tab-pane="tab-settings"><h2><span class="chap">伍</span>站点与品牌设置</h2>
+<nav class="pane-nav" data-tab-pane="tab-settings"><a href="#cardBrand" data-anchor="cardBrand" class="on">伍 · 站点与品牌</a><a href="#cardAi" data-anchor="cardAi">陆 · AI 补简介</a><a href="#cardLinks" data-anchor="cardLinks">柒 · 死链巡检</a></nav>
+<div class="card" id="cardBrand" data-tab-pane="tab-settings"><h2><span class="chap">伍</span>站点与品牌设置</h2>
 <label>站名（留空则默认「书签导航」）</label><input id="siteTitleInput" placeholder="书签导航">
 <label>页脚文案（留空则不显示该行）</label><input id="siteFooterInput" placeholder="如：本辑已毕 · 下辑随缘">
 <label>外搜引擎（站内搜不到结果时用，至少留一个；只留一个则前台只显示那一个）</label>
@@ -144,7 +146,7 @@ function getAdminHtml(siteTitle) {
 <p class="muted">说明：站名与页脚文案保存后前台与后台将实时同步生效；若未设置站名则显示默认「书签导航」，页脚文案留空则不展示刊底文案行。</p></div>
 
 <!-- Card 6: AI 补简介设置 (属于设置与智能) -->
-<div class="card" data-tab-pane="tab-settings"><h2><span class="chap">陆</span>AI 补简介设置 <span id="aiBadge" class="badge none">未配置</span></h2>
+<div class="card" id="cardAi" data-tab-pane="tab-settings"><h2><span class="chap">陆</span>AI 补简介设置 <span id="aiBadge" class="badge none">未配置</span></h2>
 <div style="display:flex;gap:8px;flex-wrap:wrap;margin:4px 0 10px">
   <button class="ghost" id="bulkAiBtn" type="button">给缺简介的书签批量补简介</button>
   <button class="ghost danger" id="bulkAiStopBtn" type="button" style="display:none">中止</button>
@@ -176,7 +178,7 @@ function getAdminHtml(siteTitle) {
 <p class="muted" id="aiTip">提示：Google Gemini 亦原生支持 OpenAI 兼容端点；测生成将使用斗鱼直播作为样本网站跑一次实际生成。</p></div>
 
 <!-- Card 7: 死链巡检 (属于设置与智能) -->
-<div class="card" data-tab-pane="tab-settings"><h2><span class="chap">柒</span>死链巡检</h2>
+<div class="card" id="cardLinks" data-tab-pane="tab-settings"><h2><span class="chap">柒</span>死链巡检</h2>
 <button class="ghost" id="linkCheckBtn" type="button">巡检死链</button>
 <p class="msg" id="lcToolMsg"></p>
 <div id="linkCheckResult" style="display:none"></div>
@@ -186,7 +188,7 @@ function getAdminHtml(siteTitle) {
 
 <!-- Card 8: 全部书签 (右栏) -->
 <div class="col-right" data-tab-pane="tab-sites">
-<div class="card"><div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px"><h2><span class="chap">捌</span>全部书签</h2><div class="fold-controls" style="display:flex;gap:6px;align-items:center"><button class="primary mini" type="button" id="addSiteBtn">＋ 新增书签</button><button class="ghost mini" type="button" id="foldAllBtn" title="全部折叠分类">全部折叠</button><button class="ghost mini" type="button" id="unfoldAllBtn" title="全部展开分类">全部展开</button></div></div><div class="searchbar"><input id="siteSearch" placeholder="过滤：打站名、网址或分类…"><button type="button" class="search-clear-btn" id="searchClearBtn" title="清空搜索" aria-label="清空搜索" style="display:none">×</button></div><div id="list">加载中…</div></div>
+<div class="card"><div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px"><h2><span class="chap">捌</span>全部书签</h2><div class="fold-controls" style="display:flex;gap:6px;align-items:center"><button class="primary mini" type="button" id="addSiteBtn">＋ 新增书签</button><button class="ghost mini" type="button" id="foldAllBtn" title="全部折叠分类">全部折叠</button><button class="ghost mini" type="button" id="unfoldAllBtn" title="全部展开分类">全部展开</button></div></div><div class="searchbar"><input id="siteSearch" placeholder="过滤：打站名、网址或分类…"><button type="button" class="search-clear-btn" id="searchClearBtn" title="清空搜索" aria-label="清空搜索" style="display:none">×</button></div><div class="site-filters"><select id="siteCatSel"><option value="">全部分类</option></select><label class="chk"><input type="checkbox" id="fltPinned"> 只看置顶</label><label class="chk"><input type="checkbox" id="fltPrivate"> 只看私密</label><span class="spacer"></span><span class="muted" id="fltCount"></span><label class="chk"><input type="checkbox" id="fltCompact"> 紧凑行高</label></div><div id="list">加载中…</div></div>
 </div>
 </div>
 </div>
@@ -216,7 +218,7 @@ function getAdminHtml(siteTitle) {
 
 <!-- 外置客户端逻辑 -->
 <script src="/assets/icon.js?v=20261030a" defer></script>
-<script src="/admin-assets/admin.js?v=20261106a" defer></script>
+<script src="/admin-assets/admin.js?v=20261106b" defer></script>
 </body></html>`;
 }
 

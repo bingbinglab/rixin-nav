@@ -1414,3 +1414,36 @@ html.dark-theme .lc-badge.warn { border-color: #e0b347; color: #e0b347; }
 .edit-modal-close { position: absolute; top: 8px; right: 8px; z-index: 3; width: 34px; height: 34px; padding: 0; margin: 0; font-size: 20px; line-height: 1; }
 #editModal [data-tab-pane] { display: block; }
 @media (max-width: 900px) { .edit-modal-mask { padding: 10px 8px; } .edit-modal-card { max-width: 96vw; } }
+
+
+/* ===== 方案一 后台排版优化：全端标签吸顶 / 页内目录 / 书签筛选 / 紧凑行高 ===== */
+.site-filters{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin:10px 0 8px}
+.site-filters select{width:auto;min-width:132px;padding:6px 8px;margin:0}
+.site-filters .chk{display:inline-flex;align-items:center;gap:5px;margin:0;font-size:13px;white-space:nowrap}
+.site-filters .chk input{width:auto;margin:0}
+.site-filters .spacer{flex:1}
+#fltCount{font-size:12.5px;white-space:nowrap}
+#list.compact .sites-tbl td{padding-top:3px;padding-bottom:3px}
+#list.compact .site-desc{margin-top:1px}
+#list.compact .site-url{margin-top:0}
+.pane-nav{display:flex;gap:8px;flex-wrap:wrap;position:sticky;top:54px;z-index:190;background:var(--paper);padding:8px 2px;margin:0 0 14px;border-bottom:1.5px solid var(--ink)}
+.pane-nav a{border:1.5px solid var(--ink);background:var(--card);color:var(--ink);padding:5px 12px;font-size:13px;font-weight:700;text-decoration:none;box-shadow:2px 2px 0 var(--card-shadow)}
+.pane-nav a.on{background:var(--ochre);border-color:var(--ochre);color:#fff}
+body.tab-data .grid-layout .pane-nav[data-tab-pane="tab-data"],body.tab-settings .grid-layout .pane-nav[data-tab-pane="tab-settings"]{display:flex}
+.card[id]{scroll-margin-top:118px}
+@media (max-width:900px){
+.grid-layout .pane-nav{display:none}
+body.tab-data .grid-layout .pane-nav[data-tab-pane="tab-data"],body.tab-settings .grid-layout .pane-nav[data-tab-pane="tab-settings"]{display:flex}
+}
+@media (min-width:901px){
+.admin-tabs{display:flex;gap:8px;overflow-x:auto;position:sticky;top:0;z-index:200;background:var(--paper);border-bottom:2px solid var(--ink);margin:0 0 16px;padding:10px 2px 8px;scrollbar-width:none}
+.admin-tabs::-webkit-scrollbar{display:none}
+.tab-pill{padding:6px 14px;border:1.5px solid var(--ink);background:var(--card);color:var(--ink);font-size:13.5px;font-weight:700;white-space:nowrap;cursor:pointer;margin:0;box-shadow:2px 2px 0 var(--card-shadow);line-height:normal}
+.tab-pill.active{background:var(--ink);border-color:var(--ink);color:var(--paper)}
+.grid-layout{display:block}
+.grid-layout [data-tab-pane]{display:none}
+body.tab-sites .grid-layout [data-tab-pane="tab-sites"],body.tab-edit .grid-layout [data-tab-pane="tab-edit"],body.tab-cats .grid-layout [data-tab-pane="tab-cats"],body.tab-data .grid-layout [data-tab-pane="tab-data"],body.tab-settings .grid-layout [data-tab-pane="tab-settings"],body.tab-users .grid-layout [data-tab-pane="tab-users"]{display:block}
+}
+@media (max-width:560px){
+.site-filters select{flex:1 1 100%}
+}
