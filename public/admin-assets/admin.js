@@ -1933,7 +1933,13 @@ function cancelFormFlow() {
   if (!wasEditing) closeEditModal();
 }
 if (editModalEl) {
-  editModalEl.addEventListener("click", (e) => { if (e.target === editModalEl) cancelFormFlow(); });
+  let editPressTarget = null;
+  editModalEl.addEventListener("mousedown", (e) => { editPressTarget = e.target; });
+  editModalEl.addEventListener("mouseup", (e) => {
+    const pressedOnMask = editPressTarget === editModalEl;
+    editPressTarget = null;
+    if (pressedOnMask && e.target === editModalEl) cancelFormFlow();
+  });
   document.addEventListener("keydown", (e) => { if (e.key === "Escape" && isEditModalOpen()) cancelFormFlow(); });
   const cmb = $("editModalClose");
   if (cmb) cmb.onclick = () => cancelFormFlow();
