@@ -266,6 +266,13 @@ function cardElFor(site) {
          document.querySelector(`.card[data-name="${nameEsc}"]`);
 }
 
+// 焦点跟随高亮：方向键选卡后把焦点移到选定卡片，回车才不会误激活仍握着焦点的旧按钮/旧卡片；焦点在搜索框时不抢（打字流优先）
+function syncFocusToSelectedCard() {
+  if (document.activeElement === input) return;
+  const el = cardElFor(visibleSitesList[selectedSiteIndex]);
+  if (el && document.activeElement !== el) el.focus({ preventScroll: true });
+}
+
 // 键盘二维导航的列锚点：记住期望的水平位置，跨过残行后仍能对回原来的列
 let kbPrefX = null;
 
@@ -523,6 +530,7 @@ function renderAZStrip() {
       initScrollSpy();
       updateAZStripUI();
       scrollToActiveTarget();
+      btn.blur(); // 焦点交还页面：否则回车会再次激活本按钮、把筛选取消
     };
   });
 
@@ -808,6 +816,7 @@ window.addEventListener('keydown', e => {
       updateSelectedCardVisual(true, e.repeat);
       const el = cardElFor(visibleSitesList[selectedSiteIndex]);
       if (el) { const r = el.getBoundingClientRect(); kbPrefX = r.left + r.width / 2; }
+      syncFocusToSelectedCard();
     }
     return;
   }
@@ -840,6 +849,7 @@ window.addEventListener('keydown', e => {
           if (best) {
             selectedSiteIndex = visibleSitesList.indexOf(best.s);
             updateSelectedCardVisual(true, e.repeat);
+            syncFocusToSelectedCard();
           }
         }
       }
