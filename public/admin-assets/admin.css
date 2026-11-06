@@ -1447,3 +1447,17 @@ body.tab-sites .grid-layout [data-tab-pane="tab-sites"],body.tab-edit .grid-layo
 @media (max-width:560px){
 .site-filters select{flex:1 1 100%}
 }
+
+/* ===== 后台细修二轮：分类/用户表列宽、整行悬停、分类小结（2026-11-06） ===== */
+.cattable.cat-tbl{width:auto}
+.cattable.cat-tbl th:nth-child(6){width:136px}
+#userTable th:nth-child(1){width:46px}
+#userTable th:nth-child(2){width:auto}
+#userTable th:nth-child(3){width:88px}
+#userTable th:nth-child(4){width:88px}
+#userTable th:nth-child(5){width:150px}
+#userTable th:nth-child(6){width:150px}
+#userTable td:nth-child(5){white-space:nowrap}
+.cattable tbody tr:hover,.sites-tbl tbody tr[data-site-id]:hover{background:rgba(140,120,90,.13)}
+.cat-summary{font-size:12.5px;margin:0 0 6px}
+.cat-add-form{margin-top:0;margin-bottom:10px}

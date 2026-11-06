@@ -810,6 +810,8 @@ function renderCats() {
   const ordered = treeCats();
   const siblings = (c) => ordered.filter((x) => (x.parent_id || 0) === (c.parent_id || 0));
 
+  const csEl = $("catSummary");
+  if (csEl) csEl.textContent = "共 " + data.categories.length + " 个分类 · " + Object.values(counts).reduce((a, b) => a + b, 0) + " 个书签";
   $("catBody").innerHTML =
     ordered
       .map((c) => {
