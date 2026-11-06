@@ -1462,3 +1462,10 @@ body.tab-sites .grid-layout [data-tab-pane="tab-sites"],body.tab-edit .grid-layo
 .cattable tbody tr:hover,.sites-tbl tbody tr[data-site-id]:hover{background:rgba(140,120,90,.13)}
 .cat-summary{font-size:12.5px;margin:0 0 6px}
 .cat-add-form{margin-top:0;margin-bottom:10px}
+
+/* ===== 后台细修三轮：表单限宽、工具行与分组标题吸顶、表格名字黑体（2026-11-06） ===== */
+.card[data-tab-pane="tab-edit"],.card[data-tab-pane="tab-settings"]{max-width:880px}
+.user-add-form{max-width:880px}
+.sites-tools{position:sticky;top:var(--tabsH,54px);z-index:150;background:var(--card);padding:10px 0 8px;border-bottom:1.5px solid var(--border-line)}
+.cat-head-wrap{position:sticky;top:calc(var(--tabsH,54px) + var(--toolsH,86px));z-index:120;background:var(--card)}
+.sites-tbl .site-title,.cattable .cname-text,.cat-head-wrap h3{font-family:"Maple Mono",system-ui,-apple-system,"PingFang SC","Microsoft YaHei",sans-serif}

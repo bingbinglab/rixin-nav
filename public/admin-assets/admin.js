@@ -706,8 +706,15 @@ function switchTab(tabId) {
   document.querySelectorAll(".tab-pill").forEach((btn) => {
     btn.classList.toggle("active", btn.dataset.tab === tabId);
   });
+  if (tabId === "tab-sites") requestAnimationFrame(measureStickyHeights);
 }
 
+function measureStickyHeights() {
+  const tabs = document.querySelector(".admin-tabs");
+  const tools = document.querySelector(".sites-tools");
+  if (tabs && tabs.offsetHeight) document.documentElement.style.setProperty("--tabsH", tabs.offsetHeight + "px");
+  if (tools && tools.offsetHeight) document.documentElement.style.setProperty("--toolsH", tools.offsetHeight + "px");
+}
 // --- 方案一: 长页签页内目录（锚点跳转 + 滚动高亮） ---
 function initPaneNavs() {
   document.querySelectorAll(".pane-nav").forEach((nav) => {
@@ -1304,6 +1311,7 @@ function renderSites() {
         const selBadgeHtml = isCollapsed && catSelCount > 0 ? `<span class="cat-folded-sel-tag">已选 ${catSelCount} 条</span>` : "";
 
         return `
+          <div class="cat-group">
           <div class="cat-head-wrap" data-cat-fold="${esc(cat)}">
             <div class="cat-title-toggle">
               <span class="cat-fold-arrow ${isCollapsed ? "" : "expanded"}">▶</span>
@@ -1314,7 +1322,7 @@ function renderSites() {
               <input type="checkbox" data-cat-check="${esc(cat)}"${allCatChecked ? " checked" : ""}> 全选本类
             </label>
           </div>
-          <div class="tblwrap" style="display:${isCollapsed ? "none" : "block"}"><table class="sites-tbl"><tbody data-cat="${esc(cat)}">${trs}</tbody></table></div>`;
+          <div class="tblwrap" style="display:${isCollapsed ? "none" : "block"}"><table class="sites-tbl"><tbody data-cat="${esc(cat)}">${trs}</tbody></table></div></div>`;
       })
       .join("") || emptyHtml;
 
@@ -3101,6 +3109,8 @@ function initAdmin() {
     });
   }
   initPaneNavs();
+  measureStickyHeights();
+  window.addEventListener("resize", measureStickyHeights);
   $("fDesc").addEventListener("input", updateDescCount);
 
   // 18 网址实时查重
