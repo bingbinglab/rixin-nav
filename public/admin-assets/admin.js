@@ -789,7 +789,9 @@ async function load() {
   const catSel = $("siteCatSel");
   if (catSel) {
     const prevSel = catSel.value;
-    catSel.innerHTML = '<option value="">全部分类</option>' + data.categories.map((c) => `<option value="${esc(c.name)}">${esc(c.name)}</option>`).join("");
+    const cntByName = {};
+    data.sites.forEach((s) => { cntByName[s.category] = (cntByName[s.category] || 0) + 1; });
+    catSel.innerHTML = '<option value="">全部分类</option>' + data.categories.map((c) => `<option value="${esc(c.name)}">${esc(c.name)}（${cntByName[c.name] || 0}）</option>`).join("");
     if (prevSel && data.categories.some((c) => c.name === prevSel)) catSel.value = prevSel;
   }
   $("cParent").innerHTML =
