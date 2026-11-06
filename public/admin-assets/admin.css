@@ -1449,8 +1449,9 @@ body.tab-sites .grid-layout [data-tab-pane="tab-sites"],body.tab-edit .grid-layo
 }
 
 /* ===== 后台细修二轮：分类/用户表列宽、整行悬停、分类小结（2026-11-06） ===== */
-.cattable.cat-tbl{width:auto}
+.cattable.cat-tbl th:nth-child(1){width:auto}
 .cattable.cat-tbl th:nth-child(6){width:136px}
+.cattable.cat-tbl th:nth-child(1),.cattable.cat-tbl td.cname{text-align:left}
 #userTable th:nth-child(1){width:46px}
 #userTable th:nth-child(2){width:auto}
 #userTable th:nth-child(3){width:88px}
