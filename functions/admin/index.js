@@ -9,7 +9,7 @@ function getLoginHtml(siteTitle) {
 <html lang="zh-CN"><head><meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>${title} · 后台登录</title><link rel="icon" type="image/svg+xml" href="/favicon-2.svg"><link rel="icon" type="image/png" sizes="192x192" href="/icon-192-2.png">
-<link rel="stylesheet" href="/admin-assets/admin.css?v=20261106f">
+<link rel="stylesheet" href="/admin-assets/admin.css?v=20261108a">
 <style>
 body{display:flex;min-height:100vh;align-items:center;justify-content:center;padding:16px}
 form{background:var(--card);border:2px solid var(--ink);box-shadow:7px 7px 0 var(--card-shadow);padding:30px;width:340px;max-width:94vw}
@@ -50,7 +50,7 @@ function getAdminHtml(siteTitle) {
 <html lang="zh-CN"><head><meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>${title} · 后台管理</title><link rel="icon" type="image/svg+xml" href="/favicon-2.svg"><link rel="icon" type="image/png" sizes="192x192" href="/icon-192-2.png">
-<link rel="stylesheet" href="/admin-assets/admin.css?v=20261106f">
+<link rel="stylesheet" href="/admin-assets/admin.css?v=20261108a">
 <script>(function(){try{var t=localStorage.getItem('myNavTheme');if(!t&&window.matchMedia&&window.matchMedia('(prefers-color-scheme:dark)').matches)t='dark';if(t==='dark')document.documentElement.classList.add('dark-theme');}catch(e){}})();</script>
 </head>
 <body><div class="wrap">
@@ -72,8 +72,8 @@ function getAdminHtml(siteTitle) {
 <!-- Card 1: 新增·编辑 -->
 <div class="card" data-tab-pane="tab-edit"><h2><span class="chap">壹</span><span id="formTitle">新增书签</span></h2>
 <input type="hidden" id="fId"><input type="hidden" id="fSort">
-<label>站名</label><input id="fName" placeholder="如：豆包">
-<label>网址</label><input id="fUrl" placeholder="https://…">
+<div class="frow frow-nameurl"><div><label>站名</label><input id="fName" placeholder="如：豆包"></div>
+<div><label>网址</label><input id="fUrl" placeholder="https://…"></div></div>
 <div id="urlDupWarn" class="dup-warn" style="display:none"></div>
 <div class="descrow"><div><div style="display:flex;justify-content:space-between;align-items:baseline"><label>简介</label><span id="descCount" class="muted" style="font-size:12px">0/40</span></div><input id="fDesc" placeholder="一句话说明" maxlength="40"></div><button class="ghost inline-btn" id="aiDescBtn" type="button">AI 生成</button></div>
 <div class="row"><div><label>分类（选已有，或直接打新名自动建为一级）</label><input id="fCat" list="catList"><datalist id="catList"></datalist></div>
@@ -108,8 +108,8 @@ function getAdminHtml(siteTitle) {
 <button class="ghost mini" type="button" id="wdPresetNextcloud">Nextcloud</button>
 <button class="ghost mini" type="button" id="wdPresetCustom">自定义</button></div>
 <label>WebDAV 地址</label><input id="wdUrl" placeholder="https://dav.jianguoyun.com/dav/">
-<label>账号</label><input id="wdUser" placeholder="WebDAV 登录账号">
-<label>应用密码（密码框留空表示保持原值不修改）</label><input id="wdPass" type="password" placeholder="未设置">
+<div class="frow"><div><label>账号</label><input id="wdUser" placeholder="WebDAV 登录账号"></div>
+<div><label>应用密码（密码框留空表示保持原值不修改）</label><input id="wdPass" type="password" placeholder="未设置"></div></div>
 <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px">
   <button class="primary" id="wdSaveBtn" type="button">保存 WebDAV 设置</button>
   <button class="ghost" id="wdTestBtn" type="button">测试连接</button>
@@ -135,8 +135,8 @@ function getAdminHtml(siteTitle) {
 <!-- Card 5: 站点与品牌设置 (属于设置与智能) -->
 <nav class="pane-nav" data-tab-pane="tab-settings"><a href="#cardBrand" data-anchor="cardBrand" class="on">伍 · 站点与品牌</a><a href="#cardAi" data-anchor="cardAi">陆 · AI 补简介</a><a href="#cardLinks" data-anchor="cardLinks">柒 · 死链巡检</a></nav>
 <div class="card" id="cardBrand" data-tab-pane="tab-settings"><h2><span class="chap">伍</span>站点与品牌设置</h2>
-<label>站名（留空则默认「书签导航」）</label><input id="siteTitleInput" placeholder="书签导航">
-<label>页脚文案（留空则不显示该行）</label><input id="siteFooterInput" placeholder="如：本辑已毕 · 下辑随缘">
+<div class="frow frow-nameurl"><div><label>站名（留空则默认「书签导航」）</label><input id="siteTitleInput" placeholder="书签导航"></div>
+<div><label>页脚文案（留空则不显示该行）</label><input id="siteFooterInput" placeholder="如：本辑已毕 · 下辑随缘"></div></div>
 <label>外搜引擎（站内搜不到结果时用，至少留一个；只留一个则前台只显示那一个）</label>
 <div style="display:flex;gap:18px;flex-wrap:wrap;margin:2px 0 10px">
 <label style="display:inline-flex;align-items:center;gap:6px;margin:0"><input type="checkbox" id="extEngBing" style="width:auto;margin:0"> Bing</label>
@@ -154,22 +154,22 @@ function getAdminHtml(siteTitle) {
   <button class="ghost danger" id="bulkAiStopBtn" type="button" style="display:none">中止</button>
 </div>
 <p class="msg" id="aiToolMsg"></p>
-<label>AI 服务商</label>
+<div class="frow"><div><label>AI 服务商</label>
 <select id="aiProvider">
   <option value="cloudflare">Cloudflare Workers AI（原生）</option>
   <option value="openai">OpenAI</option>
   <option value="google">Google Gemini（OpenAI 兼容协议）</option>
   <option value="deepseek">DeepSeek</option>
   <option value="custom">自定义（OpenAI 兼容协议）</option>
-</select>
-<div id="aiCfWrap">
+</select></div>
+<div><label>模型名称 (model)</label><input id="aiModel" placeholder="@cf/meta/llama-3.3-70b-instruct-fp8-fast"></div></div>
+<div class="frow"><div><div id="aiCfWrap">
   <label>Cloudflare 账户 ID (Account ID)</label><input id="aiAccount" placeholder="在 Cloudflare 控制台右侧获取">
 </div>
 <div id="aiOpenAiWrap" style="display:none">
   <label>接口地址 (base_url)</label><input id="aiBaseUrl" placeholder="https://api.openai.com/v1">
-</div>
-<label id="aiKeyLabel">Workers AI 令牌 (API Token，留空保持原值)</label><input id="aiKey" type="password" placeholder="未设置">
-<label>模型名称 (model)</label><input id="aiModel" placeholder="@cf/meta/llama-3.3-70b-instruct-fp8-fast">
+</div></div>
+<div><label id="aiKeyLabel">Workers AI 令牌 (API Token，留空保持原值)</label><input id="aiKey" type="password" placeholder="未设置"></div></div>
 <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px">
   <button class="primary" id="aiSaveBtn" type="button">保存 AI 设置</button>
   <button class="ghost" id="aiTestBtn" type="button">测试生成</button>

@@ -1469,3 +1469,11 @@ body.tab-sites .grid-layout [data-tab-pane="tab-sites"],body.tab-edit .grid-layo
 .sites-tools{position:sticky;top:var(--tabsH,54px);z-index:150;background:var(--card);padding:10px 0 8px;border-bottom:1.5px solid var(--border-line)}
 .cat-head-wrap{position:sticky;top:calc(var(--tabsH,54px) + var(--toolsH,86px));z-index:120;background:var(--card)}
 .sites-tbl .site-title,.cattable .cname-text,.cat-head-wrap h3{font-family:"Maple Mono",system-ui,-apple-system,"PingFang SC","Microsoft YaHei",sans-serif}
+
+/* ===== 后台细修四轮：全宽统一＋表单内部网格（2026-11-08） ===== */
+.card[data-tab-pane="tab-edit"],.card[data-tab-pane="tab-settings"]{max-width:none}
+.user-add-form{max-width:none}
+@media (min-width:901px){
+.grid-layout .frow{display:grid;grid-template-columns:1fr 1fr;gap:0 14px}
+.grid-layout .frow-nameurl{grid-template-columns:1fr 2fr}
+}
