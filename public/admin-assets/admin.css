@@ -1477,3 +1477,15 @@ body.tab-sites .grid-layout [data-tab-pane="tab-sites"],body.tab-edit .grid-layo
 .grid-layout .frow{display:grid;grid-template-columns:1fr 1fr;gap:0 14px}
 .grid-layout .frow-nameurl{grid-template-columns:1fr 2fr}
 }
+
+/* ===== 后台细修五轮：手机端用户表防溢出（2026-11-08） ===== */
+@media (max-width:620px){
+#userTable th:nth-child(1){width:32px}
+#userTable th:nth-child(3){width:60px}
+#userTable th:nth-child(4){width:48px}
+#userTable th:nth-child(5),#userTable td:nth-child(5){display:none}
+#userTable th:nth-child(6){width:108px}
+#userTable td:nth-child(2){overflow-wrap:anywhere}
+#userTable .badge{white-space:nowrap}
+#userTable td:nth-child(6) .ghost{white-space:nowrap}
+}
