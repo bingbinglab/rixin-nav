@@ -3673,3 +3673,26 @@ body.seal-stamping-mode {
   .modal-close, .shortcut-modal-close, .beast-close-btn { min-width: 44px; min-height: 44px; }
   .back-to-top-btn { min-height: 44px; }
 }
+
+/* 进站进度线（2026-11-14）：贴视口顶端的朱砂细线，只报第二阶段数据刷新的真实
+   等待：慢于 250ms 才露面，走满即隐；快开时完全不出现、不挡交互 */
+#loadBar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  z-index: 9999;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity .25s ease;
+}
+#loadBar.on { opacity: 1; }
+#loadBar > i {
+  display: block;
+  height: 100%;
+  width: 0;
+  background: linear-gradient(90deg, var(--ochre), #c4633c);
+  box-shadow: 0 0 8px rgba(158, 71, 42, .45);
+  transition: width .2s ease;
+}

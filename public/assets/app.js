@@ -1198,6 +1198,43 @@ function applySiteConfig(siteTitle, siteFooter) {
   }
 }
 
+// 进站进度线：只报第二阶段数据刷新的等待。慢于 250ms 才露面（快开无感），
+// 露面后先缓爬向 72%，数据落定即走满并淡出；全程不挡交互。
+const loadBarState = { shown: false, width: 0, showTimer: 0, creepTimer: 0, doneTimer: 0 };
+function loadBarSetWidth(w) {
+  loadBarState.width = w;
+  const fill = document.querySelector('#loadBar > i');
+  if (fill) fill.style.width = w + '%';
+}
+function loadBarStart() {
+  const bar = document.getElementById('loadBar');
+  if (!bar) return;
+  clearTimeout(loadBarState.showTimer);
+  clearTimeout(loadBarState.doneTimer);
+  loadBarState.showTimer = setTimeout(() => {
+    loadBarState.shown = true;
+    bar.classList.add('on');
+    loadBarSetWidth(10);
+    clearInterval(loadBarState.creepTimer);
+    loadBarState.creepTimer = setInterval(() => {
+      const next = loadBarState.width + (72 - loadBarState.width) * 0.07;
+      loadBarSetWidth(Math.min(next, 72));
+    }, 120);
+  }, 250);
+}
+function loadBarDone() {
+  clearTimeout(loadBarState.showTimer);
+  clearInterval(loadBarState.creepTimer);
+  if (!loadBarState.shown) return;
+  loadBarState.shown = false;
+  loadBarSetWidth(100);
+  loadBarState.doneTimer = setTimeout(() => {
+    const bar = document.getElementById('loadBar');
+    if (bar) bar.classList.remove('on');
+    loadBarSetWidth(0);
+  }, 220);
+}
+
 // 核心拉取函数：拉全量站点＋私密（带 Cookie 鉴权时生效）
 async function refreshSitesData() {
   try {
@@ -1266,4 +1303,5 @@ try {
 }
 
 // 第二阶段：异步吃 D1 接口数据（/api/sites）；若指纹无变化则静默跳过重渲
-refreshSitesData();
+loadBarStart();
+refreshSitesData().finally(loadBarDone);
