@@ -11,6 +11,9 @@
   --ink: #272422;
   --muted: #736b62;
   --ochre: #9e472a;
+  --serif: "Noto Serif SC", "Source Han Serif SC", "Songti SC", serif;
+  --accent-contrast: #fff;
+  --success: #276b32;
   --paper: #f8f5ee;
   --card: #fff;
   --border-line: #e3ddd0;
@@ -21,6 +24,8 @@ html.dark-theme, body.dark-theme {
   --ink: #e6dfd3;
   --muted: #b0a58f;
   --ochre: #d96f47;
+  --accent-contrast: #100f0e;
+  --success: #81c784;
   --paper: #100f0e;
   --card: #171514;
   --border-line: rgba(230, 223, 211, .16);
@@ -29,6 +34,8 @@ html.dark-theme, body.dark-theme {
 * { box-sizing: border-box; }
 body {
   font-family: "Maple Mono", system-ui, -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif;
+  font-size: 14px;
+  line-height: 1.45;
   background: var(--paper);
   color: var(--ink);
   margin: 0;
@@ -37,7 +44,7 @@ body {
 }
 .serif { font-family: "Noto Serif SC", "Source Han Serif SC", "Songti SC", serif; }
 .wrap { max-width: 1200px; margin: 0 auto; }
-.grid-layout { display: grid; grid-template-columns: 540px 1fr; gap: 20px; align-items: start; }
+.grid-layout { display: block; }
 .col-left, .col-right { min-width: 0; }
 .col-left .card, .col-right .card { margin: 0 0 20px; }
 header.top {
@@ -97,6 +104,13 @@ input, select {
   color: var(--ink);
 }
 input:focus, select:focus { outline: 2px solid var(--ochre); outline-offset: 1px; }
+button, input, select, textarea { font-family: inherit; }
+input, select { line-height: 1.4; }
+:where(button, a, input, select, [tabindex]):focus-visible { outline: 2px solid var(--ochre); outline-offset: 3px; }
+.cat-drop button:focus-visible { outline-offset: -3px; background: var(--paper); }
+@media (hover: hover) and (pointer: fine) {
+  button:hover, a.btn:hover { filter: brightness(.94); }
+}
 .row { display: flex; gap: 10px; align-items: flex-end; }
 .row > div { flex: 1; }
 .chk { display: flex; align-items: center; gap: 7px; font-size: 14px; color: var(--ink); margin-top: 12px; width: fit-content; cursor: pointer; }
@@ -104,8 +118,9 @@ input:focus, select:focus { outline: 2px solid var(--ochre); outline-offset: 1px
 [data-tab-pane="tab-edit"] .chk:hover { background: rgba(127, 120, 105, .16); }
 .cat-combo { position: relative; }
 .cat-drop { position: absolute; left: 0; right: 0; top: calc(100% + 4px); z-index: 60; max-height: 240px; overflow-y: auto; background: var(--card); border: 1.5px solid var(--ink); box-shadow: 4px 4px 0 var(--card-shadow); }
-.cat-drop button { display: block; width: 100%; text-align: left; background: none; border: 0; color: var(--ink); font-size: 14px; padding: 8px 10px; cursor: pointer; font-family: inherit; }
-.cat-drop button:hover { background: var(--ochre); color: var(--paper); }
+.cat-drop button { display: block; width: 100%; text-align: left; background: none; border: 0; color: var(--ink); font-size: 14px; padding: 8px 10px; cursor: pointer; font-family: inherit; margin: 0; box-shadow: none; border-radius: 0; line-height: 1.4; white-space: normal; overflow-wrap: anywhere; }
+.cat-drop button:hover { background: var(--ochre); color: var(--accent-contrast); }
+.cat-drop button:active { transform: none; box-shadow: none; background: var(--ochre); color: var(--accent-contrast); }
 .chk input { width: auto; accent-color: var(--ochre); }
 button, a.btn {
   display: inline-block;
@@ -120,7 +135,7 @@ button, a.btn {
   cursor: pointer;
   margin: 12px 8px 0 0;
   box-shadow: 3px 3px 0 var(--card-shadow);
-  line-height: normal;
+  line-height: 1.3;
 }
 button:active, a.btn:active { transform: translate(2px, 2px); box-shadow: 1px 1px 0 var(--card-shadow); }
 button:disabled, a.btn:disabled, button[disabled] {
@@ -130,18 +145,22 @@ button:disabled, a.btn:disabled, button[disabled] {
   box-shadow: none;
   transform: none !important;
 }
-button.primary, a.btn.primary { background: var(--ochre); border-color: var(--ochre); color: #fff; }
+button.primary, a.btn.primary { background: var(--ochre); border-color: var(--ochre); color: var(--accent-contrast); }
 button.ghost, a.btn.ghost { background: var(--card); color: var(--ink); }
 button.mini, a.btn.mini { padding: 3px 10px; font-size: 12.5px; margin: 0 3px 0 0; box-shadow: none; }
 button.danger, a.danger { color: var(--ochre) !important; border-color: var(--ochre) !important; background: var(--card) !important; }
 button.danger:hover, a.danger:hover { background: rgba(158, 71, 42, .1) !important; }
-button.danger:active, a.danger:active { background: var(--ochre) !important; color: #fff !important; }
+button.danger:active, a.danger:active { background: var(--ochre) !important; color: var(--accent-contrast) !important; }
 table { width: 100%; border-collapse: collapse; font-size: 14px; }
-td, th { border-bottom: 1px solid var(--border-line); padding: 7px 5px; text-align: left; vertical-align: middle; }
+td, th { border-bottom: 1px solid var(--border-line); padding: 7px 5px; text-align: left; vertical-align: middle; line-height: 1.4; }
 th { font-size: 12px; color: var(--muted); letter-spacing: 1px; }
 a { color: var(--ochre); }
 .muted { color: var(--muted); font-size: 12.5px; }
 .msg { color: var(--ochre); font-size: 13.5px; min-height: 18px; }
+.msg.ok { color: var(--success); }
+.msg.ok::before { content: "✓ "; }
+.msg.err { color: var(--ochre); }
+.msg.err::before { content: "！"; }
 .kid td:first-child { padding-left: 26px; }
 .kid .cname::before { content: "↳ "; color: var(--ochre); font-weight: 700; }
 select.inline { width: auto; padding: 4px 6px; font-size: 13px; }
@@ -228,8 +247,10 @@ select.inline { width: auto; padding: 4px 6px; font-size: 13px; }
   align-items: center;
   margin-top: 14px;
 }
+.action-row { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-top: 10px; }
+.action-row > button, .dav-action-btns > button { margin: 0; }
 .form-actions-sticky button {
-  margin: 0 8px 0 0;
+  margin: 0;
 }
 .drag-handle { cursor: grab; color: var(--muted); user-select: none; margin-right: 6px; font-size: 13px; display: inline-block; vertical-align: middle; }
 tr[draggable="true"] { cursor: grab; }
@@ -323,7 +344,7 @@ html.dark-theme .icon-box { background: var(--card); }
   display: none;
   max-width: 90vw;
 }
-.toast.err { background: var(--ochre); border-color: var(--ochre); color: #fff; }
+.toast.err { background: var(--ochre); border-color: var(--ochre); color: var(--accent-contrast); }
 
 @keyframes ochreFade {
   0% { box-shadow: 0 0 0 2.5px var(--ochre); background: rgba(158, 71, 42, .12); }
@@ -343,6 +364,7 @@ html.dark-theme .icon-box { background: var(--card); }
   justify-content: center;
   z-index: 10000;
   padding: 16px;
+  overflow-y: auto;
 }
 .confirm-card {
   width: 380px;
@@ -352,6 +374,13 @@ html.dark-theme .icon-box { background: var(--card); }
   border: 2px solid var(--ink);
   box-shadow: 6px 6px 0 var(--card-shadow);
   padding: 20px;
+}
+.confirm-card:not(.preview-card) {
+  max-height: calc(100vh - 32px);
+  max-height: calc(100dvh - 32px);
+  overflow-y: auto;
+  margin: auto !important;
+  flex-shrink: 0;
 }
 .confirm-title {
   margin: 0 0 10px;
@@ -576,98 +605,6 @@ html.dark-theme .icon-box { background: var(--card); }
   .sites-tbl tr.drag-over-above { box-shadow: inset 0 2.5px 0 var(--ochre); }
   .sites-tbl tr.drag-over-below { box-shadow: inset 0 -2.5px 0 var(--ochre); }
 
-  /* 批量操作浮动栏手机端单行紧凑（<=56px）、防横滑、抽屉展开、防遮挡末尾书签 */
-  .desktop-only-inline { display: none !important; }
-  .mobile-bulk-more {
-    display: inline-flex !important;
-    align-items: center;
-    justify-content: center;
-    min-height: 34px;
-    padding: 3px 12px;
-    margin: 0 !important;
-    font-size: 13px;
-    font-weight: 700;
-    box-shadow: 2px 2px 0 var(--card-shadow);
-  }
-  .bulk-bar {
-    position: sticky;
-    bottom: calc(10px + env(safe-area-inset-bottom, 0px));
-    height: 48px;
-    max-height: 52px;
-    padding: 6px 12px;
-    margin: 10px 0 0;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    flex-wrap: nowrap !important;
-    overflow: visible !important;
-    z-index: 100;
-  }
-  .bulk-info {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    font-size: 13px;
-    white-space: nowrap;
-    width: auto !important;
-  }
-  .bulk-info button {
-    min-height: 30px;
-    padding: 2px 8px;
-    font-size: 12px;
-    margin: 0;
-  }
-  .bulk-actions-group {
-    display: none !important;
-  }
-  .bulk-bar.expanded .bulk-actions-group {
-    display: flex !important;
-    flex-direction: column;
-    gap: 8px;
-    position: absolute;
-    bottom: calc(100% + 6px);
-    left: 0;
-    right: 0;
-    background: var(--card);
-    border: 2px solid var(--ink);
-    box-shadow: 4px -4px 0 var(--card-shadow);
-    padding: 12px;
-    z-index: 105;
-    animation: slideUp 0.15s ease-out;
-    width: 100%;
-    box-sizing: border-box;
-  }
-  .bulk-cat-wrap {
-    display: flex;
-    gap: 6px;
-    width: 100%;
-  }
-  .bulk-cat-wrap select {
-    flex: 1;
-    min-width: 0;
-    height: 36px;
-    font-size: 13px;
-  }
-  .bulk-cat-wrap button {
-    flex-shrink: 0;
-    min-height: 36px;
-    padding: 4px 12px;
-    margin: 0 !important;
-  }
-  .bulk-btns-wrap {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 6px;
-    width: 100%;
-  }
-  .bulk-btns-wrap button {
-    width: 100%;
-    min-height: 36px;
-    padding: 4px 2px;
-    margin: 0 !important;
-    font-size: 12px;
-    text-align: center;
-  }
   .sites-tbl {
     margin-bottom: 58px;
   }
@@ -690,19 +627,19 @@ html.dark-theme .icon-box { background: var(--card); }
   }
 
   /* 分类管理表格移动端（≤560px）：重构为自适应两行卡片流，彻底杜绝文字与数字重叠、按钮切边 */
-  .tblwrap {
+  .cat-table-wrap {
     overflow-x: visible !important; /* 手机端两行卡片流自适应屏幕，彻底解除横向滚动拦截 */
   }
-  .cattable {
+  .cat-tbl {
     display: block !important;
     min-width: 0 !important;
     width: 100% !important;
     table-layout: auto !important;
   }
-  .cattable thead {
+  .cat-tbl thead {
     display: none !important; /* 手机端隐藏表头 */
   }
-  .cattable tbody {
+  .cat-tbl tbody {
     display: flex !important;
     flex-direction: column !important;
     gap: 6px !important;
@@ -860,20 +797,24 @@ html.dark-theme .icon-box { background: var(--card); }
     align-items: center !important;
     gap: 4px !important;
     width: 100% !important;
+    flex-wrap: wrap !important;
+    min-width: 0;
   }
   .cname-inline-input {
-    flex: 1 !important;
-    min-width: 60px !important;
-    height: 28px !important;
+    flex: 1 1 100% !important;
+    width: 100%;
+    min-width: 0 !important;
+    height: 36px !important;
     font-size: 13px !important;
     padding: 2px 6px !important;
   }
   .cname-inline-wrap .mini {
-    min-height: 28px !important;
+    min-height: 36px !important;
     padding: 2px 7px !important;
     margin: 0 !important;
     font-size: 12px !important;
   }
+  .cattable .cname-text { min-width: 0; }
 
   /* 预设快捷按钮移动端热区提升（≥38px） */
   .preset-btns button {
@@ -897,15 +838,6 @@ html.dark-theme .icon-box { background: var(--card); }
     overflow-y: auto;
     max-height: none !important;
     -webkit-overflow-scrolling: touch;
-  }
-  .preview-card .confirm-actions {
-    position: sticky;
-    bottom: 0;
-    background: var(--card);
-    padding-top: 10px;
-    margin-top: auto;
-    z-index: 2;
-    border-top: 1px solid var(--border-line);
   }
   .preview-stats-grid {
     grid-template-columns: repeat(2, 1fr) !important;
@@ -1209,6 +1141,103 @@ html.dark-theme .preview-stat-num.update, body.dark-theme .preview-stat-num.upda
   margin-left: 12px;
 }
 
+/* 批量操作浮动栏手机端规则后置（A4）：同优先级后写者胜，须排在桌面基础规则之后；z-index 保持已修复的 300 */
+@media (max-width: 560px) {
+  /* 批量操作浮动栏手机端单行紧凑（<=56px）、防横滑、抽屉展开、防遮挡末尾书签 */
+  .desktop-only-inline { display: none !important; }
+  .mobile-bulk-more {
+    display: inline-flex !important;
+    align-items: center;
+    justify-content: center;
+    min-height: 34px;
+    padding: 3px 12px;
+    margin: 0 !important;
+    font-size: 13px;
+    font-weight: 700;
+    box-shadow: 2px 2px 0 var(--card-shadow);
+  }
+  .bulk-bar {
+    position: sticky;
+    bottom: calc(10px + env(safe-area-inset-bottom, 0px));
+    height: 48px;
+    max-height: none;
+    padding: 4px 10px;
+    margin: 10px 0 0;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: nowrap !important;
+    overflow: visible !important;
+    z-index: 300;
+  }
+  .bulk-info {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    white-space: nowrap;
+    width: auto !important;
+  }
+  .bulk-info button {
+    min-height: 36px;
+    padding: 2px 8px;
+    font-size: 12px;
+    margin: 0;
+  }
+  .bulk-actions-group {
+    display: none !important;
+  }
+  .bulk-bar.expanded .bulk-actions-group {
+    display: flex !important;
+    flex-direction: column;
+    gap: 8px;
+    position: absolute;
+    bottom: calc(100% + 6px);
+    left: 0;
+    right: 0;
+    background: var(--card);
+    border: 2px solid var(--ink);
+    box-shadow: 4px -4px 0 var(--card-shadow);
+    padding: 12px;
+    z-index: 105;
+    animation: slideUp 0.15s ease-out;
+    width: 100%;
+    box-sizing: border-box;
+  }
+  .bulk-cat-wrap {
+    display: flex;
+    gap: 6px;
+    width: 100%;
+  }
+  .bulk-cat-wrap select {
+    flex: 1;
+    min-width: 0;
+    height: 36px;
+    font-size: 13px;
+  }
+  .bulk-cat-wrap button {
+    flex-shrink: 0;
+    min-height: 36px;
+    padding: 4px 12px;
+    margin: 0 !important;
+  }
+  .bulk-btns-wrap {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 6px;
+    width: 100%;
+  }
+  .bulk-btns-wrap button {
+    width: 100%;
+    min-height: 36px;
+    padding: 4px 2px;
+    margin: 0 !important;
+    font-size: 12px;
+    text-align: center;
+  }
+  #bulkDelBtn { margin-left: 0; }
+}
+
 /* 网址实时查重预警框 */
 .dup-warn {
   margin-top: 6px;
@@ -1269,7 +1298,7 @@ html.dark-theme .dup-warn {
   padding: 1px 7px;
   border-radius: 10px;
   background: var(--ochre);
-  color: #fff;
+  color: var(--accent-contrast);
   margin-left: 8px;
   vertical-align: middle;
   letter-spacing: 0.5px;
@@ -1370,6 +1399,11 @@ html.dark-theme .dup-warn {
     padding: 6px 10px;
     font-size: 12px;
   }
+  .tab-pill { min-height: 44px; }
+  .search-clear-btn { width: 40px; height: 40px; right: 2px; }
+  .searchbar input { padding-right: 46px; }
+  .cat-priv-label { min-height: 36px; }
+  .cattable .cat-col-sort button, .cattable .cat-col-act button { min-height: 36px !important; }
 }
 
 /* 死链巡检结果限高与内部滚动 */
@@ -1430,14 +1464,15 @@ html.dark-theme .lc-badge.warn { border-color: #e0b347; color: #e0b347; }
 .site-filters .chk input{width:auto;margin:0}
 .site-filters .spacer{flex:1}
 #fltCount{font-size:12.5px;white-space:nowrap}
+.cat-count-badge,.preview-stat-num,#fltCount{font-variant-numeric:tabular-nums}
 #list.compact .sites-tbl td{padding-top:3px;padding-bottom:3px}
 #list.compact .site-desc{margin-top:1px}
 #list.compact .site-url{margin-top:0}
-.pane-nav{display:flex;gap:8px;flex-wrap:wrap;position:sticky;top:54px;z-index:190;background:var(--paper);padding:8px 2px;margin:0 0 14px;border-bottom:1.5px solid var(--ink)}
+.pane-nav{display:flex;gap:8px;flex-wrap:wrap;position:sticky;top:var(--tabsH,54px);z-index:190;background:var(--paper);padding:8px 2px;margin:0 0 14px;border-bottom:1.5px solid var(--ink)}
 .pane-nav a{border:1.5px solid var(--ink);background:var(--card);color:var(--ink);padding:5px 12px;font-size:13px;font-weight:700;text-decoration:none;box-shadow:2px 2px 0 var(--card-shadow)}
-.pane-nav a.on{background:var(--ochre);border-color:var(--ochre);color:#fff}
+.pane-nav a.on{background:var(--ochre);border-color:var(--ochre);color:var(--accent-contrast)}
 body.tab-data .grid-layout .pane-nav[data-tab-pane="tab-data"],body.tab-settings .grid-layout .pane-nav[data-tab-pane="tab-settings"]{display:flex}
-.card[id]{scroll-margin-top:118px}
+.card[id]{scroll-margin-top:calc(var(--tabsH,54px) + var(--paneNavH,54px) + 10px)}
 @media (max-width:900px){
 .grid-layout .pane-nav{display:none}
 body.tab-data .grid-layout .pane-nav[data-tab-pane="tab-data"],body.tab-settings .grid-layout .pane-nav[data-tab-pane="tab-settings"]{display:flex}
@@ -1471,8 +1506,6 @@ body.tab-sites .grid-layout [data-tab-pane="tab-sites"],body.tab-edit .grid-layo
 .cat-add-form{margin-top:0;margin-bottom:10px}
 
 /* ===== 后台细修三轮：表单限宽、工具行与分组标题吸顶、表格名字黑体（2026-11-06） ===== */
-.card[data-tab-pane="tab-edit"],.card[data-tab-pane="tab-settings"]{max-width:880px}
-.user-add-form{max-width:880px}
 .sites-tools{position:sticky;top:var(--tabsH,54px);z-index:150;background:var(--card);padding:10px 0 8px;border-bottom:1.5px solid var(--border-line)}
 .cat-head-wrap{position:sticky;top:calc(var(--tabsH,54px) + var(--toolsH,86px));z-index:120;background:var(--card)}
 .sites-tbl .site-title,.cattable .cname-text,.cat-head-wrap h3{font-family:"Maple Mono",system-ui,-apple-system,"PingFang SC","Microsoft YaHei",sans-serif}
