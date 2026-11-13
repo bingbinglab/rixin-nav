@@ -2515,7 +2515,9 @@ if ($("floccusSyncBtn")) {
     }
     floccusSyncRunning = true;
     $("floccusSyncBtn").disabled = true;
-    $("toolMsg").textContent = "正在拉取 Floccus 书签并预演比对…";
+    // 同步进度写本区专属消息行（元素缺失时回退到备份区的 toolMsg）
+    const fMsg = $("floccusToolMsg") || $("toolMsg");
+    fMsg.textContent = "正在拉取 Floccus 书签并预演比对…";
     toast("正在拉取 Floccus 书签预演…");
     try {
       const preview = await api("/api/admin/sync-floccus", {
@@ -2526,12 +2528,12 @@ if ($("floccusSyncBtn")) {
 
       const choice = await showFloccusSyncModal(preview);
       if (!choice.confirmed) {
-        $("toolMsg").textContent = "已取消同步";
+        fMsg.textContent = "已取消同步";
         toast("已取消同步");
         return;
       }
 
-      $("toolMsg").textContent = "正在执行双向同步…";
+      fMsg.textContent = "正在执行双向同步…";
       toast("正在执行双向同步…");
       const j = await api("/api/admin/sync-floccus", {
         method: "POST",
@@ -2543,11 +2545,11 @@ if ($("floccusSyncBtn")) {
       let msg = `Floccus 同步完成：站内新增 ${j.addedToSite} 条，写进浏览器 ${j.pushedToBrowser} 条，删除 ${totalDels} 条。`;
       if (j.deleteSuspended) msg += "（待删总数超限已触发批量熔断保护，未删除）";
       if (j.writebackDeferred) msg += `（写回暂缓：${j.writebackNote || "WebDAV 文件并发冲突"}）`;
-      $("toolMsg").textContent = msg;
+      fMsg.textContent = msg;
       toast(msg);
       await load();
     } catch (e) {
-      $("toolMsg").textContent = "同步失败：" + e.message;
+      fMsg.textContent = "同步失败：" + e.message;
       toast("同步失败：" + e.message, true);
     } finally {
       floccusSyncRunning = false;
@@ -2976,7 +2978,7 @@ async function loadConfig() {
     if (cfg.source.webdav === "env") {
       $("wdPass").placeholder = "环境变量生效中（" + cfg.webdav.pass_mask + "）；如需存入后台请重新输入";
       $("wdTip").innerHTML =
-        '<b style="color:var(--ochre)">当前环境变量在管事</b>（WEBDAV_URL/USER/PASS 已配齐并优先生效）。如需存入后台，请重新输入密码后再保存。';
+        '<b>当前环境变量在管事</b>（WEBDAV_URL/USER/PASS 已配齐并优先生效）。如需存入后台，请重新输入密码后再保存。';
     } else {
       $("wdPass").placeholder =
         cfg.webdav && cfg.webdav.pass_set ? "已设置 (" + cfg.webdav.pass_mask + ")，留空保持不变" : "未设置";

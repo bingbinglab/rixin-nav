@@ -281,17 +281,22 @@ tr.drag-over-below td { border-bottom: 2.5px solid var(--ochre) !important; }
   border-radius: 2px;
 }
 .badge.priv { border-color: var(--ochre); color: var(--ochre); }
-.badge.env { border-color: #2e7d32; color: #2e7d32; background: rgba(46, 125, 50, .08); }
-.badge.kv { border-color: #1565c0; color: #1565c0; background: rgba(21, 101, 192, .08); }
+.badge.env { border-color: var(--muted); color: var(--ink); background: rgba(127, 120, 105, .10); }
+.badge.kv { border-color: var(--muted); color: var(--ink); background: rgba(127, 120, 105, .10); }
 .badge.none { border-color: var(--muted); color: var(--muted); background: transparent; }
-html.dark-theme .badge.env { border-color: #66bb6a; color: #66bb6a; }
-html.dark-theme .badge.kv { border-color: #64b5f6; color: #64b5f6; }
 
 .badge.clickable { cursor: pointer; user-select: none; transition: opacity .15s, transform .15s; }
 .badge.clickable:hover { transform: scale(1.08); }
 .badge.badge-off { opacity: .35; border-style: dashed; }
 
 .preset-btns { display: flex; gap: 6px; margin: 8px 0 12px; flex-wrap: wrap; align-items: center; }
+
+/* 数据与备份卡任务分区：连接配置 / 备份与恢复 / Floccus 同步 */
+.dav-zone { border-top: 1.5px dashed var(--border-line); padding-top: 14px; margin-top: 16px; }
+.dav-zone:first-of-type { border-top: none; padding-top: 0; margin-top: 2px; }
+.dav-zone-title { font-family: var(--serif); font-size: 15px; font-weight: 800; letter-spacing: 1px; margin: 0 0 6px; }
+.dav-status { margin: 0 0 6px; line-height: 1.6; }
+.field-tip { font-size: 12px; margin-top: 4px; line-height: 1.5; }
 .preset-btns button { margin: 0; padding: 3px 9px; font-size: 12px; box-shadow: none; }
 .test-res-box { margin-top: 10px; padding: 10px; border: 1.5px dashed var(--border-line); background: rgba(0, 0, 0, .02); font-size: 13px; border-radius: 4px; line-height: 1.6; word-break: break-word; overflow-wrap: anywhere; }
 html.dark-theme .test-res-box { background: rgba(255, 255, 255, .02); }

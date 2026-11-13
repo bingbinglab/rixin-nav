@@ -9,7 +9,7 @@ function getLoginHtml(siteTitle) {
 <html lang="zh-CN"><head><meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>${title} · 后台登录</title><link rel="icon" type="image/svg+xml" href="/favicon-2.svg"><link rel="icon" type="image/png" sizes="192x192" href="/icon-192-2.png">
-<link rel="stylesheet" href="/admin-assets/admin.css?v=20261113e">
+<link rel="stylesheet" href="/admin-assets/admin.css?v=20261113f">
 <style>
 body{display:flex;min-height:100vh;align-items:center;justify-content:center;padding:16px}
 form{background:var(--card);border:2px solid var(--ink);box-shadow:7px 7px 0 var(--card-shadow);padding:30px;width:340px;max-width:94vw}
@@ -50,7 +50,7 @@ function getAdminHtml(siteTitle) {
 <html lang="zh-CN"><head><meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>${title} · 后台管理</title><link rel="icon" type="image/svg+xml" href="/favicon-2.svg"><link rel="icon" type="image/png" sizes="192x192" href="/icon-192-2.png">
-<link rel="stylesheet" href="/admin-assets/admin.css?v=20261113e">
+<link rel="stylesheet" href="/admin-assets/admin.css?v=20261113f">
 <script>(function(){try{var t=localStorage.getItem('myNavTheme');if(!t&&window.matchMedia&&window.matchMedia('(prefers-color-scheme:dark)').matches)t='dark';if(t==='dark')document.documentElement.classList.add('dark-theme');}catch(e){}})();</script>
 </head>
 <body><div class="wrap">
@@ -95,33 +95,44 @@ function getAdminHtml(siteTitle) {
 <p class="msg" id="catMsg"></p></div>
 
 <!-- Card 3: WebDAV 备份与同步 (属于数据与备份) -->
-<nav class="pane-nav" data-tab-pane="tab-data"><a href="#cardDav" data-anchor="cardDav" class="on">叁 · WebDAV 备份与同步</a><a href="#cardImport" data-anchor="cardImport">肆 · 导入与导出</a></nav>
+<nav class="pane-nav" data-tab-pane="tab-data"><a href="#cardDav" data-anchor="cardDav" class="on">WebDAV 备份与同步</a><a href="#cardImport" data-anchor="cardImport">导入与导出</a></nav>
 <div class="card" id="cardDav" data-tab-pane="tab-data"><h2><span class="chap">叁</span>WebDAV 备份与同步 <span id="wdBadge" class="badge none">未配置</span></h2>
-<div class="dav-action-btns action-row" style="display:flex;gap:8px;flex-wrap:wrap;margin:4px 0 10px">
-  <button class="ghost" id="davBackupBtn" type="button">备份到 WebDAV</button>
-  <button class="ghost" id="davRestoreBtn" type="button">从 WebDAV 恢复</button>
-  <button class="ghost" id="floccusSyncBtn" type="button">同步 Floccus 书签</button>
-</div>
-<p class="msg" id="toolMsg"></p>
+<div class="dav-zone">
+<h3 class="dav-zone-title">连接配置</h3>
+<p class="muted dav-status" id="wdTip">提示：坚果云密码请填「账户信息 - 安全设置」中生成的应用密码，非登录密码；备份文件将写入对应目录下的 rixin-jilan-backup.json。</p>
 <div class="preset-btns"><span class="muted" style="font-size:12px">快捷预设：</span>
 <button class="ghost mini" type="button" id="wdPresetJianGuo">坚果云</button>
 <button class="ghost mini" type="button" id="wdPresetNextcloud">Nextcloud</button>
 <button class="ghost mini" type="button" id="wdPresetCustom">自定义</button></div>
 <label>WebDAV 地址</label><input id="wdUrl" placeholder="https://dav.jianguoyun.com/dav/">
 <div class="frow"><div><label>账号</label><input id="wdUser" placeholder="WebDAV 登录账号"></div>
-<div><label>应用密码（密码框留空表示保持原值不修改）</label><input id="wdPass" type="password" placeholder="未设置"></div></div>
+<div><label>应用密码（密码框留空表示保持原值不修改）</label><input id="wdPass" type="password" placeholder="未设置">
+<p class="field-tip muted">坚果云请填「账户信息 - 安全设置」生成的第三方应用密码，非登录密码；建议新建一个专门同步书签的应用授权。</p></div></div>
 <div class="action-row" style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px">
   <button class="primary" id="wdSaveBtn" type="button">保存 WebDAV 设置</button>
   <button class="ghost" id="wdTestBtn" type="button">测试连接</button>
   <button class="ghost danger" id="wdClearBtn" type="button">清除配置</button>
 </div>
 <p class="msg" id="wdMsg"></p>
-<p class="muted" id="wdTip">提示：坚果云密码请填「账户信息 - 安全设置」中生成的应用密码，非登录密码；备份文件将写入对应目录下的 rixin-jilan-backup.json。</p>
-<div style="margin-top:14px;padding-top:12px;border-top:1px dashed var(--border-line)">
+</div>
+<div class="dav-zone">
+<h3 class="dav-zone-title">备份与恢复</h3>
+<div class="dav-action-btns action-row" style="display:flex;gap:8px;flex-wrap:wrap;margin:4px 0 10px">
+  <button class="ghost" id="davBackupBtn" type="button">备份到 WebDAV</button>
+  <button class="ghost" id="davRestoreBtn" type="button">从 WebDAV 恢复</button>
+</div>
+<p class="msg" id="toolMsg"></p>
+</div>
+<div class="dav-zone">
+<h3 class="dav-zone-title">Floccus 同步</h3>
 <label>Floccus 同步文件相对路径（相对于 WebDAV 文件所在目录，如 bookmarks.xbel）</label>
 <input id="floccusPath" placeholder="bookmarks.xbel">
-<button class="ghost mini" id="floccusSaveBtn" type="button" style="margin-top:4px">保存 Floccus 路径</button>
+<div class="action-row" style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px">
+  <button class="ghost" id="floccusSaveBtn" type="button">保存 Floccus 路径</button>
+  <button class="ghost" id="floccusSyncBtn" type="button">同步 Floccus 书签</button>
+</div>
 <p class="msg" id="floccusMsg"></p>
+<p class="msg" id="floccusToolMsg"></p>
 </div></div>
 
 <!-- Card 4: 导入 / 导出 (属于数据与备份) -->
@@ -220,7 +231,7 @@ function getAdminHtml(siteTitle) {
 
 <!-- 外置客户端逻辑 -->
 <script src="/assets/icon.js?v=20261030a" defer></script>
-<script src="/admin-assets/admin.js?v=20261113d" defer></script>
+<script src="/admin-assets/admin.js?v=20261113e" defer></script>
 </body></html>`;
 }
 
