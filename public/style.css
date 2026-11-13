@@ -806,6 +806,47 @@ html.dark-theme .add-btn:hover {
   padding-bottom: 40px;
 }
 
+/* 搜索结果总览行：文本搜索生效且有命中时由 app.js 显示 */
+.search-summary {
+  align-items: center;
+  gap: 10px 14px;
+  flex-wrap: wrap;
+  margin-bottom: 30px;
+  padding: 9px 14px;
+  border: 1.5px dashed rgba(158, 71, 42, .45);
+  background: var(--pinned-bg);
+  font-size: 13.5px;
+}
+html.dark-theme .search-summary { border-color: rgba(217, 111, 71, .5); }
+.search-summary-text { font-weight: 700; letter-spacing: .5px; }
+.search-summary-clear {
+  background: none;
+  border: none;
+  padding: 4px 2px;
+  color: var(--ochre);
+  font-size: 13px;
+  font-weight: 700;
+  font-family: inherit;
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+/* 搜索态弱化：A–Z 索引条与页首全站统计退后（仅透明度，不动布局高度） */
+.page.is-searching .quick-loc-bar { opacity: .38; }
+.page.is-searching .mast-stats,
+.page.is-searching .mast-divider,
+.page.is-searching .mast-note { opacity: .35; }
+
+/* 卡片标题/简介关键词高亮：纸墨调淡赭水洗 */
+.kw-hit {
+  background: rgba(158, 71, 42, .16);
+  color: inherit;
+  padding: 0 1px;
+  border-radius: 2px;
+}
+html.dark-theme .kw-hit { background: rgba(217, 111, 71, .34); }
+
 /* 分区容器 */
 .section {
   margin-bottom: 40px;
@@ -1593,6 +1634,9 @@ body:has(.toy-hub-wrap.is-open) .float-top-btn {
     padding-bottom: 2px;
     scrollbar-width: none;
     -webkit-overflow-scrolling: touch;
+    /* 胶囊溢出时右缘渐隐，提示可横滑 */
+    -webkit-mask-image: linear-gradient(to right, #000 calc(100% - 30px), transparent);
+    mask-image: linear-gradient(to right, #000 calc(100% - 30px), transparent);
   }
   .sidebar-nav::-webkit-scrollbar { display: none; }
   

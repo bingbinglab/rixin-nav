@@ -10,7 +10,7 @@
 <meta name="theme-color" content="#f8f5ee">
 <meta name="color-scheme" content="light dark">
 <link rel="manifest" href="/site.webmanifest">
-<link rel="stylesheet" href="style.css?v=20261113e">
+<link rel="stylesheet" href="style.css?v=20261113f">
 <link rel="stylesheet" href="fonts/noto-serif-sc/700.css">
 <link rel="stylesheet" href="fonts/noto-serif-sc/800.css">
 <link rel="stylesheet" href="fonts/noto-serif-sc/900.css">
@@ -115,6 +115,11 @@
 
     <!-- 右侧内容主画卷 -->
     <div class="main-sections-content">
+      <!-- 搜索结果总览：仅文本搜索生效时由 app.js 显示（单字母 A–Z 定位不触发） -->
+      <div class="search-summary" id="searchSummary" style="display: none;">
+        <span class="search-summary-text" id="searchSummaryText"></span>
+        <button type="button" class="search-summary-clear" id="searchSummaryClear">清除搜索，查看全部</button>
+      </div>
       <!-- 常用常顾专区 (Pinned Essentials) -->
       <section id="pinnedSection" class="section pinned-section" style="display: none;">
         <div class="section-head">
@@ -319,7 +324,7 @@
 
 <script src="data.js"></script>
 <script src="/assets/icon.js?v=20261030a"></script>
-<script src="/assets/app.js?v=20261113c"></script>
+<script src="/assets/app.js?v=20261113d"></script>
 <script src="/assets/widgets.js?v=20261113a" defer></script>
 <script src="/assets/hitokoto.js?v=20261113a" defer></script>
 </body>

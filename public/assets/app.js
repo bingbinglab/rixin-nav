@@ -226,6 +226,25 @@ function safeHttpUrl(u) {
   return /^https?:\/\//i.test(String(u || "").trim()) ? u : "#";
 }
 
+// 搜索关键词高亮：仅在 render() 认定为「可高亮关键词」时由 renderKw 传入，逐字面片段包裹 <mark>
+// 先分段 esc 再拼接，绝不把未转义文本拼进 HTML
+let renderKw = '';
+function highlightKw(text, kw) {
+  const raw = String(text ?? '');
+  if (!kw || !raw) return esc(raw);
+  const lowerRaw = raw.toLowerCase();
+  const lowerKw = String(kw).toLowerCase();
+  let out = '';
+  let i = 0;
+  for (;;) {
+    const idx = lowerRaw.indexOf(lowerKw, i);
+    if (idx === -1) { out += esc(raw.slice(i)); break; }
+    out += esc(raw.slice(i, idx)) + '<mark class="kw-hit">' + esc(raw.slice(idx, idx + lowerKw.length)) + '</mark>';
+    i = idx + lowerKw.length;
+  }
+  return out;
+}
+
 function renderCard(s) {
   enrichSite(s);
   const isSelected = (keyword.trim().length > 0 && visibleSitesList[selectedSiteIndex] === s);
@@ -233,13 +252,13 @@ function renderCard(s) {
     ${iconHTML(s)}
     <span class="card-main">
       <span class="card-name">
-        <span>${esc(s.name)}</span>
+        <span>${highlightKw(s.name, renderKw)}</span>
         <span class="card-icons">
           <button type="button" class="card-copy-btn" title="复制网址" data-copy="${esc(s.url)}" aria-label="复制网址"><svg class="copy-icon" viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg></button>
           <span class="card-arrow">↗</span>
         </span>
       </span>
-      <span class="card-desc">${esc(s.desc || '')}</span>
+      <span class="card-desc">${highlightKw(s.desc || '', renderKw)}</span>
       <span class="card-host">${esc(hostOf(s.url))}</span>
     </span>
   </a>`;
@@ -325,6 +344,11 @@ function render() {
   sites.forEach(enrichSite);
   const kw = keyword.trim().toLowerCase();
 
+  // 搜索态分型：单字母 [a-z] 是 A–Z 快速定位语义，不算文本搜索（不弹总览行、不弱化索引条）
+  const isTextSearch = kw.length > 0 && !/^[a-z]$/.test(kw);
+  renderKw = (kw.length >= 2 || /[\u4e00-\u9fff]/.test(kw)) ? kw : '';
+  if (pageRoot) pageRoot.classList.toggle('is-searching', isTextSearch);
+
   const ordered = orderedCats();
   const visibleCatsCount = ordered.filter(cat => sites.some(s => s.category === cat)).length;
 
@@ -369,6 +393,19 @@ function render() {
   ordered.forEach(cat => {
     catSitesMap.set(cat, sites.filter(s => s.category === cat && isMatch(s)));
   });
+
+  // 搜索结果总览行：文本搜索且有命中时显示总数与分布分类数，空结果时隐藏（空态由 #noResults 承担）
+  const sumEl = document.getElementById('searchSummary');
+  const sumText = document.getElementById('searchSummaryText');
+  if (sumEl && sumText) {
+    if (isTextSearch && visibleSitesList.length > 0) {
+      const hitCats = ordered.filter(cat => (catSitesMap.get(cat) || []).length > 0).length;
+      sumText.textContent = `搜索『${keyword.trim()}』· 共 ${visibleSitesList.length} 个站点，分布于 ${hitCats} 个分类`;
+      sumEl.style.display = 'flex';
+    } else {
+      sumEl.style.display = 'none';
+    }
+  }
 
   // 顶级分类编号（仅对当前自身或子类有可见站点的顶级分类顺次分配连续编号）
   const topNums = {};
@@ -696,6 +733,11 @@ if (clearBtn) {
     resetFilter();
     input.focus();
   };
+}
+
+const sumClearBtn = document.getElementById('searchSummaryClear');
+if (sumClearBtn) {
+  sumClearBtn.onclick = () => resetFilter();
 }
 
 // 检字诀：键位速查浮层 (桌面端)
