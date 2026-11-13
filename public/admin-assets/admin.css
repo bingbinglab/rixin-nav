@@ -99,7 +99,13 @@ input, select {
 input:focus, select:focus { outline: 2px solid var(--ochre); outline-offset: 1px; }
 .row { display: flex; gap: 10px; align-items: flex-end; }
 .row > div { flex: 1; }
-.chk { display: flex; align-items: center; gap: 7px; font-size: 14px; color: var(--ink); margin-top: 12px; }
+.chk { display: flex; align-items: center; gap: 7px; font-size: 14px; color: var(--ink); margin-top: 12px; width: fit-content; cursor: pointer; }
+[data-tab-pane="tab-edit"] .chk { padding: 3px 12px 3px 2px; margin-left: -2px; border-radius: 3px; }
+[data-tab-pane="tab-edit"] .chk:hover { background: rgba(127, 120, 105, .16); }
+.cat-combo { position: relative; }
+.cat-drop { position: absolute; left: 0; right: 0; top: calc(100% + 4px); z-index: 60; max-height: 240px; overflow-y: auto; background: var(--card); border: 1.5px solid var(--ink); box-shadow: 4px 4px 0 var(--card-shadow); }
+.cat-drop button { display: block; width: 100%; text-align: left; background: none; border: 0; color: var(--ink); font-size: 14px; padding: 8px 10px; cursor: pointer; font-family: inherit; }
+.cat-drop button:hover { background: var(--ochre); color: var(--paper); }
 .chk input { width: auto; accent-color: var(--ochre); }
 button, a.btn {
   display: inline-block;

@@ -9,7 +9,7 @@ function getLoginHtml(siteTitle) {
 <html lang="zh-CN"><head><meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>${title} · 后台登录</title><link rel="icon" type="image/svg+xml" href="/favicon-2.svg"><link rel="icon" type="image/png" sizes="192x192" href="/icon-192-2.png">
-<link rel="stylesheet" href="/admin-assets/admin.css?v=20261108b">
+<link rel="stylesheet" href="/admin-assets/admin.css?v=20261113a">
 <style>
 body{display:flex;min-height:100vh;align-items:center;justify-content:center;padding:16px}
 form{background:var(--card);border:2px solid var(--ink);box-shadow:7px 7px 0 var(--card-shadow);padding:30px;width:340px;max-width:94vw}
@@ -50,7 +50,7 @@ function getAdminHtml(siteTitle) {
 <html lang="zh-CN"><head><meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>${title} · 后台管理</title><link rel="icon" type="image/svg+xml" href="/favicon-2.svg"><link rel="icon" type="image/png" sizes="192x192" href="/icon-192-2.png">
-<link rel="stylesheet" href="/admin-assets/admin.css?v=20261108b">
+<link rel="stylesheet" href="/admin-assets/admin.css?v=20261113a">
 <script>(function(){try{var t=localStorage.getItem('myNavTheme');if(!t&&window.matchMedia&&window.matchMedia('(prefers-color-scheme:dark)').matches)t='dark';if(t==='dark')document.documentElement.classList.add('dark-theme');}catch(e){}})();</script>
 </head>
 <body><div class="wrap">
@@ -76,7 +76,7 @@ function getAdminHtml(siteTitle) {
 <div><label>网址</label><input id="fUrl" placeholder="https://…"></div></div>
 <div id="urlDupWarn" class="dup-warn" style="display:none"></div>
 <div class="descrow"><div><div style="display:flex;justify-content:space-between;align-items:baseline"><label>简介</label><span id="descCount" class="muted" style="font-size:12px">0/40</span></div><input id="fDesc" placeholder="一句话说明" maxlength="40"></div><button class="ghost inline-btn" id="aiDescBtn" type="button">AI 生成</button></div>
-<div class="row"><div><label>分类（选已有，或直接打新名自动建为一级）</label><input id="fCat" list="catList"><datalist id="catList"></datalist></div>
+<div class="row"><div><label>分类（选已有，或直接打新名自动建为一级）</label><div class="cat-combo"><input id="fCat" autocomplete="off"><div class="cat-drop" id="catDrop" hidden></div></div></div>
 <div><label>图标文件名（可空）</label><input id="fIcon" placeholder="如 doubao.com.png"></div></div>
 <label class="chk"><input type="checkbox" id="fPinned"> 置顶（常用常顾）</label>
 <label class="chk"><input type="checkbox" id="fPrivate"> 私密（未登录不可见）</label>
@@ -220,7 +220,7 @@ function getAdminHtml(siteTitle) {
 
 <!-- 外置客户端逻辑 -->
 <script src="/assets/icon.js?v=20261030a" defer></script>
-<script src="/admin-assets/admin.js?v=20261106e" defer></script>
+<script src="/admin-assets/admin.js?v=20261113a" defer></script>
 </body></html>`;
 }
 

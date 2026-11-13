@@ -792,7 +792,6 @@ async function load() {
   }
   renderCats();
   renderSites();
-  $("catList").innerHTML = data.categories.map((c) => `<option value="${esc(c.name)}">`).join("");
   const catSel = $("siteCatSel");
   if (catSel) {
     const prevSel = catSel.value;
@@ -1963,6 +1962,33 @@ function checkUrlDup() {
   } else {
     clearUrlDupWarn();
   }
+}
+
+// --- 分类自定义下拉：点开出全量名单，输入时筛选，仍可直接打新名 ---
+const catInputEl = $("fCat");
+const catDropEl = $("catDrop");
+function closeCatDrop() { if (catDropEl) catDropEl.hidden = true; }
+function renderCatDrop(showAll) {
+  if (!catInputEl || !catDropEl) return;
+  const q = showAll ? "" : (catInputEl.value || "").trim();
+  const names = (data.categories || []).map((c) => c.name).filter((n) => !q || n.includes(q));
+  if (!names.length) { catDropEl.innerHTML = ""; closeCatDrop(); return; }
+  catDropEl.innerHTML = names.map((n) => `<button type="button" data-cat-name="${esc(n)}">${esc(n)}</button>`).join("");
+  catDropEl.querySelectorAll("button").forEach((b) => {
+    b.addEventListener("mousedown", (e) => {
+      e.preventDefault();
+      catInputEl.value = b.dataset.catName;
+      closeCatDrop();
+    });
+  });
+  catDropEl.hidden = false;
+}
+if (catInputEl && catDropEl) {
+  catInputEl.addEventListener("focus", () => renderCatDrop(true));
+  catInputEl.addEventListener("click", () => renderCatDrop(true));
+  catInputEl.addEventListener("input", () => renderCatDrop(false));
+  catInputEl.addEventListener("blur", () => setTimeout(closeCatDrop, 120));
+  catInputEl.addEventListener("keydown", (e) => { if (e.key === "Escape") closeCatDrop(); });
 }
 
 // --- 表单、编辑与取消编辑 (P11, P15, P08+P17 站内确认) ---
