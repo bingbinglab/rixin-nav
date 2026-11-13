@@ -110,11 +110,19 @@ button, input, select, textarea {
 
 /* ---------- 1. 大报头 (Masthead) ---------- */
 .masthead {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-end;
-  gap: 32px;
-  flex-wrap: wrap;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-areas: "main side" "quote side";
+  column-gap: 32px;
+}
+
+.masthead-main {
+  grid-area: main;
+}
+
+.masthead .hitokoto-bar {
+  grid-area: quote;
+  min-width: 0;
 }
 
 .eyebrow-row {
@@ -179,11 +187,13 @@ button, input, select, textarea {
 }
 
 .masthead-side {
+  grid-area: side;
   border-left: 3px solid var(--ink);
   padding-left: 22px;
   padding-bottom: 4px;
   display: flex;
   flex-direction: column;
+  justify-content: space-between;
   gap: 10px;
   min-width: 350px;
 }
@@ -286,14 +296,46 @@ html.dark-theme .yinyang-btn:hover .yinyang-icon {
 }
 
 .mast-stats {
-  font-family: var(--mono);
-  font-variant-numeric: tabular-nums;
+  display: flex;
+  flex: 1 1 auto;
+  border-top: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+}
+
+.mast-stat {
+  flex: 1;
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  padding: 7px 4px;
+}
+
+.mast-stat + .mast-stat {
+  border-left: 1px solid var(--line);
+  padding-left: 16px;
 }
 
 .mast-stats b {
+  font-family: var(--serif);
   color: var(--ochre);
-  font-size: 17px;
+  font-size: 23px;
+  font-weight: 900;
+  line-height: 1;
   font-variant-numeric: tabular-nums;
+}
+
+.mast-stat span {
+  font-size: 12px;
+  letter-spacing: 2px;
+  color: var(--muted);
+  white-space: nowrap;
+}
+
+.mast-motto {
+  font-size: 12.5px;
+  letter-spacing: .35em;
+  color: var(--muted);
+  white-space: nowrap;
 }
 
 /* 报刊经典双墨线 */
@@ -1602,7 +1644,9 @@ body:has(.toy-hub-wrap.is-open) .float-top-btn {
   }
   
   .mast-title { font-size: 56px; letter-spacing: 3px; }
+  .masthead { display: flex; flex-direction: column; align-items: stretch; }
   .masthead-side { border-left: none; padding-left: 0; }
+  .mast-motto { display: none; }
   
   /* 平板/横屏手机：两栏转为单栏，左侧索引转为顶部横向吸顶滑动条 */
   .workspace-layout { flex-direction: column; align-items: stretch; gap: 20px; margin-top: 20px; }
@@ -3559,8 +3603,8 @@ body.seal-stamping-mode {
   .lunar-almanac-row { line-height: 18px; }
   .almanac-badge { line-height: 15px; padding-top: 0; padding-bottom: 0; }
   .masthead-side-bottom { flex-wrap: nowrap; align-items: baseline; column-gap: 8px; }
-  .mast-stats { font-size: 11.5px; line-height: 16px; white-space: nowrap; flex: 0 0 auto; }
-  .mast-stats b { font-size: 15px; line-height: 20px; }
+  .mast-stats { flex: 1 1 auto; }
+  .mast-stats b { font-size: 19px; }
   .rule-double { margin-top: 8px; margin-bottom: 8px; }
   .toolbar { display: flex; align-items: stretch; gap: 6px; }
   .search-box { flex: 1 1 auto; min-width: 0; height: 48px; align-items: center; }

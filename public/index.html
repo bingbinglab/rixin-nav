@@ -10,7 +10,7 @@
 <meta name="theme-color" content="#f8f5ee">
 <meta name="color-scheme" content="light dark">
 <link rel="manifest" href="/site.webmanifest">
-<link rel="stylesheet" href="style.css?v=20261113j">
+<link rel="stylesheet" href="style.css?v=20261113p">
 <link rel="stylesheet" href="fonts/noto-serif-sc/700.css">
 <link rel="stylesheet" href="fonts/noto-serif-sc/800.css">
 <link rel="stylesheet" href="fonts/noto-serif-sc/900.css">
@@ -57,17 +57,21 @@
         </button>
       </div>
       <div class="masthead-side-bottom">
-        <span class="mast-stats" id="mastStats" style="visibility:hidden">已收录 <b id="siteCount">0</b> 个站点 · <b id="catCount">0</b> 个分类</span>
+        <div class="mast-stats" id="mastStats" style="visibility:hidden">
+          <div class="mast-stat"><b id="siteCount">0</b><span>收录站点</span></div>
+          <div class="mast-stat"><b id="catCount">0</b><span>栏目分类</span></div>
+        </div>
       </div>
+      <div class="mast-motto">辑 录 万 站 · 井 井 有 条</div>
+    </div>
+
+    <!-- 2.05 一言题记 (报头左栏底部一行；第三方公开接口驱动，无缓存/拉不到时显示站铭；换句走行末小入口，阅读期间不自动替换) -->
+    <div class="hitokoto-bar" id="hitokotoBar">
+      <span class="hitokoto-text" id="hitokotoText">辑 录 万 站 · 井 井 有 条</span>
+      <span class="hitokoto-from" id="hitokotoFrom"></span>
+      <button class="hitokoto-refresh" id="hitokotoRefresh" type="button" title="换一句">换一句</button>
     </div>
   </header>
-
-  <!-- 2.05 一言题记 (报头底部一行；第三方公开接口驱动，无缓存/拉不到时显示站铭；换句走行末小入口，阅读期间不自动替换) -->
-  <div class="hitokoto-bar" id="hitokotoBar">
-    <span class="hitokoto-text" id="hitokotoText">辑 录 万 站 · 井 井 有 条</span>
-    <span class="hitokoto-from" id="hitokotoFrom"></span>
-    <button class="hitokoto-refresh" id="hitokotoRefresh" type="button" title="换一句">换一句</button>
-  </div>
 
   <div class="rule-double"></div>
 
