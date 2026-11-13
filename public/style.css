@@ -3541,6 +3541,40 @@ body.seal-stamping-mode {
   .hitokoto-from { display: block; margin: 3px 0 0; }
 }
 
+/* ===== 手机刊头压缩（第二批，2026-11-13）：刊头收紧＋统计与一言并行＋工具栏单行，第一卡上移首屏 ===== */
+@media (max-width: 640px) {
+  .page { padding-top: 10px; }
+  .eyebrow-row { margin-bottom: 4px; }
+  .eyebrow { font-size: 12px; line-height: 16px; }
+  .mast-title { font-size: 29px; line-height: 32px; }
+  .masthead-side { padding-top: 4px; padding-bottom: 0; row-gap: 6px; }
+  .mast-solar-date { font-size: 14px; line-height: 17px; }
+  .lunar-almanac-row { line-height: 18px; }
+  .almanac-badge { line-height: 15px; padding-top: 0; padding-bottom: 0; }
+  .masthead-side-bottom { flex-wrap: nowrap; align-items: baseline; column-gap: 8px; }
+  .mast-stats { font-size: 11.5px; line-height: 16px; white-space: nowrap; flex: 0 0 auto; }
+  .mast-stats b { font-size: 15px; line-height: 20px; }
+  .mast-note { font-size: 11px; line-height: 16px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
+  .rule-double { margin-top: 8px; margin-bottom: 8px; }
+  .toolbar { display: flex; align-items: stretch; gap: 6px; }
+  .search-box { flex: 1 1 auto; min-width: 0; height: 48px; align-items: center; }
+  .search-input { height: 42px; }
+  .toggle-view-btn, .tool-btn { flex: 0 0 auto; height: auto; }
+  .quick-loc-bar { margin-top: 6px; padding-top: 5px; padding-bottom: 6px; }
+  .az-strip-wrap { padding-top: 2px; padding-bottom: 2px; }
+  .workspace-layout { margin-top: 12px; }
+  .sidebar-index { padding-top: 3px; padding-bottom: 3px; }
+  .sidebar-sticky-box { padding-top: 5px; padding-bottom: 5px; }
+  #pinnedSection { padding-top: 6px; }
+  .toolbar { flex-wrap: nowrap; }
+  .search-box { flex: 1 1 0%; }
+  .mast-title { font-size: 28px; line-height: 30px; }
+  .masthead-side { padding-top: 2px; row-gap: 4px; }
+  .quick-loc-bar { padding-bottom: 4px; }
+  .sidebar-link { padding-top: 4px; padding-bottom: 4px; }
+  .sidebar-sticky-box { padding-top: 4px; padding-bottom: 4px; }
+}
+
 /* 宽屏网格按内容区实际宽度排布列数（容器查询），避免屏幕宽但卡片窄 */
 @media (min-width: 961px) {
   .main-sections-content { container-type: inline-size; }

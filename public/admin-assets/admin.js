@@ -1341,15 +1341,16 @@ function renderSites() {
                   <span class="badge clickable priv${privCls}" data-tpriv="${s.id}" title="${privTitle}" tabindex="0" role="button" aria-pressed="${s.is_private ? "true" : "false"}">私密</span>
                 </div>
                 ${descHtml}
+              </td>
+              <td class="site-url-col">
                 <div class="site-url"><a href="${esc(s.url)}" target="_blank" rel="noopener">${esc(s.url)}</a></div>
               </td>
-              <td class="nowrap col-sort">
-                <button class="mini ghost" data-sup="${s.id}"${upDis}>↑</button>
-                <button class="mini ghost" data-sdown="${s.id}"${downDis}>↓</button>
-              </td>
-              <td class="nowrap col-act">
-                <button class="mini ghost" data-edit="${s.id}">编辑</button>
-                <button class="mini ghost danger" data-del="${s.id}">删除</button>
+              <td class="nowrap site-ops-col">
+                <div class="site-ops">
+                  <span class="site-sort-pair"><button class="mini ghost" data-sup="${s.id}"${upDis}>↑</button><button class="mini ghost" data-sdown="${s.id}"${downDis}>↓</button></span>
+                  <button class="mini ghost" data-edit="${s.id}">编辑</button>
+                  <button class="site-del-btn" data-del="${s.id}">删除</button>
+                </div>
               </td>
             </tr>`;
           })
@@ -2464,8 +2465,8 @@ async function runBulkAiDesc(todo) {
           descEl = document.createElement("div");
           descEl.className = "site-desc";
           const mainCol = row.querySelector(".site-main-col");
-          const urlEl = row.querySelector(".site-url");
-          if (mainCol && urlEl) mainCol.insertBefore(descEl, urlEl);
+          const headEl = mainCol ? mainCol.querySelector(".site-head") : null;
+          if (mainCol && headEl) headEl.after(descEl);
           else if (mainCol) mainCol.appendChild(descEl);
         }
         if (descEl) descEl.textContent = j.desc;
