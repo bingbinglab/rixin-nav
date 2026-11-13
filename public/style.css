@@ -43,16 +43,16 @@
 html.dark-theme,
 body.dark-theme {
   --ink: #e6dfd3;
-  --muted: #b0a58f;
+  --muted: #c2b59c;
   --ochre: #d96f47;
   --ochre-solid: #b55333;
   --green: #37654f;
   --paper: #100f0e;
-  --card: #171514;
-  --card-hover: #1f1c1a;
-  --box-bg: #201e1c;
+  --card: #1e1b19;
+  --card-hover: #292522;
+  --box-bg: #2a2723;
   --card-shadow: #050404;
-  --border-line: rgba(230, 223, 211, 0.16);
+  --border-line: rgba(230, 223, 211, 0.27);
   --pattern-dot: rgba(230, 223, 211, 0.035);
   --quick-bg: rgba(32, 30, 28, 0.85);
   --pinned-bg: rgba(32, 30, 28, 0.7);
@@ -1272,8 +1272,13 @@ html.dark-theme .icon-box {
 }
 
 html.dark-theme .icon-box img {
-  filter: brightness(0.88) contrast(0.95);
+  filter: brightness(1.02) contrast(0.98);
 }
+
+/* 暗色下域名与卡角图标再提一档，确保次级信息可读 */
+html.dark-theme .card-host { color: #cfc2ab; }
+html.dark-theme .card-copy-btn,
+html.dark-theme .card-arrow { color: #cfc2ab; }
 
 html.dark-theme .icon-box.is-fallback,
 html.dark-theme .icon-box:has(.icon-fallback) {
