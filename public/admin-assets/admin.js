@@ -112,7 +112,8 @@ function showConfirm(msg, title = "请确认", { isDanger = false, defaultCancel
 
     const onKeyDown = (e) => {
       if (e.key === "Escape") cleanup(false);
-      else if (e.key === "Enter" && !disableEnter) cleanup(true);
+      // Enter 不再全局强制确认：交给当前聚焦按钮的原生激活行为，
+      // 否则 defaultCancel 时焦点在「取消」上按 Enter 也会执行确认
     };
 
     okBtn.onclick = () => cleanup(true);
@@ -714,6 +715,9 @@ function measureStickyHeights() {
   const tools = document.querySelector(".sites-tools");
   if (tabs && tabs.offsetHeight) document.documentElement.style.setProperty("--tabsH", tabs.offsetHeight + "px");
   if (tools && tools.offsetHeight) document.documentElement.style.setProperty("--toolsH", tools.offsetHeight + "px");
+  // A-优5 的 CSS 已改用 var(--paneNavH)：取第一个可见的 .pane-nav 实测高度写入，都不可见时不写、保持回退值
+  const paneNav = [...document.querySelectorAll(".pane-nav")].find((n) => n.offsetHeight);
+  if (paneNav) document.documentElement.style.setProperty("--paneNavH", paneNav.offsetHeight + "px");
 }
 // 量高必须持续保鲜：字体晚到、窗口变化、工具栏换行都会让标签栏/工具栏高度变掉，
 // 量值一旦过期，分类头吸顶偏移就错位、滚动时会滑进工具栏底下叠字。字体就绪后重测一次，之后用 ResizeObserver 常驻盯着。
@@ -724,6 +728,7 @@ if (window.ResizeObserver) {
   const stickyToolsEl = document.querySelector(".sites-tools");
   if (stickyTabsEl) stickyRO.observe(stickyTabsEl, { box: "border-box" });
   if (stickyToolsEl) stickyRO.observe(stickyToolsEl, { box: "border-box" });
+  document.querySelectorAll(".pane-nav").forEach((n) => stickyRO.observe(n, { box: "border-box" }));
 }
 // --- 方案一: 长页签页内目录（锚点跳转 + 滚动高亮） ---
 function initPaneNavs() {
@@ -806,7 +811,7 @@ async function load() {
   const catSel = $("siteCatSel");
   if (catSel) {
     const prevSel = catSel.value;
-    const cntByName = {};
+    const cntByName = Object.create(null);
     data.sites.forEach((s) => { cntByName[s.category] = (cntByName[s.category] || 0) + 1; });
     catSel.innerHTML = '<option value="">全部分类</option>' + data.categories.map((c) => `<option value="${esc(c.name)}">${esc(c.name)}（${cntByName[c.name] || 0}）</option>`).join("");
     if (prevSel && data.categories.some((c) => c.name === prevSel)) catSel.value = prevSel;
@@ -929,6 +934,9 @@ function renderCats() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ private: chk.checked }),
       });
+      // 同步本地状态，否则之后任何重渲染都会按旧值把复选框画回相反状态
+      const cat = catById(+chk.dataset.cpriv);
+      if (cat) cat.is_private = chk.checked;
       toast(chk.checked ? "分类已设为私密" : "分类已设为公开");
     } catch (e) {
       toast("私密设置失败：" + e.message, true);
@@ -1175,6 +1183,7 @@ async function toggleSiteBadge(s, field, el) {
   const nextVal = !prevVal;
   s[field] = nextVal;
   el.classList.toggle("badge-off", !nextVal);
+  el.setAttribute("aria-pressed", nextVal ? "true" : "false");
   if (field === "pinned") {
     el.title = nextVal ? "点击取消置顶" : "点击设为置顶";
   } else {
@@ -1199,6 +1208,7 @@ async function toggleSiteBadge(s, field, el) {
   } catch (e) {
     s[field] = prevVal;
     el.classList.toggle("badge-off", !prevVal);
+    el.setAttribute("aria-pressed", prevVal ? "true" : "false");
     if (field === "pinned") {
       el.title = prevVal ? "点击取消置顶" : "点击设为置顶";
     } else {
@@ -1222,7 +1232,7 @@ function renderSites() {
   const fltPrivate = !!(($("fltPrivate") || {}).checked);
   const fltActive = !!(fltCat || fltPinned || fltPrivate);
   const isSearching = !!kw || fltActive;
-  const byCat = {};
+  const byCat = Object.create(null);
   const visibleSites = [];
 
   data.sites.forEach((s) => {
@@ -1264,7 +1274,7 @@ function renderSites() {
 
   $("list").innerHTML =
     orderedNames
-      .map((cat) => {
+      .map((cat, catIdx) => {
         const rows = byCat[cat];
         const allCatChecked = rows.length > 0 && rows.every((s) => selectedSiteIds.has(s.id));
         const trs = rows
@@ -1298,8 +1308,8 @@ function renderSites() {
                 <div class="site-head">
                   <span class="drag-handle"${dragTip}>⠿</span>
                   <b class="site-title">${esc(s.name)}</b>
-                  <span class="badge clickable${pinCls}" data-tpin="${s.id}" title="${pinTitle}">置顶</span>
-                  <span class="badge clickable priv${privCls}" data-tpriv="${s.id}" title="${privTitle}">私密</span>
+                  <span class="badge clickable${pinCls}" data-tpin="${s.id}" title="${pinTitle}" tabindex="0" role="button" aria-pressed="${s.pinned ? "true" : "false"}">置顶</span>
+                  <span class="badge clickable priv${privCls}" data-tpriv="${s.id}" title="${privTitle}" tabindex="0" role="button" aria-pressed="${s.is_private ? "true" : "false"}">私密</span>
                 </div>
                 ${descHtml}
                 <div class="site-url"><a href="${esc(s.url)}" target="_blank" rel="noopener">${esc(s.url)}</a></div>
@@ -1323,7 +1333,7 @@ function renderSites() {
         return `
           <div class="cat-group">
           <div class="cat-head-wrap" data-cat-fold="${esc(cat)}">
-            <div class="cat-title-toggle">
+            <div class="cat-title-toggle" tabindex="0" role="button" aria-expanded="${isCollapsed ? "false" : "true"}" aria-controls="cat-body-${catIdx}">
               <span class="cat-fold-arrow ${isCollapsed ? "" : "expanded"}">▶</span>
               <h3 class="serif" style="margin:0">${esc(cat)}（${rows.length}）</h3>
               ${selBadgeHtml}
@@ -1332,7 +1342,7 @@ function renderSites() {
               <input type="checkbox" data-cat-check="${esc(cat)}"${allCatChecked ? " checked" : ""}> 全选本类
             </label>
           </div>
-          <div class="tblwrap" style="display:${isCollapsed ? "none" : "block"}"><table class="sites-tbl"><tbody data-cat="${esc(cat)}">${trs}</tbody></table></div></div>`;
+          <div class="tblwrap" id="cat-body-${catIdx}" style="display:${isCollapsed ? "none" : "block"}"><table class="sites-tbl"><tbody data-cat="${esc(cat)}">${trs}</tbody></table></div></div>`;
       })
       .join("") || emptyHtml;
 
@@ -1356,8 +1366,8 @@ function renderSites() {
   }
 
   const moveSite = async (s, target) => {
-    if ((($("siteSearch") || {}).value || "").trim()) {
-      toast("搜索状态下不能调序，请先清空搜索", true);
+    if (isReorderLocked()) {
+      toast("搜索或筛选状态下不能调序，请先清空筛选", true);
       return;
     }
     if (!s || !target) return;
@@ -1386,8 +1396,14 @@ function renderSites() {
     }
   };
 
-  // 分类折叠：点击分类标题栏切换折叠/展开
+  // 分类折叠：点击分类标题栏切换折叠/展开（Enter/空格同样可操作）
   document.querySelectorAll(".cat-title-toggle").forEach((toggleEl) => {
+    toggleEl.onkeydown = (e) => {
+      if (e.key === "Enter" || e.key === " ") {
+        e.preventDefault();
+        toggleEl.click();
+      }
+    };
     toggleEl.onclick = () => {
       const wrap = toggleEl.closest(".cat-head-wrap");
       if (!wrap) return;
@@ -1466,14 +1482,28 @@ function renderSites() {
     };
   });
 
-  document.querySelectorAll("[data-tpin]").forEach((el) => (el.onclick = () => {
-    const s = data.sites.find((x) => x.id === +el.dataset.tpin);
-    if (s) toggleSiteBadge(s, "pinned", el);
-  }));
-  document.querySelectorAll("[data-tpriv]").forEach((el) => (el.onclick = () => {
-    const s = data.sites.find((x) => x.id === +el.dataset.tpriv);
-    if (s) toggleSiteBadge(s, "is_private", el);
-  }));
+  const bindBadgeKeys = (el) => {
+    el.onkeydown = (e) => {
+      if (e.key === "Enter" || e.key === " ") {
+        e.preventDefault();
+        el.click();
+      }
+    };
+  };
+  document.querySelectorAll("[data-tpin]").forEach((el) => {
+    el.onclick = () => {
+      const s = data.sites.find((x) => x.id === +el.dataset.tpin);
+      if (s) toggleSiteBadge(s, "pinned", el);
+    };
+    bindBadgeKeys(el);
+  });
+  document.querySelectorAll("[data-tpriv]").forEach((el) => {
+    el.onclick = () => {
+      const s = data.sites.find((x) => x.id === +el.dataset.tpriv);
+      if (s) toggleSiteBadge(s, "is_private", el);
+    };
+    bindBadgeKeys(el);
+  });
 
   document.querySelectorAll("[data-sup]").forEach((b) => (b.onclick = () => {
     const s = data.sites.find((x) => x.id === +b.dataset.sup);
@@ -1735,6 +1765,28 @@ function updateBulkBar(visibleSites = []) {
 }
 
 // --- 书签拖拽排序 (桌面 + P16 触控) ---
+// 调序可用性统一判断：搜索词或任一属性筛选生效时禁止调序，桌面/触控/上下按钮共用同一口径
+function isReorderLocked() {
+  if ((($("siteSearch") || {}).value || "").trim()) return true;
+  if ((($("siteCatSel") || {}).value || "")) return true;
+  if ((($("fltPinned") || {}).checked)) return true;
+  if ((($("fltPrivate") || {}).checked)) return true;
+  return false;
+}
+
+// 把某分类的重排结果按原槽位写回 data.sites：只替换该分类元素原本占据的位置，
+// 其他分类条目一位不动（旧写法按连续区间 splice，不连续时会误删其他分类并产生重复）
+function applyCategoryReorder(catName, reordered) {
+  const slots = [];
+  data.sites.forEach((x, idx) => {
+    if (x.category === catName) slots.push(idx);
+  });
+  if (!slots.length || slots.length !== reordered.length) return;
+  slots.forEach((idx, i) => {
+    data.sites[idx] = reordered[i];
+  });
+}
+
 function attachSiteDrag() {
   let dragSource = null;
   const tables = document.querySelectorAll("table.sites-tbl");
@@ -1746,7 +1798,7 @@ function attachSiteDrag() {
         if (
           e.target.closest("button, a, input, select") ||
           tr.getAttribute("draggable") === "false" ||
-          (($("siteSearch") || {}).value || "").trim()
+          isReorderLocked()
         ) {
           e.preventDefault();
           return;
@@ -1793,15 +1845,11 @@ function attachSiteDrag() {
             const s2 = data.sites.find((x) => x.id === id);
             if (s2) s2.sort_order = (i + 1) * 10;
           });
-          if ((($("siteSearch") || {}).value || "").trim()) {
+          if (isReorderLocked()) {
             load();
           } else {
-            const catName = dropCat;
-            const group = data.sites.filter((x) => x.category === catName);
             const reordered = newIds.map((id) => data.sites.find((x) => x.id === id)).filter(Boolean);
-            if (group.length === reordered.length && group.length) {
-              data.sites.splice(data.sites.indexOf(group[0]), group.length, ...reordered);
-            }
+            applyCategoryReorder(dropCat, reordered);
           }
           toast("书签排序已保存");
         } catch (err) {
@@ -1828,7 +1876,7 @@ function attachSiteDrag() {
         handle.addEventListener(
           "touchstart",
           (e) => {
-            if ((($("siteSearch") || {}).value || "").trim()) return;
+            if (isReorderLocked()) return;
             touchActive = true;
             dragSource = tr;
             tr.classList.add("dragging");
@@ -1903,15 +1951,11 @@ function attachSiteDrag() {
                   const s2 = data.sites.find((x) => x.id === id);
                   if (s2) s2.sort_order = (i + 1) * 10;
                 });
-                if ((($("siteSearch") || {}).value || "").trim()) {
+                if (isReorderLocked()) {
                   load();
                 } else {
-                  const catName = dropCat;
-                  const group = data.sites.filter((x) => x.category === catName);
                   const reordered = newIds.map((id) => data.sites.find((x) => x.id === id)).filter(Boolean);
-                  if (group.length === reordered.length && group.length) {
-                    data.sites.splice(data.sites.indexOf(group[0]), group.length, ...reordered);
-                  }
+                  applyCategoryReorder(dropCat, reordered);
                 }
                 toast("书签排序已保存");
               } catch (err) {
@@ -1986,11 +2030,17 @@ function renderCatDrop(showAll) {
   if (!names.length) { catDropEl.innerHTML = ""; closeCatDrop(); return; }
   catDropEl.innerHTML = names.map((n) => `<button type="button" data-cat-name="${esc(n)}">${esc(n)}</button>`).join("");
   catDropEl.querySelectorAll("button").forEach((b) => {
-    b.addEventListener("mousedown", (e) => {
-      e.preventDefault();
+    const pick = () => {
       catInputEl.value = b.dataset.catName;
       closeCatDrop();
+      catInputEl.focus();
+    };
+    b.addEventListener("mousedown", (e) => {
+      e.preventDefault();
+      pick();
     });
+    // 键盘 Enter/空格走 click，必须同样能选中（原先只有 mousedown，键盘选不了）
+    b.addEventListener("click", pick);
   });
   catDropEl.hidden = false;
 }
@@ -1998,7 +2048,19 @@ if (catInputEl && catDropEl) {
   catInputEl.addEventListener("focus", () => renderCatDrop(true));
   catInputEl.addEventListener("click", () => renderCatDrop(true));
   catInputEl.addEventListener("input", () => renderCatDrop(false));
-  catInputEl.addEventListener("blur", () => setTimeout(closeCatDrop, 120));
+  // 焦点只是从输入框移进下拉选项时不许关，否则 Tab 过去还没选就被收起
+  catInputEl.addEventListener("blur", () => setTimeout(() => {
+    if (!catDropEl.contains(document.activeElement)) closeCatDrop();
+  }, 120));
+  catDropEl.addEventListener("focusout", () => setTimeout(() => {
+    if (document.activeElement !== catInputEl && !catDropEl.contains(document.activeElement)) closeCatDrop();
+  }, 120));
+  catDropEl.addEventListener("keydown", (e) => {
+    if (e.key === "Escape") {
+      closeCatDrop();
+      catInputEl.focus();
+    }
+  });
   catInputEl.addEventListener("keydown", (e) => { if (e.key === "Escape") closeCatDrop(); });
 }
 
@@ -2247,6 +2309,8 @@ $("aiDescBtn").onclick = async () => {
     toast("先填网址", true);
     return;
   }
+  // 记下发起时的编辑对象与网址：响应回来时若已切换到别的书签或改了网址，丢弃结果不许串写
+  const reqSiteId = editingSiteId;
   $("aiDescBtn").disabled = true;
   $("msg").textContent = "正在生成…";
   try {
@@ -2255,6 +2319,11 @@ $("aiDescBtn").onclick = async () => {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ url }),
     });
+    if (editingSiteId !== reqSiteId || normalizeUrlInput($("fUrl").value) !== url) {
+      $("msg").textContent = "已切换编辑对象，刚才的生成结果已丢弃。";
+      toast("已切换编辑对象，生成结果已丢弃", true);
+      return;
+    }
     $("fDesc").value = j.desc;
     updateDescCount();
     if (!$("fName").value.trim() && j.title) {
@@ -2276,6 +2345,7 @@ $("aiDescBtn").onclick = async () => {
 
 // --- P13: 批量补简介 (中止与连续3次失败自动停) ---
 let bulkAiAborted = false;
+let bulkAiRunning = false;
 const setAiToolMsg = (txt) => { const el = $("aiToolMsg") || $("toolMsg"); if (el) el.textContent = txt; };
 $("bulkAiStopBtn").onclick = () => {
   bulkAiAborted = true;
@@ -2284,13 +2354,21 @@ $("bulkAiStopBtn").onclick = () => {
 };
 
 async function runBulkAiDesc(todo) {
+  // 可重入守卫：运行中再点任一入口直接拒绝，避免两轮并行写简介与双倍 AI 调用
+  if (bulkAiRunning) {
+    toast("批量补简介正在运行中", true);
+    return;
+  }
   if (!todo.length) {
     setAiToolMsg("没有缺简介的书签。");
     toast("没有缺简介的书签");
     return;
   }
+  bulkAiRunning = true;
   bulkAiAborted = false;
   $("bulkAiBtn").disabled = true;
+  const rowBtn = $("bulkAiBtnRow");
+  if (rowBtn) rowBtn.disabled = true;
   $("bulkAiStopBtn").disabled = false;
   $("bulkAiStopBtn").style.display = "inline-block";
   let done = 0;
@@ -2349,7 +2427,10 @@ async function runBulkAiDesc(todo) {
       }
     }
   }
+  bulkAiRunning = false;
   $("bulkAiBtn").disabled = false;
+  const rowBtnEnd = $("bulkAiBtnRow");
+  if (rowBtnEnd) rowBtnEnd.disabled = false;
   $("bulkAiStopBtn").style.display = "none";
   if (bulkAiAborted) {
     const resMsg = "批量补简介已中止，已完成 " + done + " 条。";
@@ -2913,7 +2994,7 @@ $("wdSaveBtn").onclick = async () => {
   $("wdMsg").textContent = "保存中…";
   const url = $("wdUrl").value.trim();
   const user = $("wdUser").value.trim();
-  const pass = $("wdPass").value.trim();
+  const pass = $("wdPass").value; // 密码不许 trim：首尾空格可能就是密码本身
   if (url && !/^https?:\/\//i.test(url)) {
     $("wdMsg").textContent = "网址必须以 http:// 或 https:// 开头";
     toast("网址必须以 http:// 或 https:// 开头", true);
@@ -2997,7 +3078,7 @@ $("wdTestBtn").onclick = async () => {
   $("wdTestBtn").disabled = true;
   const url = $("wdUrl").value.trim();
   const user = $("wdUser").value.trim();
-  const pass = $("wdPass").value.trim();
+  const pass = $("wdPass").value; // 密码不许 trim：首尾空格可能就是密码本身
   try {
     const res = await api("/api/admin/config/test-webdav", {
       method: "POST",

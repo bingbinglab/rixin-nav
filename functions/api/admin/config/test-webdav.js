@@ -50,7 +50,7 @@ export async function onRequestPost(context) {
 
   let targetUrl = String(body.url || "").trim();
   let targetUser = String(body.user || "").trim();
-  let targetPass = typeof body.pass === "string" ? body.pass.trim() : "";
+  let targetPass = typeof body.pass === "string" ? body.pass : ""; // 不许 trim：密码首尾空格是密码本身
 
   // P06: 仅当草稿 url 的域名与已存生效配置的域名一致时才允许密码留空复用；域名不同且未填密码 -> 报错
   const activeCfg = await getWebdavConfig(env);

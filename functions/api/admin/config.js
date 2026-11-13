@@ -54,7 +54,7 @@ export async function onRequestPut(context) {
         groupErrors.webdav = "WebDAV 网址必须以 http:// 或 https:// 开头";
       } else {
         const prevWd = kv.webdav || {};
-        const submittedPass = typeof body.webdav.pass === "string" ? body.webdav.pass.trim() : "";
+        const submittedPass = typeof body.webdav.pass === "string" ? body.webdav.pass : ""; // 不许 trim：密码首尾空格是密码本身；空串仍表示「保持原值」
         const existingPass = prevWd.pass || "";
         const newWdUrl = inputUrl || prevWd.url || "";
 

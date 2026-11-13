@@ -221,10 +221,15 @@ const esc = (s) =>
     .replace(/>/g, "&gt;")
     .replace(/"/g, "&quot;");
 
+// 卡片链接只放行 http/https：javascript:/data: 等协议即使入库也不许变成可点链接
+function safeHttpUrl(u) {
+  return /^https?:\/\//i.test(String(u || "").trim()) ? u : "#";
+}
+
 function renderCard(s) {
   enrichSite(s);
   const isSelected = (keyword.trim().length > 0 && visibleSitesList[selectedSiteIndex] === s);
-  return `<a class="card ${isSelected ? 'keyboard-selected' : ''}" href="${esc(s.url)}" target="_blank" rel="noopener" data-url="${esc(s.url)}" data-name="${esc(s.name)}">
+  return `<a class="card ${isSelected ? 'keyboard-selected' : ''}" href="${esc(safeHttpUrl(s.url))}" target="_blank" rel="noopener" data-url="${esc(s.url)}" data-name="${esc(s.name)}">
     ${iconHTML(s)}
     <span class="card-main">
       <span class="card-name">
@@ -1110,7 +1115,7 @@ let currentDataFingerprint = '';
 function calcDataFingerprint(sites, cats, authed) {
   if (!Array.isArray(sites)) return '';
   const catList = Array.isArray(cats) ? cats : [];
-  const catStr = catList.map(c => typeof c === 'string' ? c : (c ? c.name : '')).join(',');
+  const catStr = catList.map(c => typeof c === 'string' ? c : (c ? c.name + '<' + (c.parent || '') : '')).join(',');
   const siteStr = sites.map(s => {
     if (!s || typeof s !== 'object') return '';
     return `${s.id || ''}:${s.name || ''}:${s.url || ''}:${s.category || ''}:${s.desc || ''}:${s.icon || ''}:${s.pinned ? 1 : 0}:${s.private ? 1 : 0}`;
