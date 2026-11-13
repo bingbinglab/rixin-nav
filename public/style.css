@@ -3619,7 +3619,11 @@ body.seal-stamping-mode {
   .toolbar { flex-wrap: nowrap; }
   .search-box { flex: 1 1 0%; }
   .mast-title { font-size: 28px; line-height: 30px; }
-  .masthead-side { padding-top: 2px; row-gap: 4px; }
+  .masthead-side { padding-top: 2px; row-gap: 4px; border-left: 2px solid var(--ink); padding-left: 14px; }
+  .masthead-side-top { gap: 10px; padding-right: 58px; }
+  .masthead-side-bottom { align-items: center; }
+  .admin-seal-btn { height: 38px; padding: 0 12px; margin: 0; flex: 0 0 auto; }
+  .yinyang-btn { margin-top: 3px; }
   .quick-loc-bar { padding-bottom: 4px; }
   .sidebar-link { padding-top: 4px; padding-bottom: 4px; }
   .sidebar-sticky-box { padding-top: 4px; padding-bottom: 4px; }
