@@ -122,6 +122,8 @@ input, select { line-height: 1.4; }
 .cat-drop button:hover { background: var(--ochre); color: var(--accent-contrast); }
 .cat-drop button:active { transform: none; box-shadow: none; background: var(--ochre); color: var(--accent-contrast); }
 .chk input { width: auto; accent-color: var(--ochre); }
+/* 全站后台勾选控件选中色统一赭色（消灭浏览器默认亮蓝） */
+input[type="checkbox"] { accent-color: var(--ochre); }
 button, a.btn {
   display: inline-block;
   text-decoration: none;
@@ -172,13 +174,18 @@ select.inline { width: auto; padding: 4px 6px; font-size: 13px; }
 .tblwrap { overflow-x: auto; }
 .tblwrap-fit { overflow-x: visible; }
 .cattable { min-width: 0; width: 100%; table-layout: fixed; }
-.cattable th:nth-child(1) { width: 132px; }
+.cattable th:nth-child(1) { width: 118px; }
 .cattable th:nth-child(2) { width: 40px; }
 .cattable th:nth-child(3) { width: 98px; }
 .cattable th:nth-child(4) { width: 38px; }
 .cattable th:nth-child(5) { width: 72px; }
+.cattable th:nth-child(6) { width: 96px; }
 .cattable td { text-align: center; padding: 4px 6px; }
 .cattable select.inline { padding: 2px 4px; font-size: 12.5px; }
+/* 父级下拉常态降权：无边框弱化显示，行悬停/聚焦时才显完整控件 */
+.cattable .cat-col-parent select.inline { border-color: transparent; background: transparent; color: var(--muted); box-shadow: none; }
+.cattable tr:hover .cat-col-parent select.inline,
+.cattable .cat-col-parent select.inline:focus { border-color: var(--ink); background: var(--card); color: var(--ink); }
 .cat-add-form { display: flex; gap: 8px; flex-wrap: wrap; align-items: flex-end; margin-top: 10px; }
 .cat-add-form .caf-name { flex: 1 1 130px; }
 .cat-add-form .caf-parent { flex: 0 1 150px; }
@@ -1473,9 +1480,10 @@ html.dark-theme .lc-badge.warn { border-color: #e0b347; color: #e0b347; }
 #list.compact .sites-tbl td{padding-top:3px;padding-bottom:3px}
 #list.compact .site-desc{margin-top:1px}
 #list.compact .site-url{margin-top:0}
-.pane-nav{display:flex;gap:8px;flex-wrap:wrap;position:sticky;top:var(--tabsH,54px);z-index:190;background:var(--paper);padding:8px 2px;margin:0 0 14px;border-bottom:1.5px solid var(--ink)}
-.pane-nav a{border:1.5px solid var(--ink);background:var(--card);color:var(--ink);padding:5px 12px;font-size:13px;font-weight:700;text-decoration:none;box-shadow:2px 2px 0 var(--card-shadow)}
-.pane-nav a.on{background:var(--ochre);border-color:var(--ochre);color:var(--accent-contrast)}
+.pane-nav{display:flex;gap:6px;flex-wrap:wrap;position:sticky;top:var(--tabsH,54px);z-index:190;background:var(--paper);padding:8px 2px;margin:0 0 14px;border-bottom:1px solid var(--border-line)}
+.pane-nav a{border:1px solid var(--border-line);background:transparent;color:var(--muted);padding:4px 10px;font-size:13px;font-weight:700;text-decoration:none}
+.pane-nav a.on{background:rgba(158,71,42,.10);border-color:var(--border-line);color:var(--ink);text-decoration:underline;text-decoration-color:var(--ochre);text-decoration-thickness:2px;text-underline-offset:4px}
+html.dark-theme .pane-nav a.on{background:rgba(217,111,71,.14)}
 body.tab-data .grid-layout .pane-nav[data-tab-pane="tab-data"],body.tab-settings .grid-layout .pane-nav[data-tab-pane="tab-settings"]{display:flex}
 .card[id]{scroll-margin-top:calc(var(--tabsH,54px) + var(--paneNavH,54px) + 10px)}
 @media (max-width:900px){

@@ -9,7 +9,7 @@ function getLoginHtml(siteTitle) {
 <html lang="zh-CN"><head><meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>${title} · 后台登录</title><link rel="icon" type="image/svg+xml" href="/favicon-2.svg"><link rel="icon" type="image/png" sizes="192x192" href="/icon-192-2.png">
-<link rel="stylesheet" href="/admin-assets/admin.css?v=20261113f">
+<link rel="stylesheet" href="/admin-assets/admin.css?v=20261113g">
 <style>
 body{display:flex;min-height:100vh;align-items:center;justify-content:center;padding:16px}
 form{background:var(--card);border:2px solid var(--ink);box-shadow:7px 7px 0 var(--card-shadow);padding:30px;width:340px;max-width:94vw}
@@ -50,7 +50,7 @@ function getAdminHtml(siteTitle) {
 <html lang="zh-CN"><head><meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>${title} · 后台管理</title><link rel="icon" type="image/svg+xml" href="/favicon-2.svg"><link rel="icon" type="image/png" sizes="192x192" href="/icon-192-2.png">
-<link rel="stylesheet" href="/admin-assets/admin.css?v=20261113f">
+<link rel="stylesheet" href="/admin-assets/admin.css?v=20261113g">
 <script>(function(){try{var t=localStorage.getItem('myNavTheme');if(!t&&window.matchMedia&&window.matchMedia('(prefers-color-scheme:dark)').matches)t='dark';if(t==='dark')document.documentElement.classList.add('dark-theme');}catch(e){}})();</script>
 </head>
 <body><div class="wrap">
@@ -90,7 +90,7 @@ function getAdminHtml(siteTitle) {
 <div class="caf-parent"><label>父级（空＝一级）</label><select id="cParent"><option value="0">（一级分类）</option></select></div>
 <label class="chk"><input type="checkbox" id="cPrivate"> 私密分类</label>
 <button class="primary" id="catAddBtn" type="button">新建分类</button></div>
-<div class="tblwrap tblwrap-fit cat-table-wrap"><table class="cattable cat-tbl"><thead><tr><th>分类</th><th>书签数</th><th>父级</th><th>私密</th><th>排序</th><th></th></tr></thead><tbody id="catBody"></tbody></table></div>
+<div class="tblwrap tblwrap-fit cat-table-wrap"><table class="cattable cat-tbl"><thead><tr><th>分类</th><th>书签数</th><th>父级</th><th>私密</th><th>排序</th><th>操作</th></tr></thead><tbody id="catBody"></tbody></table></div>
 
 <p class="msg" id="catMsg"></p></div>
 
@@ -144,7 +144,7 @@ function getAdminHtml(siteTitle) {
 <p class="muted">导入按网址去重；支持浏览器书签 HTML 与本站备份 JSON（文件夹/父级自动还原分类）。</p></div>
 
 <!-- Card 5: 站点与品牌设置 (属于设置与智能) -->
-<nav class="pane-nav" data-tab-pane="tab-settings"><a href="#cardBrand" data-anchor="cardBrand" class="on">伍 · 站点与品牌</a><a href="#cardAi" data-anchor="cardAi">陆 · AI 补简介</a><a href="#cardLinks" data-anchor="cardLinks">柒 · 死链巡检</a></nav>
+<nav class="pane-nav" data-tab-pane="tab-settings"><a href="#cardBrand" data-anchor="cardBrand" class="on">站点与品牌</a><a href="#cardAi" data-anchor="cardAi">AI 补简介</a><a href="#cardLinks" data-anchor="cardLinks">死链巡检</a></nav>
 <div class="card" id="cardBrand" data-tab-pane="tab-settings"><h2><span class="chap">伍</span>站点与品牌设置</h2>
 <div class="frow frow-nameurl"><div><label>站名（留空则默认「书签导航」）</label><input id="siteTitleInput" placeholder="书签导航"></div>
 <div><label>页脚文案（留空则不显示该行）</label><input id="siteFooterInput" placeholder="如：本辑已毕 · 下辑随缘"></div></div>
