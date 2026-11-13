@@ -1150,7 +1150,8 @@ html.dark-theme .preview-stat-num.update, body.dark-theme .preview-stat-num.upda
 .bulk-bar {
   position: sticky;
   bottom: calc(16px + env(safe-area-inset-bottom, 0px));
-  z-index: 100;
+  /* 必须高于全站吸顶层（分类头 120／工具栏 150／页内目录 190／标签栏 200）：折叠态下分类头与吸底栏位置重叠时，低一层就会被分类头盖住 */
+  z-index: 300;
   display: flex;
   flex-wrap: wrap;
   align-items: center;
@@ -1496,7 +1497,3 @@ body.tab-sites .grid-layout [data-tab-pane="tab-sites"],body.tab-edit .grid-layo
 #userTable td:nth-child(6) .ghost{white-space:nowrap}
 }
 
-/* ===== 滚动花屏对策（2026-11-13）：实测在用户机器上窗口滚动时吸顶层画面翻花（多浏览器、关硬件加速、肉眼可见均复现），
-   后台列表页的窗口吸顶一律改为普通排版：标签栏、页内目录、过滤工具栏、分类头、批量栏。
-   仅摘窗口滚动的吸顶；卡内滚动容器里的吸底确认区与链接巡检头等容器内吸顶不动。 ===== */
-.admin-tabs, .pane-nav, .sites-tools, .cat-head-wrap, .bulk-bar { position: static; }
