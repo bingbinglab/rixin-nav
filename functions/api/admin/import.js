@@ -28,6 +28,7 @@ export async function onRequestPost(context) {
 
     const catRows = (await env.NAV_DB.prepare("SELECT id, name, parent_id FROM category").all()).results || [];
     const catMap = new Map(catRows.map((c) => [c.name, c.id]));
+    const catParentMap = new Map(catRows.map((c) => [c.id, c.parent_id || 0]));
 
     const insertStmts = [];
     const updateStmts = [];
@@ -54,26 +55,48 @@ export async function onRequestPost(context) {
       const parentName = String(raw.parent_category || "").trim();
       const targetCat = site.category || "未分类";
       let catId = catMap.get(targetCat);
-      if (!catId) {
-        let parentId = 0;
-        if (parentName) {
-          parentId = catMap.get(parentName);
-          if (!parentId) {
-            parentId = await ensureCategory(env.NAV_DB, parentName);
-            catMap.set(parentName, parentId);
-            newCats.add(parentName);
-          }
+
+      // 解析导入指定的父级：不存在则新建（新建的必然是一级分类）；
+      // 解析到的若本身是二级分类，按站内「最多两级」口径不能再作父级，降级为无父级（防导入造出三级）
+      let wantParentId = 0;
+      if (parentName && parentName !== targetCat) {
+        wantParentId = catMap.get(parentName) || 0;
+        if (!wantParentId) {
+          wantParentId = await ensureCategory(env.NAV_DB, parentName);
+          catMap.set(parentName, wantParentId);
+          catParentMap.set(wantParentId, 0);
+          newCats.add(parentName);
+        } else if (catParentMap.get(wantParentId)) {
+          wantParentId = 0;
         }
-        catId = await ensureCategory(env.NAV_DB, targetCat, { parentId });
+      }
+
+      if (!catId) {
+        catId = await ensureCategory(env.NAV_DB, targetCat, { parentId: wantParentId });
         catMap.set(targetCat, catId);
+        catParentMap.set(catId, wantParentId);
         newCats.add(targetCat);
+      } else if (wantParentId && (catParentMap.get(catId) || 0) !== wantParentId) {
+        // 分类已存在但父级与导入指定不一致：按导入结构归位（旧实现直接跳过、父子关系静默丢失）。
+        // 底线：有子分类的分类不能降为二级（子分类会变三级）；父级已保证是一级且非自身，不可能成环
+        const hasKids = [...catParentMap.values()].some((pid) => pid === catId);
+        if (!hasKids) {
+          await env.NAV_DB.prepare("UPDATE category SET parent_id = ? WHERE id = ?").bind(wantParentId, catId).run();
+          catParentMap.set(catId, wantParentId);
+        }
       }
 
       if (existing && overwrite) {
+        // 覆盖导入写导入数据里实际带了的策展字段；没带的（图标/置顶/私密/排序）不许冲掉现有值
+        const sets = ["name = ?", "desc = ?", "category_id = ?"];
+        const binds = [site.name, site.desc, catId];
+        if (raw.icon !== undefined) { sets.push("icon = ?"); binds.push(site.icon); }
+        if (raw.pinned !== undefined) { sets.push("pinned = ?"); binds.push(site.pinned); }
+        if (raw.private !== undefined || raw.is_private !== undefined) { sets.push("is_private = ?"); binds.push(site.is_private); }
+        if (site.sort_order !== undefined) { sets.push("sort_order = ?"); binds.push(site.sort_order); }
+        binds.push(existing.id);
         updateStmts.push(
-          env.NAV_DB.prepare(
-            "UPDATE sites SET name = ?, desc = ?, category_id = ? WHERE id = ?"
-          ).bind(site.name, site.desc, catId, existing.id)
+          env.NAV_DB.prepare(`UPDATE sites SET ${sets.join(", ")} WHERE id = ?`).bind(...binds)
         );
       } else {
         insertStmts.push(
@@ -84,10 +107,10 @@ export async function onRequestPost(context) {
       }
     }
 
+    // 站点写入一整个 batch 提交（batch 内是事务）：分多次 batch 中途失败会留半成品导入
     const allStmts = [...updateStmts, ...insertStmts];
-    const CHUNK_SIZE = 50;
-    for (let i = 0; i < allStmts.length; i += CHUNK_SIZE) {
-      await env.NAV_DB.batch(allStmts.slice(i, i + CHUNK_SIZE));
+    if (allStmts.length) {
+      await env.NAV_DB.batch(allStmts);
     }
 
     return json({

@@ -14,13 +14,24 @@ export async function onRequestPut(context) {
     }
     const row = await env.NAV_DB.prepare("SELECT * FROM category WHERE id=?").bind(id).first();
     if (!row) return json({ error: "没有这个分类" }, 404);
-    const name = String(body.name ?? row.name).trim();
-    if (!name) return json({ error: "分类名必填" }, 400);
-    if (name.length > 20) return json({ error: "分类名不能超过 20 个字符" }, 400);
-    const dup = await env.NAV_DB.prepare("SELECT id FROM category WHERE name=? AND id<>?").bind(name, id).first();
-    if (dup) return json({ error: "这个分类名已经被占用" }, 409);
 
-    let parentId = row.parent_id || 0;
+    // 只写请求实际带了的字段：全字段写回会让并发的两个局部修改互相覆盖（各自拿着旧快照）
+    const sets = [];
+    const binds = [];
+    let newParentId = null; // null = 本次不改父级
+
+    if (body.name !== undefined) {
+      const name = String(body.name ?? "").trim();
+      if (!name) return json({ error: "分类名必填" }, 400);
+      if (name.length > 20) return json({ error: "分类名不能超过 20 个字符" }, 400);
+      if (name !== row.name) {
+        const dup = await env.NAV_DB.prepare("SELECT id FROM category WHERE name=? AND id<>?").bind(name, id).first();
+        if (dup) return json({ error: "这个分类名已经被占用" }, 409);
+      }
+      sets.push("name = ?");
+      binds.push(name);
+    }
+
     if (body.parent_id !== undefined) {
       const pv = await validParent(env.NAV_DB, Number(body.parent_id) || 0, id);
       if (!pv.ok) return json({ error: pv.error }, 400);
@@ -29,17 +40,44 @@ export async function onRequestPut(context) {
         const kid = await env.NAV_DB.prepare("SELECT id FROM category WHERE parent_id=? LIMIT 1").bind(id).first();
         if (kid) return json({ error: "这个分类下有子分类，不能再降为二级" }, 400);
       }
-      parentId = pv.parentId;
+      newParentId = pv.parentId;
+      sets.push("parent_id = ?");
+      binds.push(newParentId);
     }
-    const isPrivate = (body.private ?? body.is_private) !== undefined
-      ? (body.private ?? body.is_private ? 1 : 0)
-      : row.is_private;
-    const sortOrder = Number.isFinite(+body.sort_order) && body.sort_order !== undefined
-      ? +body.sort_order
-      : row.sort_order;
 
-    await env.NAV_DB.prepare("UPDATE category SET name=?, parent_id=?, is_private=?, sort_order=? WHERE id=?")
-      .bind(name, parentId, isPrivate, sortOrder, id).run();
+    const privRaw = body.private ?? body.is_private;
+    if (privRaw !== undefined) {
+      sets.push("is_private = ?");
+      binds.push(privRaw ? 1 : 0);
+    }
+
+    if (body.sort_order !== undefined && Number.isFinite(+body.sort_order)) {
+      sets.push("sort_order = ?");
+      binds.push(+body.sort_order);
+    }
+
+    if (!sets.length) return json({ ok: true });
+
+    if (newParentId) {
+      // 防环：把「目标父级不在自身子树内」的校验做进同一条 UPDATE——
+      // anc 是目标父级一路向上（含其自身）的祖先集合，自身 id 出现在里面即成环，WHERE 直接挡下。
+      // 与前面的 validParent 预检不同，这条校验与写入是同一条语句、同一时刻的快照：
+      // 两处并发互设父级时，后执行的那条必然看到先执行的结果，环造不出来
+      const res = await env.NAV_DB.prepare(
+        `WITH RECURSIVE anc(id) AS (
+           SELECT ?
+           UNION ALL
+           SELECT c.parent_id FROM category AS c INNER JOIN anc ON c.id = anc.id
+           WHERE c.parent_id IS NOT NULL AND c.parent_id <> 0
+         )
+         UPDATE category SET ${sets.join(", ")} WHERE id = ? AND NOT EXISTS (SELECT 1 FROM anc WHERE anc.id = ?)`
+      ).bind(newParentId, ...binds, id, id).run();
+      if (!res.meta.changes) {
+        return json({ error: "不能这样设置父级：会形成循环层级" }, 400);
+      }
+    } else {
+      await env.NAV_DB.prepare(`UPDATE category SET ${sets.join(", ")} WHERE id = ?`).bind(...binds, id).run();
+    }
     return json({ ok: true });
   } catch (err) {
     return json({ error: err.message || "修改分类失败" }, 500);

@@ -37,7 +37,8 @@ export async function saveKvConfig(env, config) {
 export async function getWebdavConfig(env) {
   const envUrl = String((env && env.WEBDAV_URL) || "").trim();
   const envUser = String((env && env.WEBDAV_USER) || "").trim();
-  const envPass = String((env && env.WEBDAV_PASS) || "").trim();
+  // 密码不 trim：保存侧已按原样存（首尾空格可能是密码的一部分），读取再削会与存入值不一致
+  const envPass = String((env && env.WEBDAV_PASS) || "");
 
   if (envUrl && envUser && envPass) {
     return {
@@ -52,7 +53,7 @@ export async function getWebdavConfig(env) {
   const wd = kv.webdav || {};
   const kvUrl = String(wd.url || "").trim();
   const kvUser = String(wd.user || "").trim();
-  const kvPass = String(wd.pass || "").trim();
+  const kvPass = String(wd.pass || ""); // 同上：密码按原样读，与保存侧口径一致
 
   if (/^https?:\/\//i.test(kvUrl) && kvUser && kvPass) {
     return {
@@ -238,6 +239,19 @@ export function resolveFloccusUrl(webdavUrl, relativePath) {
   const rel = String(relativePath || "").trim();
   if (!rel || rel.includes("://") || rel.startsWith("//") || rel.includes("..")) {
     throw new Error("Floccus XBEL 路径不合法（只允许相对路径，禁止跨域或跨根访问）");
+  }
+  // 字面检查挡不住编码形式：%2e%2e 在 URL 标准化/服务端解码后等同于 ..，
+  // 逐段解码后再验一次（解码后出现 ..、. 或分隔符的段一律拒绝）
+  for (const seg of rel.split("/")) {
+    let decoded = seg;
+    try {
+      decoded = decodeURIComponent(seg);
+    } catch {
+      throw new Error("Floccus XBEL 路径不合法（包含无法解码的编码）");
+    }
+    if (decoded === ".." || decoded === "." || decoded.includes("/") || decoded.includes("\\") || decoded.includes("://")) {
+      throw new Error("Floccus XBEL 路径不合法（只允许相对路径，禁止跨域或跨根访问）");
+    }
   }
   const cleanRel = rel.replace(/^\/+/, "");
   const base = String(webdavUrl || "").trim();

@@ -771,8 +771,10 @@
         if (saved && typeof saved.left === 'number' && typeof saved.top === 'number') {
           const w = beastToy.offsetWidth || 92;
           const h = beastToy.offsetHeight || 92;
-          const left = Math.min(Math.max(10, saved.left), window.innerWidth - w - 10);
-          const top = Math.min(Math.max(40, saved.top), window.innerHeight - h - 10);
+          // 钳制上限不得小于下限：小屏/横竖屏切换后视口小于组件尺寸时 Math.min(下限, 负数上限)
+          // 会返回负数把组件推到屏外，上下限先取齐
+          const left = Math.min(Math.max(10, saved.left), Math.max(10, window.innerWidth - w - 10));
+          const top = Math.min(Math.max(40, saved.top), Math.max(40, window.innerHeight - h - 10));
           beastToy.style.left = `${left}px`;
           beastToy.style.top = `${top}px`;
           beastToy.style.right = 'auto';
@@ -1093,8 +1095,9 @@
         if (saved && typeof saved.left === 'number' && typeof saved.top === 'number') {
           const w = catToy.offsetWidth || 96;
           const h = catToy.offsetHeight || 96;
-          const left = Math.min(Math.max(10, saved.left), window.innerWidth - w - 10);
-          const top = Math.min(Math.max(40, saved.top), window.innerHeight - h - 10);
+          // 同 beastToy：钳制上下限先取齐，小视口下不许把组件推出屏幕
+          const left = Math.min(Math.max(10, saved.left), Math.max(10, window.innerWidth - w - 10));
+          const top = Math.min(Math.max(40, saved.top), Math.max(40, window.innerHeight - h - 10));
           catToy.style.left = `${left}px`;
           catToy.style.top = `${top}px`;
           catToy.style.right = 'auto';

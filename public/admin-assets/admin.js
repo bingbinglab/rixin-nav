@@ -4,6 +4,9 @@
 const $ = (id) => document.getElementById(id);
 let data = { categories: [], sites: [] };
 let editingSiteId = null;
+// 表单会话代次：每次切换编辑对象/清空表单/保存成功都 +1。
+// 异步回调只认 editingSiteId 还不够——新建（id=null）→编辑同一条等路径下 id 可合法相等，必须再比代次
+let formSessionSeq = 0;
 const selectedSiteIds = new Set();
 const collapsedCats = new Set();
 
@@ -74,7 +77,12 @@ function toast(msg, isError = false) {
 }
 
 // --- P17: 统一站内弹窗 (增强防呆：支持危险操作默认聚焦取消、禁用回车) ---
+// 弹窗共用同一套 DOM：后开的弹窗会覆盖先开者的按钮回调与 resolve，
+// 先开者的 Promise 永远等不到结算。打开新弹窗前，先把先开者按「取消」结算掉，串行化。
+let activeModalCleanup = null;
+
 function showConfirm(msg, title = "请确认", { isDanger = false, defaultCancel = false, disableEnter = false } = {}) {
+  if (activeModalCleanup) activeModalCleanup();
   return new Promise((resolve) => {
     let mask = $("confirmModal");
     if (!mask) {
@@ -103,12 +111,15 @@ function showConfirm(msg, title = "请确认", { isDanger = false, defaultCancel
     mask.style.display = "flex";
 
     const cleanup = (result) => {
+      if (activeModalCleanup === dismissAsCancel) activeModalCleanup = null;
       mask.style.display = "none";
       okBtn.onclick = null;
       cancelBtn.onclick = null;
       window.removeEventListener("keydown", onKeyDown);
       resolve(result);
     };
+    const dismissAsCancel = () => cleanup(false);
+    activeModalCleanup = dismissAsCancel;
 
     const onKeyDown = (e) => {
       if (e.key === "Escape") cleanup(false);
@@ -798,16 +809,23 @@ function clearSiteFilters() {
 }
 
 // --- 数据加载 ---
+// load 并发防护：慢响应后到会把较新的 data 与界面回滚成旧快照，只认最后一次发起的响应
+let loadSeq = 0;
+
 async function load() {
+  const seq = ++loadSeq;
+  let fresh;
   try {
-    data = await api("/api/admin/sites");
+    fresh = await api("/api/admin/sites");
   } catch (e) {
     if (e.message !== "unauthorized") $("list").textContent = "加载失败：" + e.message;
     return;
   }
-  renderCats();
-  renderSites();
-  measureStickyHeights();
+  if (seq !== loadSeq) return; // 已有更新的 load 在飞，这份响应过期，丢弃
+  data = fresh;
+  // 先重建依赖 data 的下拉（书签分类筛选、分类父级），再渲染：
+  // renderSites 按 siteCatSel 当前值过滤、renderCats 按 cParent 画父级下拉，
+  // 若下拉还是上一轮的旧选项，本轮新数据会被旧口径过滤/渲染错位
   const catSel = $("siteCatSel");
   if (catSel) {
     const prevSel = catSel.value;
@@ -822,6 +840,9 @@ async function load() {
       .filter((c) => !c.parent_id)
       .map((c) => `<option value="${c.id}">${esc(c.name)}</option>`)
       .join("");
+  renderCats();
+  renderSites();
+  measureStickyHeights();
 }
 
 // --- 分类渲染与管理 (含 P17 行内改名、站内确认) ---
@@ -928,19 +949,24 @@ function renderCats() {
   }));
 
   document.querySelectorAll("[data-cpriv]").forEach((chk) => (chk.onchange = async () => {
+    // 在途禁用防连点：连点两次会发出两个相反的 PUT，响应乱序时服务端落盘值与最终勾选态相反
+    const submitted = chk.checked;
+    chk.disabled = true;
     try {
       await api("/api/admin/categories/" + chk.dataset.cpriv, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ private: chk.checked }),
+        body: JSON.stringify({ private: submitted }),
       });
       // 同步本地状态，否则之后任何重渲染都会按旧值把复选框画回相反状态
       const cat = catById(+chk.dataset.cpriv);
-      if (cat) cat.is_private = chk.checked;
-      toast(chk.checked ? "分类已设为私密" : "分类已设为公开");
+      if (cat) cat.is_private = submitted;
+      toast(submitted ? "分类已设为私密" : "分类已设为公开");
     } catch (e) {
       toast("私密设置失败：" + e.message, true);
       load();
+    } finally {
+      chk.disabled = false;
     }
   }));
 
@@ -1205,6 +1231,9 @@ async function toggleSiteBadge(s, field, el) {
       }),
     });
     toast(field === "pinned" ? (nextVal ? "已置顶" : "已取消置顶") : nextVal ? "已设为私密" : "已设为公开");
+    // 置顶会改变排序、私密会改变（非搜索态下）分组归属：只改徽标自身的样式，
+    // 列表的置顶区顺序与所在分组不会跟着动，成功后整表重渲一次与服务端对齐
+    renderSites();
   } catch (e) {
     s[field] = prevVal;
     el.classList.toggle("badge-off", !prevVal);
@@ -1582,6 +1611,9 @@ function updateBulkBar(visibleSites = []) {
     ? "取消全选"
     : (isSearching ? "全选匹配到的 " + visibleCount + " 条" : "全选全部 " + visibleCount + " 条");
 
+  // 批量栏每次渲染都整段重建：目标分类下拉会被重置成第一项，
+  // 已选好的目标分类先记下，重建后仍在选项中就恢复，避免误把书签移进错误分类
+  const prevTargetCat = ($("bulkTargetCat") || {}).value || "";
   bar.innerHTML = `
     <div class="bulk-info">
       <span>已选 <b>${selectedCount}</b> 条${matchTip}</span>
@@ -1606,6 +1638,10 @@ function updateBulkBar(visibleSites = []) {
     </div>
     <button type="button" class="mini primary mobile-bulk-more" id="bulkMoreBtn">操作 ▾</button>
   `;
+  if (prevTargetCat) {
+    const tgt = $("bulkTargetCat");
+    if (tgt && [...tgt.options].some((o) => o.value === prevTargetCat)) tgt.value = prevTargetCat;
+  }
 
   const moreBtn = $("bulkMoreBtn");
   if (moreBtn) {
@@ -1829,6 +1865,9 @@ function attachSiteDrag() {
         tr.classList.remove("drag-over-above", "drag-over-below");
         if (!dragSource || dragSource === tr) return;
         if (tr.dataset.cat !== dragSource.dataset.cat) return;
+        // 筛选/搜索激活时列表只是全集子集：落点前再查一次锁定，
+        // 与分类表口径一致，不拿子集当全集回写（服务端也会以不完整集合拒绝，这里只为口径统一与早失败）
+        if (isReorderLocked()) return;
         const rect = tr.getBoundingClientRect();
         const next = e.clientY - rect.top > rect.height / 2;
         tr.parentNode.insertBefore(dragSource, next ? tr.nextSibling : tr);
@@ -1937,6 +1976,12 @@ function attachSiteDrag() {
               .forEach((el) => el.classList.remove("drag-over-above", "drag-over-below"));
 
             if (lastOverTr && dragSource && lastOverTr !== dragSource && lastOverTr.dataset.cat === dragSource.dataset.cat) {
+              // 同 ondrop：筛选/搜索激活时不许落点，先清掉拖拽残留状态
+              if (isReorderLocked()) {
+                dragSource = null;
+                lastOverTr = null;
+                return;
+              }
               lastOverTr.parentNode.insertBefore(dragSource, lastNext ? lastOverTr.nextSibling : lastOverTr);
               const tbody = lastOverTr.parentNode;
               const newIds = [...tbody.querySelectorAll("tr[data-site-id]")].map((r) => +r.dataset.siteId);
@@ -2129,6 +2174,7 @@ function edit(id) {
   if (!s) return;
   clearUrlDupWarn();
   editingSiteId = s.id;
+  formSessionSeq++;
   $("fId").value = s.id;
   $("fSort").value = s.sort_order;
   $("fName").value = s.name;
@@ -2154,6 +2200,7 @@ function edit(id) {
 $("resetBtn").onclick = () => {
   const prevId = editingSiteId;
   editingSiteId = null;
+  formSessionSeq++;
   clearUrlDupWarn();
   ["fId", "fSort", "fName", "fUrl", "fDesc", "fCat", "fIcon"].forEach((i) => ($(i).value = ""));
   $("fPinned").checked = $("fPrivate").checked = false;
@@ -2233,6 +2280,7 @@ $("saveBtn").onclick = async () => {
     toast(id ? "书签修改已保存" : "新书签已保存");
     closeEditModal();
     editingSiteId = null;
+    formSessionSeq++;
     clearUrlDupWarn();
     $("fId").value = "";
     $("fUrl").value = "";
@@ -2311,6 +2359,7 @@ $("aiDescBtn").onclick = async () => {
   }
   // 记下发起时的编辑对象与网址：响应回来时若已切换到别的书签或改了网址，丢弃结果不许串写
   const reqSiteId = editingSiteId;
+  const reqSession = formSessionSeq;
   $("aiDescBtn").disabled = true;
   $("msg").textContent = "正在生成…";
   try {
@@ -2319,7 +2368,7 @@ $("aiDescBtn").onclick = async () => {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ url }),
     });
-    if (editingSiteId !== reqSiteId || normalizeUrlInput($("fUrl").value) !== url) {
+    if (editingSiteId !== reqSiteId || formSessionSeq !== reqSession || normalizeUrlInput($("fUrl").value) !== url) {
       $("msg").textContent = "已切换编辑对象，刚才的生成结果已丢弃。";
       toast("已切换编辑对象，生成结果已丢弃", true);
       return;
@@ -2385,20 +2434,26 @@ async function runBulkAiDesc(todo) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ url: s.url }),
       });
-      await api("/api/admin/sites/" + s.id, {
+      // 写回前按 id 重取当前对象：todo 是开跑时的快照，在途 load() 可能已换上新 data——
+      // 目标已被删则跳过（照旧对象 PUT 只会 404 误计失败），目标已补上简介则不覆盖人工/他路写入
+      const cur = (data.sites || []).find((x) => x.id === s.id);
+      if (!cur) continue;
+      if (cur.desc) continue;
+      await api("/api/admin/sites/" + cur.id, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          name: s.name,
-          url: s.url,
+          name: cur.name,
+          url: cur.url,
           desc: j.desc,
-          category: s.category,
-          icon: s.icon || "",
-          pinned: !!s.pinned,
-          private: !!s.is_private,
-          sort_order: s.sort_order,
+          category: cur.category,
+          icon: cur.icon || "",
+          pinned: !!cur.pinned,
+          private: !!cur.is_private,
+          sort_order: cur.sort_order,
         }),
       });
+      cur.desc = j.desc;
       s.desc = j.desc;
       consecutiveFail = 0;
       done++;
@@ -2449,8 +2504,17 @@ $("bulkAiBtn").onclick = () => {
 };
 
 // --- floccus 双向书签同步 (先预演后执行) ---
+// 同步全程可重入防护：预演弹窗等待期间按钮仍可点，连点会并行跑两轮全量同步互相踩数据
+let floccusSyncRunning = false;
+
 if ($("floccusSyncBtn")) {
   $("floccusSyncBtn").onclick = async () => {
+    if (floccusSyncRunning) {
+      toast("Floccus 同步正在进行中，请等它跑完", true);
+      return;
+    }
+    floccusSyncRunning = true;
+    $("floccusSyncBtn").disabled = true;
     $("toolMsg").textContent = "正在拉取 Floccus 书签并预演比对…";
     toast("正在拉取 Floccus 书签预演…");
     try {
@@ -2485,6 +2549,9 @@ if ($("floccusSyncBtn")) {
     } catch (e) {
       $("toolMsg").textContent = "同步失败：" + e.message;
       toast("同步失败：" + e.message, true);
+    } finally {
+      floccusSyncRunning = false;
+      $("floccusSyncBtn").disabled = false;
     }
   };
 }

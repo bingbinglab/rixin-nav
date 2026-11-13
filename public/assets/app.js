@@ -1119,12 +1119,14 @@ let currentDataFingerprint = '';
 function calcDataFingerprint(sites, cats, authed) {
   if (!Array.isArray(sites)) return '';
   const catList = Array.isArray(cats) ? cats : [];
-  const catStr = catList.map(c => typeof c === 'string' ? c : (c ? c.name + '<' + (c.parent || '') : '')).join(',');
-  const siteStr = sites.map(s => {
-    if (!s || typeof s !== 'object') return '';
-    return `${s.id || ''}:${s.name || ''}:${s.url || ''}:${s.category || ''}:${s.desc || ''}:${s.icon || ''}:${s.pinned ? 1 : 0}:${s.private ? 1 : 0}`;
-  }).join('|');
-  return `${authed ? 1 : 0}_${sites.length}_${catList.length}_${catStr}_${siteStr}`;
+  // 分隔符拼接可被字段内容伪造碰撞（字段里塞 , | < _ 即可让两组不同数据指纹相同、
+  // 第二次渲染被误判无变化而跳过）：改用 JSON 数组编码，字段边界由序列化保证
+  const catArr = catList.map(c => typeof c === 'string' ? c : (c ? [c.name || '', c.parent || ''] : null));
+  const siteArr = sites.map(s => {
+    if (!s || typeof s !== 'object') return null;
+    return [s.id || '', s.name || '', s.url || '', s.category || '', s.desc || '', s.icon || '', s.pinned ? 1 : 0, s.private ? 1 : 0];
+  });
+  return JSON.stringify([authed ? 1 : 0, catArr, siteArr]);
 }
 
 // ---------- 11.5 站点品牌与页脚文案动态同步 ----------
@@ -1186,7 +1188,8 @@ async function refreshSitesData() {
 
     currentDataFingerprint = newFp;
     window.NAV_DATA = data.sites;
-    if (Array.isArray(data.categories) && data.categories.length) {
+    if (Array.isArray(data.categories)) {
+      // 空数组也是有效新值：分类被删光时必须覆盖旧值，否则已删分类会残留在页面上
       window.NAV_CATEGORIES = data.categories;
     }
     selectedSiteIndex = 0;

@@ -4,6 +4,7 @@
 // 判定：能连上且状态码 <500 = ok（401/403/405 等说明主机活着）；5xx = warn（服务器异常）；连不上/超时/DNS 失败 = dead。
 // 只报告、永不自动删除，删不删由站长在结果里逐条决定。
 import { json, requireAuth } from "../../_lib/util.js";
+import { hostnameBlocked } from "../../_lib/netguard.js";
 
 const UA = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0 Safari/537.36";
 const TIMEOUT_MS = 6000;
@@ -14,6 +15,17 @@ async function checkOne(u, timeoutMs = TIMEOUT_MS) {
   const url = String(u?.url || "").trim();
   if (!/^https?:\/\/\S+$/i.test(url)) {
     return { id, status: "dead", code: 0, note: "网址格式不对" };
+  }
+  // 纵深防御：字面内网/保留地址不探测（防把巡检当内网探测通道）。
+  // 只做字面量判断、绝不查 DNS 解析——批量巡检有子请求 1:1 的硬约束，不能为校验多发请求
+  let parsed = null;
+  try { parsed = new URL(url); } catch { /* 保持 parsed 为 null，下面按格式不对处理 */ }
+  if (!parsed) {
+    return { id, status: "dead", code: 0, note: "网址格式不对" };
+  }
+  const host = parsed.hostname.replace(/^\[|\]$/g, "");
+  if (hostnameBlocked(host)) {
+    return { id, status: "error", code: 0, note: "目标是内网/保留地址，按安全口径不探测" };
   }
   const ctl = new AbortController();
   const timer = setTimeout(() => ctl.abort(), timeoutMs);

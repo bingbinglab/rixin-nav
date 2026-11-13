@@ -33,7 +33,8 @@
       var raw = window.localStorage.getItem(CACHE_KEY);
       if (!raw) return null;
       var d = JSON.parse(raw);
-      return (d && d.hitokoto) ? d : null;
+      // hitokoto 必须是真字符串才认缓存：{hitokoto:{}} 这类真值非串会被 textContent 渲染成 [object Object]
+      return (d && typeof d.hitokoto === 'string' && d.hitokoto) ? d : null;
     } catch (e) {
       return null;
     }

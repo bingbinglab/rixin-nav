@@ -176,7 +176,24 @@ export async function onRequestPut(context) {
   // 若存在有效修改则落库
   if (updatedWd || updatedAi || updatedFl || updatedSite) {
     try {
-      await saveKvConfig(env, kv);
+      // 落库前重读最新配置，只覆盖本请求实际改动的组/键：
+      // 否则两个管理员并发保存不同组时，整对象快照写回会把先保存一方的改动还原成旧值
+      const fresh = await getKvConfig(env);
+      if (updatedWd) {
+        if (kv.webdav === undefined) delete fresh.webdav; else fresh.webdav = kv.webdav;
+      }
+      if (updatedAi) {
+        if (kv.ai === undefined) delete fresh.ai; else fresh.ai = kv.ai;
+      }
+      if (updatedFl) {
+        if (kv.floccus === undefined) delete fresh.floccus; else fresh.floccus = kv.floccus;
+      }
+      if (updatedSite) {
+        for (const key of ["site_title", "site_footer", "ext_engines"]) {
+          if (kv[key] !== undefined) fresh[key] = kv[key];
+        }
+      }
+      await saveKvConfig(env, fresh);
     } catch (err) {
       return json({ error: "保存失败：" + (err.message || "KV 写入异常") }, 500);
     }

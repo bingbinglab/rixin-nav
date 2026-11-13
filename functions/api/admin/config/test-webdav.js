@@ -100,7 +100,18 @@ export async function onRequestPost(context) {
           if (rFile.ok || rFile.status === 207) {
             return json({ ok: true, message: `连接成功，备份文件已存在（HTTP ${rFile.status}）` });
           }
-          return json({ ok: true, message: "目标文件尚不存在（首次备份时会自动创建），目录连通正常" });
+          // 只有 404 才算「文件尚不存在」；403/5xx 是权限或服务端故障，不许误报成不存在
+          if (rFile.status === 404) {
+            return json({ ok: true, message: "目标文件尚不存在（首次备份时会自动创建），目录连通正常" });
+          }
+          if (rFile.status === 401 || rFile.status === 403) {
+            return json({
+              error: "账号或密码不对。若使用坚果云，请使用坚果云「账户信息 - 安全设置」中生成的应用密码，而非登录密码。",
+            }, 400);
+          }
+          return json({
+            error: `备份文件探测返回状态码 HTTP ${rFile.status}，请核对该文件的访问权限或稍后再试`,
+          }, 400);
         }
         return json({
           error: `WebDAV 父目录探测返回状态码 HTTP ${rParent.status}，请核对地址与权限`,

@@ -23,7 +23,15 @@ export function parseCookies(request) {
   const raw = request.headers.get("Cookie") || "";
   for (const part of raw.split(";")) {
     const i = part.indexOf("=");
-    if (i > 0) out[part.slice(0, i).trim()] = decodeURIComponent(part.slice(i + 1).trim());
+    if (i > 0) {
+      // 非法 % 编码只降级该条为原文，不许一个坏 Cookie 把整个请求打成 500
+      const value = part.slice(i + 1).trim();
+      try {
+        out[part.slice(0, i).trim()] = decodeURIComponent(value);
+      } catch {
+        out[part.slice(0, i).trim()] = value;
+      }
+    }
   }
   return out;
 }

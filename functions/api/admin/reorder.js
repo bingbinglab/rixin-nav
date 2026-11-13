@@ -96,15 +96,13 @@ export async function onRequestPost(context) {
     }
 
     // 2. D1 batch 原子重写 sort_order（按数组顺序间隔 10 赋序）
+    // 必须一整个 batch 提交：batch 内部是一个事务；若按 50 条分多次 batch，
+    // 中途失败会留下前半新序、后半旧序的混杂状态（文件头「不许写一半」的口径）
     const table = type === "site" ? "sites" : "category";
     const stmts = cleanIds.map((id, index) =>
       env.NAV_DB.prepare(`UPDATE ${table} SET sort_order = ? WHERE id = ?`).bind((index + 1) * 10, id)
     );
-
-    // 与批量接口同口径：每 50 条一批执行，避免大分类排序时撞 D1 批量上限
-    for (let i = 0; i < stmts.length; i += 50) {
-      await env.NAV_DB.batch(stmts.slice(i, i + 50));
-    }
+    await env.NAV_DB.batch(stmts);
 
     return json({ ok: true, count: cleanIds.length });
   } catch (err) {
