@@ -1161,7 +1161,7 @@ html.dark-theme .preview-stat-num.update, body.dark-theme .preview-stat-num.upda
   box-shadow: 4px 4px 0 var(--card-shadow);
   padding: 10px 16px;
   margin: 16px 0;
-  animation: slideUp 0.18s ease-out;
+  /* 不给吸底栏加 transform 入场动画：滚动时易触发浏览器合成层重绘错乱（画面被压扁糊成一条压住内容） */
 }
 @keyframes slideUp {
   from { transform: translateY(8px); opacity: 0; }
