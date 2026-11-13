@@ -81,7 +81,43 @@ function toast(msg, isError = false) {
 // 先开者的 Promise 永远等不到结算。打开新弹窗前，先把先开者按「取消」结算掉，串行化。
 let activeModalCleanup = null;
 
-function showConfirm(msg, title = "请确认", { isDanger = false, defaultCancel = false, disableEnter = false } = {}) {
+// 弹窗无障碍（确认/复核两种共用同一遮罩）：打开时记住触发点并把 Tab 焦点圈在
+// 弹窗内，关闭时回焦触发点并解锁背景滚动。深度计数防连开弹窗时误恢复。
+let modalPrevFocus = null;
+let modalOpenDepth = 0;
+function modalTrapKeydown(e) {
+  if (e.key !== "Tab") return;
+  const mask = document.getElementById("confirmModal");
+  if (!mask || mask.style.display === "none") return;
+  const card = mask.querySelector(".confirm-card");
+  if (!card) return;
+  const focusables = [...card.querySelectorAll("button, input, select, textarea, a[href]")]
+    .filter((el) => !el.disabled && el.style.display !== "none" && el.offsetParent !== null);
+  if (!focusables.length) return;
+  const first = focusables[0];
+  const last = focusables[focusables.length - 1];
+  if (!card.contains(document.activeElement)) { e.preventDefault(); first.focus(); }
+  else if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+  else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+}
+function a11yModalOpen() {
+  if (modalOpenDepth === 0) modalPrevFocus = document.activeElement;
+  modalOpenDepth += 1;
+  window.addEventListener("keydown", modalTrapKeydown, true);
+  document.body.style.overflow = "hidden";
+}
+function a11yModalClose() {
+  modalOpenDepth = Math.max(0, modalOpenDepth - 1);
+  if (modalOpenDepth > 0) return;
+  window.removeEventListener("keydown", modalTrapKeydown, true);
+  document.body.style.overflow = "";
+  const ok = document.getElementById("confirmOkBtn");
+  if (ok) ok.disabled = false;
+  if (modalPrevFocus && document.contains(modalPrevFocus) && modalPrevFocus.focus) modalPrevFocus.focus();
+  modalPrevFocus = null;
+}
+
+function showConfirm(msg, title = "请确认", { isDanger = false, defaultCancel = false, disableEnter = false, disableOk = false } = {}) {
   if (activeModalCleanup) activeModalCleanup();
   return new Promise((resolve) => {
     let mask = $("confirmModal");
@@ -100,6 +136,12 @@ function showConfirm(msg, title = "请确认", { isDanger = false, defaultCancel
         </div>`;
       document.body.appendChild(mask);
     }
+    const cardEl = mask.querySelector(".confirm-card");
+    if (cardEl && !cardEl.hasAttribute("role")) {
+      cardEl.setAttribute("role", "dialog");
+      cardEl.setAttribute("aria-modal", "true");
+      cardEl.setAttribute("aria-labelledby", "confirmTitle");
+    }
     const msgEl = $("confirmMsg");
     const titleEl = $("confirmTitle");
     const okBtn = $("confirmOkBtn");
@@ -113,11 +155,14 @@ function showConfirm(msg, title = "请确认", { isDanger = false, defaultCancel
     cancelBtn.textContent = "取 消";
     okBtn.textContent = "确 定";
     okBtn.className = isDanger ? "danger mini" : "primary mini";
+    okBtn.disabled = !!disableOk;
     mask.style.display = "flex";
+    a11yModalOpen();
 
     const cleanup = (result) => {
       if (activeModalCleanup === dismissAsCancel) activeModalCleanup = null;
       mask.style.display = "none";
+      a11yModalClose();
       okBtn.onclick = null;
       cancelBtn.onclick = null;
       window.removeEventListener("keydown", onKeyDown);
@@ -185,6 +230,12 @@ function showBulkReview({ title, sites, intro = "", note = "", isDanger = false 
       const actions = mask.querySelector(".confirm-actions");
       if (actions) actions.parentNode.insertBefore(listWrap, actions);
     }
+    const cardEl = mask.querySelector(".confirm-card");
+    if (cardEl && !cardEl.hasAttribute("role")) {
+      cardEl.setAttribute("role", "dialog");
+      cardEl.setAttribute("aria-modal", "true");
+      cardEl.setAttribute("aria-labelledby", "confirmTitle");
+    }
     const msgEl = $("confirmMsg");
     const titleEl = $("confirmTitle");
     const okBtn = $("confirmOkBtn");
@@ -207,10 +258,12 @@ function showBulkReview({ title, sites, intro = "", note = "", isDanger = false 
     okBtn.className = isDanger ? "danger mini" : "primary mini";
     okBtn.textContent = `执行（${list.length} 条）`;
     mask.style.display = "flex";
+    a11yModalOpen();
 
     const cleanup = (result) => {
       if (activeModalCleanup === dismissAsCancel) activeModalCleanup = null;
       mask.style.display = "none";
+      a11yModalClose();
       listWrap.style.display = "none";
       listWrap.innerHTML = "";
       okBtn.onclick = null;
@@ -836,6 +889,9 @@ function switchTab(tabId) {
   document.querySelectorAll(".tab-pill").forEach((btn) => {
     btn.classList.toggle("active", btn.dataset.tab === tabId);
   });
+  // 窄屏下页签条可横滑：把激活页签滚进视口，免得切过去却看不见自己在哪一页
+  const activePill = document.querySelector(".tab-pill.active");
+  if (activePill) activePill.scrollIntoView({ block: "nearest", inline: "center" });
   if (tabId === "tab-sites") requestAnimationFrame(measureStickyHeights);
 }
 
@@ -1150,6 +1206,20 @@ function renderCats() {
   // P17: 分类删除改用站内弹窗
   document.querySelectorAll("[data-cdel]").forEach((b) => (b.onclick = async () => {
     const c = catById(+b.dataset.cdel);
+    // 分类下还有书签/子分类时，先把占用数摆进弹窗并禁用「确定」，免得确认后才被服务端 409 拒
+    const used = c ? (counts[c.id] || 0) : 0;
+    const kids = c ? data.categories.filter((x) => (x.parent_id || 0) === c.id).length : 0;
+    if (used > 0 || kids > 0) {
+      const parts = [];
+      if (used > 0) parts.push(used + " 条书签");
+      if (kids > 0) parts.push(kids + " 个子分类");
+      await showConfirm("分类「" + (c ? c.name : "") + "」下还有 " + parts.join("、") + "，先移走再删。", "删除分类", {
+        isDanger: true,
+        defaultCancel: true,
+        disableOk: true,
+      });
+      return;
+    }
     const ok = await showConfirm("确定删除分类「" + (c ? c.name : "") + "」？", "删除分类", {
       isDanger: true,
       defaultCancel: true,
@@ -1778,6 +1848,14 @@ function updateBulkBar(visibleSites = []) {
         const b = $("bulkMoreBtn");
         if (b) b.textContent = "操作 ▾";
       }
+    });
+  }
+
+  // 筛选 0 命中但仍有已选：选中项不在屏幕上，置顶/私密/删除类按钮先禁用，防对看不见的对象下手
+  if (isSearching && visibleCount === 0 && selectedCount > 0) {
+    ["bulkPinBtn", "bulkUnpinBtn", "bulkPrivBtn", "bulkPubBtn", "bulkDelBtn"].forEach((id) => {
+      const btn = $(id);
+      if (btn) btn.disabled = true;
     });
   }
 
@@ -3191,7 +3269,7 @@ async function loadConfig() {
     $("wdUser").value = (cfg.webdav && cfg.webdav.user) || "";
     $("wdPass").value = "";
     if (cfg.source.webdav === "env") {
-      $("wdPass").placeholder = "环境变量生效中（" + cfg.webdav.pass_mask + "）；如需存入后台请重新输入";
+      $("wdPass").placeholder = "环境变量生效中（" + cfg.webdav.pass_mask + "），如需覆盖请重输";
       $("wdTip").innerHTML =
         '<b>当前环境变量在管事</b>（WEBDAV_URL/USER/PASS 已配齐并优先生效）。如需存入后台，请重新输入密码后再保存。';
     } else {
@@ -3210,7 +3288,7 @@ async function loadConfig() {
     $("aiKey").value = "";
     renderAiFields(p, false);
     if (cfg.source.ai === "env") {
-      $("aiKey").placeholder = "环境变量生效中（" + cfg.ai.api_key_mask + "）；如需存入后台请重新输入";
+      $("aiKey").placeholder = "环境变量生效中（" + cfg.ai.api_key_mask + "），如需覆盖请重输";
       $("aiTip").innerHTML =
         '<b style="color:var(--ochre)">当前环境变量在管事</b>（CF_ACCOUNT_ID 与 CF_AI_TOKEN 已配齐并优先生效）。如需存入后台，请重新输入密钥后再保存。';
     } else {

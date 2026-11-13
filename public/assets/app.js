@@ -379,7 +379,10 @@ function render() {
   const pinnedGrid = document.getElementById('pinnedGrid');
   const pinnedCount = document.getElementById('pinnedCount');
 
-  if (pinnedList.length > 0) {
+  // 文本搜索态下置顶区不再单独渲染：命中项只在所属分类区出现一次，
+  // 否则同一书签会在置顶区与分类区各出一张卡，且与总览行的「共 N 个站点」对不上
+  const showPinned = !isTextSearch && pinnedList.length > 0;
+  if (showPinned) {
     if (pinnedSec) pinnedSec.style.display = 'block';
     if (pinnedCount) pinnedCount.textContent = `${pinnedList.length} 个站点`;
     if (pinnedGrid) pinnedGrid.innerHTML = pinnedList.map(renderCard).join('');
@@ -425,7 +428,7 @@ function render() {
 
   // 2. 渲染各分类分区
   const wrap = document.getElementById('sections');
-  let anyVisible = (pinnedList.length > 0);
+  let anyVisible = showPinned;
 
   if (wrap) {
     wrap.innerHTML = ordered.map((cat, i) => {

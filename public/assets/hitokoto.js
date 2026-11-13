@@ -67,16 +67,25 @@
       refreshBtn.classList.remove('is-loading');
     }
 
+    // 失败不静默：保留当前显示的同时，让「换一句」入口短暂变色并给出 title 说明
+    function fail() {
+      done();
+      refreshBtn.classList.add('is-failed');
+      refreshBtn.title = '题记暂不可取，稍后再试';
+      setTimeout(function () { refreshBtn.classList.remove('is-failed'); }, 2400);
+    }
+
     fetch(API, ctl ? { signal: ctl.signal } : undefined)
       .then(function (r) { return r.json(); })
       .then(function (d) {
+        if (!d || d.code || !d.hitokoto) { fail(); return; } // 拉不到保留当前显示
         done();
-        if (!d || d.code || !d.hitokoto) return; // 拉不到保留当前显示
+        refreshBtn.title = '';
         render(d);
         writeCache(d);
       })
       .catch(function () {
-        done(); // 失败保留当前显示（站铭或上一句）
+        fail(); // 失败保留当前显示（站铭或上一句）
       });
   }
 

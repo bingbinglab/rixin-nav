@@ -356,6 +356,9 @@
       hubBtn.setAttribute('aria-expanded', isHubOpen ? 'true' : 'false');
       if (fanMenu) {
         fanMenu.setAttribute('aria-hidden', isHubOpen ? 'false' : 'true');
+        // 收起态扇区钮不可见：退出 Tab 序，免得键盘焦点落到看不见的按钮上
+        fanMenu.querySelectorAll('.fan-item').forEach((el) => { el.tabIndex = isHubOpen ? 0 : -1; });
+        if (!isHubOpen && fanMenu.contains(document.activeElement)) hubBtn.focus();
       }
       if (isHubOpen) {
         preloadMuyuAudio();
@@ -1614,6 +1617,7 @@
     const hintBar = document.createElement('div');
     hintBar.className = 'leisure-seal-hint-bar';
     hintBar.innerHTML = '<span>已执闲章 · 点空白落印</span><button type="button" class="seal-hint-close" aria-label="退出落印">✕</button>';
+    hintBar.inert = true; // 未进入落印模式时提示条不可见，关闭钮不进 Tab 序
     document.body.appendChild(hintBar);
     hintBar.querySelector('.seal-hint-close').addEventListener('click', (e) => {
       e.stopPropagation();
@@ -1627,6 +1631,7 @@
         fanSeal.setAttribute('aria-pressed', isSealActive ? 'true' : 'false');
       }
       document.body.classList.toggle('seal-stamping-mode', isSealActive);
+      hintBar.inert = !isSealActive;
       if (isSealActive) {
         hintBar.classList.add('visible');
       } else {
