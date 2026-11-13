@@ -715,6 +715,16 @@ function measureStickyHeights() {
   if (tabs && tabs.offsetHeight) document.documentElement.style.setProperty("--tabsH", tabs.offsetHeight + "px");
   if (tools && tools.offsetHeight) document.documentElement.style.setProperty("--toolsH", tools.offsetHeight + "px");
 }
+// 量高必须持续保鲜：字体晚到、窗口变化、工具栏换行都会让标签栏/工具栏高度变掉，
+// 量值一旦过期，分类头吸顶偏移就错位、滚动时会滑进工具栏底下叠字。字体就绪后重测一次，之后用 ResizeObserver 常驻盯着。
+if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => measureStickyHeights());
+if (window.ResizeObserver) {
+  const stickyRO = new ResizeObserver(() => measureStickyHeights());
+  const stickyTabsEl = document.querySelector(".admin-tabs");
+  const stickyToolsEl = document.querySelector(".sites-tools");
+  if (stickyTabsEl) stickyRO.observe(stickyTabsEl, { box: "border-box" });
+  if (stickyToolsEl) stickyRO.observe(stickyToolsEl, { box: "border-box" });
+}
 // --- 方案一: 长页签页内目录（锚点跳转 + 滚动高亮） ---
 function initPaneNavs() {
   document.querySelectorAll(".pane-nav").forEach((nav) => {
@@ -792,6 +802,7 @@ async function load() {
   }
   renderCats();
   renderSites();
+  measureStickyHeights();
   const catSel = $("siteCatSel");
   if (catSel) {
     const prevSel = catSel.value;
