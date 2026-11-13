@@ -296,16 +296,6 @@ html.dark-theme .yinyang-btn:hover .yinyang-icon {
   font-variant-numeric: tabular-nums;
 }
 
-.mast-divider {
-  opacity: 0.5;
-  font-size: 14px;
-}
-
-.mast-note {
-  letter-spacing: 0.8px;
-  font-size: 14px;
-}
-
 /* 报刊经典双墨线 */
 .rule-double {
   border-top: 3.5px solid var(--ink);
@@ -837,9 +827,7 @@ html.dark-theme .search-summary { border-color: rgba(217, 111, 71, .5); }
 
 /* 搜索态弱化：A–Z 索引条与页首全站统计退后（仅透明度，不动布局高度） */
 .page.is-searching .quick-loc-bar { opacity: .38; }
-.page.is-searching .mast-stats,
-.page.is-searching .mast-divider,
-.page.is-searching .mast-note { opacity: .35; }
+.page.is-searching .mast-stats { opacity: .35; }
 
 /* 卡片标题/简介关键词高亮：纸墨调淡赭水洗 */
 .kw-hit {
@@ -3514,31 +3502,50 @@ body.seal-stamping-mode {
     font-size: 8.5px;
   }
 }
-/* 一言（搜索框下方一行；接口驱动，隐藏时零占位） */
+/* 一言题记（报头底部一行；接口驱动，站铭兜底；换句入口独立，加载只作用于入口） */
 .hitokoto-bar {
-  margin: 14px auto 0;
-  padding: 2px 16px;
-  text-align: center;
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  margin: 12px 0 0;
+  min-width: 0;
+}
+.hitokoto-text {
+  font-size: 13px;
+  line-height: 1.7;
+  letter-spacing: .14em;
+  color: var(--muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 0;
+}
+.hitokoto-from {
+  font-size: 12px;
+  letter-spacing: .05em;
+  color: var(--muted);
+  opacity: .75;
+  white-space: nowrap;
+  flex: 0 0 auto;
+}
+.hitokoto-refresh {
+  flex: 0 0 auto;
+  background: none;
+  border: none;
+  padding: 2px 4px;
+  font: inherit;
+  font-size: 12px;
+  letter-spacing: .08em;
+  color: var(--muted);
+  opacity: .75;
   cursor: pointer;
   transition: opacity .25s ease;
 }
-.hitokoto-bar[hidden] { display: none; }
-.hitokoto-bar.hitokoto-loading { opacity: .35; }
-.hitokoto-text {
-  font-family: var(--serif);
-  font-size: 15.5px;
-  letter-spacing: .04em;
-  color: var(--ink);
-}
-.hitokoto-from {
-  margin-left: 10px;
-  font-size: 12.5px;
-  color: var(--muted);
-  white-space: nowrap;
-}
+.hitokoto-refresh:hover { opacity: 1; }
+.hitokoto-refresh.is-loading { opacity: .3; pointer-events: none; }
 @media (max-width: 640px) {
-  .hitokoto-text { font-size: 14px; }
-  .hitokoto-from { display: block; margin: 3px 0 0; }
+  .hitokoto-bar { margin-top: 10px; }
+  .hitokoto-from { display: none; }
 }
 
 /* ===== 手机刊头压缩（第二批，2026-11-13）：刊头收紧＋统计与一言并行＋工具栏单行，第一卡上移首屏 ===== */
@@ -3554,7 +3561,6 @@ body.seal-stamping-mode {
   .masthead-side-bottom { flex-wrap: nowrap; align-items: baseline; column-gap: 8px; }
   .mast-stats { font-size: 11.5px; line-height: 16px; white-space: nowrap; flex: 0 0 auto; }
   .mast-stats b { font-size: 15px; line-height: 20px; }
-  .mast-note { font-size: 11px; line-height: 16px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
   .rule-double { margin-top: 8px; margin-bottom: 8px; }
   .toolbar { display: flex; align-items: stretch; gap: 6px; }
   .search-box { flex: 1 1 auto; min-width: 0; height: 48px; align-items: center; }

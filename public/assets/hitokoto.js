@@ -1,10 +1,11 @@
 /**
- * 日新辑览 · 一言 (hitokoto.js)
- * 搜索框下方一行随机句子，点击换一句。
- * 数据来自第三方公开接口 api.furry.ist（免 Key、全分类随机）；
- * 接口响应慢（实测 1.4–2.9 秒），故用 localStorage 缓存上一句：
- * 打开页面先秒显缓存句，后台拉到新句再替换并更新缓存。
- * 纯前端装饰：拉不到/超时/接口异常时整行保持隐藏，移除本脚本不影响主站。
+ * 日新辑览 · 一言题记 (hitokoto.js)
+ * 报头底部题记一行。数据来自第三方公开接口 api.furry.ist（免 Key、全分类随机）。
+ * 展示口径（2026-11-13 题记化）：一次访问内稳定展示一句，阅读期间不自动替换——
+ * 先读 localStorage 缓存秒显，有缓存就不再后台拉取；无缓存才拉一次。
+ * 换句只走行末「换一句」小入口，加载反馈只作用于入口本身，原句保持清晰。
+ * 接口拉不到/超时/异常时保留当前显示（无缓存时即 HTML 里的站铭兜底），
+ * 纯前端装饰：移除本脚本不影响主站。
  */
 (function () {
   'use strict';
@@ -13,7 +14,8 @@
   if (!bar) return;
   var textEl = document.getElementById('hitokotoText');
   var fromEl = document.getElementById('hitokotoFrom');
-  if (!textEl || !fromEl) return;
+  var refreshBtn = document.getElementById('hitokotoRefresh');
+  if (!textEl || !fromEl || !refreshBtn) return;
 
   var API = 'https://api.furry.ist/hitokoto?max_length=30';
   var CACHE_KEY = 'rixin-hitokoto';
@@ -25,7 +27,6 @@
     if (d.from) attr = '《' + d.from + '》';
     if (d.from_who) attr += (attr ? ' · ' : '') + d.from_who;
     fromEl.textContent = attr ? '—— ' + attr : '';
-    bar.hidden = false;
   }
 
   function readCache() {
@@ -55,36 +56,33 @@
   function load() {
     if (loading) return;
     loading = true;
-    bar.classList.add('hitokoto-loading');
+    refreshBtn.classList.add('is-loading');
 
     var ctl = ('AbortController' in window) ? new AbortController() : null;
     var timer = ctl ? setTimeout(function () { ctl.abort(); }, 6000) : null;
 
+    function done() {
+      if (timer) clearTimeout(timer);
+      loading = false;
+      refreshBtn.classList.remove('is-loading');
+    }
+
     fetch(API, ctl ? { signal: ctl.signal } : undefined)
       .then(function (r) { return r.json(); })
       .then(function (d) {
-        if (timer) clearTimeout(timer);
-        loading = false;
-        bar.classList.remove('hitokoto-loading');
-        if (!d || d.code || !d.hitokoto) {
-          if (!textEl.textContent) bar.hidden = true;
-          return;
-        }
+        done();
+        if (!d || d.code || !d.hitokoto) return; // 拉不到保留当前显示
         render(d);
         writeCache(d);
       })
       .catch(function () {
-        if (timer) clearTimeout(timer);
-        loading = false;
-        bar.classList.remove('hitokoto-loading');
-        if (!textEl.textContent) bar.hidden = true;
+        done(); // 失败保留当前显示（站铭或上一句）
       });
   }
 
-  bar.title = '一言 · 点击换一句';
-  bar.addEventListener('click', load);
+  refreshBtn.addEventListener('click', load);
 
   var cached = readCache();
   if (cached) render(cached);
-  load();
+  else load();
 })();

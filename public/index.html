@@ -10,7 +10,7 @@
 <meta name="theme-color" content="#f8f5ee">
 <meta name="color-scheme" content="light dark">
 <link rel="manifest" href="/site.webmanifest">
-<link rel="stylesheet" href="style.css?v=20261113i">
+<link rel="stylesheet" href="style.css?v=20261113j">
 <link rel="stylesheet" href="fonts/noto-serif-sc/700.css">
 <link rel="stylesheet" href="fonts/noto-serif-sc/800.css">
 <link rel="stylesheet" href="fonts/noto-serif-sc/900.css">
@@ -58,11 +58,17 @@
       </div>
       <div class="masthead-side-bottom">
         <span class="mast-stats" id="mastStats" style="visibility:hidden">已收录 <b id="siteCount">0</b> 个站点 · <b id="catCount">0</b> 个分类</span>
-        <span class="mast-divider">·</span>
-        <span class="mast-note">辑 录 万 站 · 井 井 有 条</span>
       </div>
     </div>
   </header>
+
+  <!-- 2.05 一言题记 (报头底部一行；第三方公开接口驱动，无缓存/拉不到时显示站铭；换句走行末小入口，阅读期间不自动替换) -->
+  <div class="hitokoto-bar" id="hitokotoBar">
+    <span class="hitokoto-text" id="hitokotoText">辑 录 万 站 · 井 井 有 条</span>
+    <span class="hitokoto-from" id="hitokotoFrom"></span>
+    <button class="hitokoto-refresh" id="hitokotoRefresh" type="button" title="换一句">换一句</button>
+  </div>
+
   <div class="rule-double"></div>
 
   <!-- 2. 工具栏 (主搜索 + 紧凑视图切换 + 私密开关) -->
@@ -79,12 +85,6 @@
     </button>
     <button id="privacyBtn" class="tool-btn" type="button" title="显示或隐藏标记为私密的站点" style="display: none;"><span>显示私密</span></button>
   </section>
-
-  <!-- 2.05 一言 (第三方公开接口驱动，拉不到整行不显示，不影响主站) -->
-  <div class="hitokoto-bar" id="hitokotoBar" hidden>
-    <span class="hitokoto-text" id="hitokotoText"></span>
-    <span class="hitokoto-from" id="hitokotoFrom"></span>
-  </div>
 
   <!-- 2.1 A-Z 快速字母条 (主控置前) + 快速定位说明 (置后) -->
   <div class="quick-loc-bar">
@@ -326,6 +326,6 @@
 <script src="/assets/icon.js?v=20261030a"></script>
 <script src="/assets/app.js?v=20261113d"></script>
 <script src="/assets/widgets.js?v=20261113a" defer></script>
-<script src="/assets/hitokoto.js?v=20261113a" defer></script>
+<script src="/assets/hitokoto.js?v=20261113b" defer></script>
 </body>
 </html>
