@@ -1495,3 +1495,8 @@ body.tab-sites .grid-layout [data-tab-pane="tab-sites"],body.tab-edit .grid-layo
 #userTable .badge{white-space:nowrap}
 #userTable td:nth-child(6) .ghost{white-space:nowrap}
 }
+
+/* ===== 滚动花屏对策（2026-11-13）：实测在用户机器上窗口滚动时吸顶层画面翻花（多浏览器、关硬件加速、肉眼可见均复现），
+   后台列表页的窗口吸顶一律改为普通排版：标签栏、页内目录、过滤工具栏、分类头、批量栏。
+   仅摘窗口滚动的吸顶；卡内滚动容器里的吸底确认区与链接巡检头等容器内吸顶不动。 ===== */
+.admin-tabs, .pane-nav, .sites-tools, .cat-head-wrap, .bulk-bar { position: static; }
