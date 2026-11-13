@@ -44,14 +44,16 @@ export async function onRequestPost(context) {
         if (rows) floccusRows.push(...rows);
       }
 
+      // 先登记墓碑、后删行：与单条删除同口径，避免删了却没墓碑、被下一轮同步复活
+      if (floccusRows && floccusRows.length > 0) {
+        await addTombstones(env, floccusRows.map((r) => r.url));
+      }
+
       const stmts = cleanIds.map((id) =>
         env.NAV_DB.prepare("DELETE FROM sites WHERE id = ?").bind(id)
       );
       await batchInChunks(env.NAV_DB, stmts, 50);
 
-      if (floccusRows && floccusRows.length > 0) {
-        await addTombstones(env, floccusRows.map((r) => r.url));
-      }
       return json({ ok: true, count: cleanIds.length, action: "delete" });
     }
 

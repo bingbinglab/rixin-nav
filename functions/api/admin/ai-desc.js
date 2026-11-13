@@ -39,12 +39,58 @@ function ipv4Blocked(ip) {
   );
 }
 
+// 把 IPv6 地址解析为 8 组 16 位整数（支持 :: 压缩与末尾点分 IPv4 写法）；形状非法返回 null
+function parseIpv6Groups(ip) {
+  let host = String(ip).toLowerCase().split("%")[0];
+  // 末尾点分 IPv4（如 ::ffff:1.2.3.4）先换成两组十六进制
+  if (host.includes(".")) {
+    const idx = host.lastIndexOf(":");
+    if (idx < 0) return null;
+    const v4 = host.slice(idx + 1).split(".").map((x) => Number(x));
+    if (v4.length !== 4 || v4.some((n) => !Number.isInteger(n) || n < 0 || n > 255)) return null;
+    const hi = ((v4[0] << 8) | v4[1]).toString(16);
+    const lo = ((v4[2] << 8) | v4[3]).toString(16);
+    host = host.slice(0, idx + 1) + hi + ":" + lo;
+  }
+  const halves = host.split("::");
+  if (halves.length > 2) return null;
+  const parsePart = (part) => {
+    if (!part) return [];
+    const groups = part.split(":");
+    if (groups.some((g) => !/^[0-9a-f]{1,4}$/.test(g))) return null;
+    return groups.map((g) => parseInt(g, 16));
+  };
+  const head = parsePart(halves[0]);
+  if (head === null) return null;
+  if (halves.length === 1) {
+    return head.length === 8 ? head : null;
+  }
+  const tail = parsePart(halves[1]);
+  if (tail === null) return null;
+  const missing = 8 - head.length - tail.length;
+  if (missing < 1) return null;
+  return [...head, ...Array(missing).fill(0), ...tail];
+}
+
 function ipv6Blocked(ip) {
   const host = String(ip).toLowerCase();
-  if (host === "::1" || host === "::") return true;
   if (/^fe[89ab]/.test(host) || /^f[cd]/.test(host)) return true;
-  const mapped = host.match(/^::ffff:(\d+\.\d+\.\d+\.\d+)$/);
-  if (mapped) return ipv4Blocked(mapped[1]);
+  const g = parseIpv6Groups(host);
+  if (!g) return true; // 形状不合法的 IPv6 字面量一律拒绝
+  if ((g[0] & 0xffc0) === 0xfe80) return true; // fe80::/10 链路本地
+  if ((g[0] & 0xfe00) === 0xfc00) return true; // fc00::/7 唯一本地
+  const low32 = [g[6] >> 8, g[6] & 0xff, g[7] >> 8, g[7] & 0xff].join(".");
+  // ::/96 兼容段（::、::1 与 ::点分形式都落在这里）：低 32 位即 IPv4 本身
+  if (g[0] === 0 && g[1] === 0 && g[2] === 0 && g[3] === 0 && g[4] === 0 && g[5] === 0) {
+    return ipv4Blocked(low32);
+  }
+  // ::ffff:x:x（IPv4 映射段，含 ::ffff:7f00:1 这类十六进制写法）与 ::ffff:0:x（IPv4 翻译段）：按内嵌 IPv4 判定
+  if (
+    g[0] === 0 && g[1] === 0 && g[2] === 0 && g[3] === 0 &&
+    ((g[4] === 0 && g[5] === 0xffff) || (g[4] === 0xffff && g[5] === 0))
+  ) {
+    return ipv4Blocked(low32);
+  }
   return false;
 }
 
@@ -76,28 +122,33 @@ async function assertPublicUrl(raw, signal) {
   if (u.protocol !== "http:" && u.protocol !== "https:") throw blockedError("只允许 http/https 网址");
   const host = u.hostname.replace(/^\[|\]$/g, "");
   if (hostnameBlocked(host)) throw blockedError("目标地址属于内网或保留地址，已拒绝抓取");
-  // 域名再查解析结果，防公网域名指向内网地址（DoH 查询失败不阻断，靠字面量校验兜底）
+  // 域名再查解析结果，防公网域名指向内网地址。
+  // 校验口径 fail-closed：DoH 查询失败（网络错/非 200/响应不可解析）直接拒绝抓取，不放行未验地址。
   if (!/^\d+\.\d+\.\d+\.\d+$/.test(host) && !host.includes(":")) {
-    try {
-      const types = [1, 28];
-      const queries = await Promise.all(
-        types.map((t) =>
-          fetch("https://cloudflare-dns.com/dns-query?name=" + encodeURIComponent(host) + "&type=" + t, {
-            headers: { Accept: "application/dns-json" },
-            signal,
-          }).then((r) => (r.ok ? r.json() : null)).catch(() => null)
-        )
-      );
-      for (const j of queries) {
-        const answers = j && Array.isArray(j.Answer) ? j.Answer : [];
-        for (const an of answers) {
-          if ((an.type === 1 || an.type === 28) && ipBlocked(an.data)) {
-            throw blockedError("目标域名解析到内网或保留地址，已拒绝抓取");
-          }
+    const types = [1, 28];
+    const queries = await Promise.all(
+      types.map((t) =>
+        fetch("https://cloudflare-dns.com/dns-query?name=" + encodeURIComponent(host) + "&type=" + t, {
+          headers: { Accept: "application/dns-json" },
+          signal,
+        })
+          .then((r) => (r.ok ? r.json() : null))
+          .catch((e) => {
+            if (e && e.name === "AbortError") throw e; // 整体超时按原样上抛，不误报为 DoH 故障
+            return null;
+          })
+      )
+    );
+    if (queries.some((j) => !j)) {
+      throw blockedError("域名解析校验失败（DoH 查询不可用），已拒绝抓取");
+    }
+    for (const j of queries) {
+      const answers = Array.isArray(j.Answer) ? j.Answer : [];
+      for (const an of answers) {
+        if ((an.type === 1 || an.type === 28) && ipBlocked(an.data)) {
+          throw blockedError("目标域名解析到内网或保留地址，已拒绝抓取");
         }
       }
-    } catch (e) {
-      if (e && e.blocked) throw e;
     }
   }
   return u.toString();

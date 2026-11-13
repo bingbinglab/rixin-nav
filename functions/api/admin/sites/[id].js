@@ -16,11 +16,14 @@ export async function onRequestPut(context) {
     const dup = await env.NAV_DB.prepare("SELECT id FROM sites WHERE url = ? AND id <> ?").bind(site.url, id).first();
     if (dup) return json({ error: "这个网址已经在库里了" }, 409);
 
-    // 未传 sort_order 时保留原值，避免普通编辑把排序清零
-    if (body.sort_order === undefined) {
-      const row = await env.NAV_DB.prepare("SELECT sort_order FROM sites WHERE id=?").bind(id).first();
-      if (row) site.sort_order = row.sort_order;
+    // 先取旧行：未传 sort_order 时保留原值；floccus 来源改址时还要按旧网址处理同步归属（见下）
+    const oldRow = await env.NAV_DB.prepare("SELECT url, origin, sort_order FROM sites WHERE id=?").bind(id).first();
+    if (body.sort_order === undefined && oldRow) {
+      site.sort_order = oldRow.sort_order;
     }
+    // 同步来的书签一旦改址，原同步关系即失效：归属转 manual（走站→浏览器写回通道推送新网址），
+    // 否则下一轮同步会按「新网址不在 XBEL」把编辑成果删掉、旧网址又被重新导回
+    const urlChangedFromFloccus = Boolean(oldRow) && oldRow.origin === "floccus" && oldRow.url !== site.url;
     let catId;
     if (site.category_id !== null) {
       if (site.category_id === 0) {
@@ -43,10 +46,20 @@ export async function onRequestPut(context) {
       return json({ error: "未指定分类（需提供 category 或有效 category_id）" }, 400);
     }
     const sortOrder = site.sort_order ?? 0;
-    const res = await env.NAV_DB.prepare(
-      "UPDATE sites SET name=?, url=?, desc=?, category_id=?, icon=?, pinned=?, is_private=?, sort_order=? WHERE id=?"
-    ).bind(site.name, site.url, site.desc, catId, site.icon, site.pinned, site.is_private, sortOrder, id).run();
+    const res = urlChangedFromFloccus
+      ? await env.NAV_DB.prepare(
+          "UPDATE sites SET name=?, url=?, desc=?, category_id=?, icon=?, pinned=?, is_private=?, sort_order=?, origin='manual' WHERE id=?"
+        ).bind(site.name, site.url, site.desc, catId, site.icon, site.pinned, site.is_private, sortOrder, id).run()
+      : await env.NAV_DB.prepare(
+          "UPDATE sites SET name=?, url=?, desc=?, category_id=?, icon=?, pinned=?, is_private=?, sort_order=? WHERE id=?"
+        ).bind(site.name, site.url, site.desc, catId, site.icon, site.pinned, site.is_private, sortOrder, id).run();
     if (!res.meta.changes) return json({ error: "没有这条书签" }, 404);
+    if (urlChangedFromFloccus) {
+      // 旧网址登记墓碑：同步时从浏览器 XBEL 移除旧条目，且不让它作为「新书签」复活。
+      // 墓碑只挡从 XBEL 回流；旧条目被移除后，墓碑会被同步末尾的陈旧修剪清掉，
+      // 日后在浏览器侧重新添加该网址仍可正常同步进来，不会被永久封死
+      await addTombstones(env, [oldRow.url]);
+    }
     return json({ ok: true });
   } catch (err) {
     return json({ error: err.message || "修改书签失败" }, 500);
@@ -61,11 +74,13 @@ export async function onRequestDelete(context) {
     const id = +params.id;
     const site = await env.NAV_DB.prepare("SELECT url, origin FROM sites WHERE id=?").bind(id).first();
     if (!site) return json({ error: "没有这条书签" }, 404);
-    const res = await env.NAV_DB.prepare("DELETE FROM sites WHERE id=?").bind(id).run();
-    if (!res.meta.changes) return json({ error: "没有这条书签" }, 404);
+    // 先登记墓碑、后删行：墓碑写失败则整单报错且行还在，
+    // 不会出现「接口报错但行已删、无墓碑」导致下一轮同步把书签复活
     if (site.origin === "floccus") {
       await addTombstones(env, [site.url]);
     }
+    const res = await env.NAV_DB.prepare("DELETE FROM sites WHERE id=?").bind(id).run();
+    if (!res.meta.changes) return json({ error: "没有这条书签" }, 404);
     return json({ ok: true });
   } catch (err) {
     return json({ error: err.message || "删除书签失败" }, 500);

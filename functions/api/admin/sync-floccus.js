@@ -307,9 +307,10 @@ export async function onRequestPost(context) {
   }
 
   // C. 执行站内删除
+  // 删除语句自守：执行时再复核 pinned 与 origin，计划期后被置顶/改来源的行自动跳过，不误删
   if (activeDeletesFromSite.length > 0) {
     const deleteStmts = activeDeletesFromSite.map((s) =>
-      env.NAV_DB.prepare("DELETE FROM sites WHERE id = ?").bind(s.id)
+      env.NAV_DB.prepare("DELETE FROM sites WHERE id = ? AND pinned = 0 AND origin = 'floccus'").bind(s.id)
     );
     const CHUNK = 50;
     for (let i = 0; i < deleteStmts.length; i += CHUNK) {
@@ -331,7 +332,8 @@ export async function onRequestPost(context) {
         writebackNote = `重新拉取 XBEL 校验失败（HTTP ${checkRes.status}）`;
       } else {
         const latestText = await checkRes.text();
-        const latestEtag = checkRes.headers.get("ETag") || (await sha256Hex(latestText));
+        const latestEtagHeader = checkRes.headers.get("ETag");
+        const latestEtag = latestEtagHeader || (await sha256Hex(latestText));
         if (latestEtag !== initialEtag) {
           // 期间文件被改，放弃本次写回
           writebackDeferred = true;
@@ -343,15 +345,28 @@ export async function onRequestPost(context) {
             toAddSites: sitesToPushToBrowser,
           });
 
-          // PUT 回写 WebDAV
+          // PUT 回写 WebDAV：带最近一次 GET 的 ETag 作 If-Match 条件写回，堵住「校验后、写回前」的并发窗口；
+          // 服务器未提供 ETag 时维持无条件写回的现行为
+          const putHeaders = {
+            Authorization: authHeader,
+            "Content-Type": "application/xbel+xml; charset=utf-8",
+          };
+          if (latestEtagHeader) {
+            putHeaders["If-Match"] = latestEtagHeader;
+          }
           const putRes = await fetch(targetUrl, {
             method: "PUT",
-            headers: {
-              Authorization: authHeader,
-              "Content-Type": "application/xbel+xml; charset=utf-8",
-            },
+            headers: putHeaders,
             body: editedXml,
           });
+
+          if (putRes.status === 412) {
+            // 条件写回被拒：文件在校验后又被并发改动，整轮同步报错中止，绝不覆盖对方新内容
+            return json(
+              { error: "WebDAV 文件在写回前又被并发修改（If-Match 校验未通过），本次同步已中止，请稍后重试" },
+              409
+            );
+          }
 
           if (putRes.ok) {
             // 写回成功：站内 manual 状态转正为 floccus

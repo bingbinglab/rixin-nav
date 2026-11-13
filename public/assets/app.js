@@ -786,9 +786,13 @@ window.addEventListener('keydown', e => {
       e.preventDefault();
       const targetSite = visibleSitesList[selectedSiteIndex] || visibleSitesList[0];
       if (targetSite && targetSite.url) {
-        window.open(targetSite.url, '_blank', 'noopener');
-        if (active && (active === input || active.id === 'searchInput' || tag === 'INPUT')) {
-          active.blur();
+        // 与卡片 href 同口径：只放行 http/https，危险协议降级为「#」时不打开
+        const openUrl = safeHttpUrl(targetSite.url);
+        if (openUrl && openUrl !== "#") {
+          window.open(openUrl, '_blank', 'noopener');
+          if (active && (active === input || active.id === 'searchInput' || tag === 'INPUT')) {
+            active.blur();
+          }
         }
       }
     } else if (keyword.trim()) {
