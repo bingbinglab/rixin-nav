@@ -107,6 +107,11 @@ function showConfirm(msg, title = "请确认", { isDanger = false, defaultCancel
 
     titleEl.textContent = title;
     msgEl.innerHTML = esc(msg).replace(/\n/g, "<br>");
+    // 与批量复核弹窗共用同一套 DOM：打开普通确认时藏掉复核清单，并把按钮文案复位为默认
+    const listWrap = $("confirmListWrap");
+    if (listWrap) listWrap.style.display = "none";
+    cancelBtn.textContent = "取 消";
+    okBtn.textContent = "确 定";
     okBtn.className = isDanger ? "danger mini" : "primary mini";
     mask.style.display = "flex";
 
@@ -136,6 +141,97 @@ function showConfirm(msg, title = "请确认", { isDanger = false, defaultCancel
     } else {
       okBtn.focus();
     }
+  });
+}
+
+// 批量操作复核弹窗：与 showConfirm 共用同一套弹窗 DOM 与等待纪律，
+// 正文给影响条数，受影响书签以可滚动清单（站名＋域名）逐条列明，确认后才执行。
+function siteHostLabel(url) {
+  const raw = String(url || "").trim();
+  if (!raw) return "";
+  try {
+    return new URL(normalizeUrlInput(raw)).hostname || raw;
+  } catch {
+    return raw.replace(/^[a-z][a-z0-9+.-]*:\/\//i, "").split("/")[0] || raw;
+  }
+}
+
+function showBulkReview({ title, sites, intro = "", note = "", isDanger = false }) {
+  if (activeModalCleanup) activeModalCleanup();
+  return new Promise((resolve) => {
+    let mask = $("confirmModal");
+    if (!mask) {
+      mask = document.createElement("div");
+      mask.id = "confirmModal";
+      mask.className = "confirm-modal-mask";
+      mask.innerHTML = `
+        <div class="confirm-card card">
+          <h3 id="confirmTitle" class="confirm-title serif">请确认</h3>
+          <p id="confirmMsg" class="confirm-msg"></p>
+          <div id="confirmListWrap" class="confirm-list-wrap" style="display:none"></div>
+          <div class="confirm-actions">
+            <button id="confirmCancelBtn" type="button" class="ghost mini">取 消</button>
+            <button id="confirmOkBtn" type="button" class="primary mini">确 定</button>
+          </div>
+        </div>`;
+      document.body.appendChild(mask);
+    }
+    let listWrap = $("confirmListWrap");
+    if (!listWrap) {
+      listWrap = document.createElement("div");
+      listWrap.id = "confirmListWrap";
+      listWrap.className = "confirm-list-wrap";
+      listWrap.style.display = "none";
+      const actions = mask.querySelector(".confirm-actions");
+      if (actions) actions.parentNode.insertBefore(listWrap, actions);
+    }
+    const msgEl = $("confirmMsg");
+    const titleEl = $("confirmTitle");
+    const okBtn = $("confirmOkBtn");
+    const cancelBtn = $("confirmCancelBtn");
+    const list = Array.isArray(sites) ? sites : [];
+
+    titleEl.textContent = title;
+    const lines = [`将影响 ${list.length} 条书签`];
+    if (intro) lines.push(intro);
+    if (note) lines.push(note);
+    msgEl.innerHTML = esc(lines.join("\n")).replace(/\n/g, "<br>");
+    listWrap.innerHTML = list
+      .map((s) => `<div class="confirm-list-item"><span class="confirm-list-name">${esc(s.name || "")}</span><span class="confirm-list-domain">${esc(siteHostLabel(s.url))}</span></div>`)
+      .join("");
+    listWrap.style.display = "block";
+    listWrap.scrollTop = 0;
+    cancelBtn.style.display = "inline-block";
+    cancelBtn.textContent = "取 消";
+    okBtn.style.display = "inline-block";
+    okBtn.className = isDanger ? "danger mini" : "primary mini";
+    okBtn.textContent = `执行（${list.length} 条）`;
+    mask.style.display = "flex";
+
+    const cleanup = (result) => {
+      if (activeModalCleanup === dismissAsCancel) activeModalCleanup = null;
+      mask.style.display = "none";
+      listWrap.style.display = "none";
+      listWrap.innerHTML = "";
+      okBtn.onclick = null;
+      cancelBtn.onclick = null;
+      window.removeEventListener("keydown", onKeyDown);
+      resolve(result);
+    };
+    const dismissAsCancel = () => cleanup(false);
+    activeModalCleanup = dismissAsCancel;
+
+    const onKeyDown = (e) => {
+      if (e.key === "Escape") cleanup(false);
+      // 与 showConfirm 同口径：Enter 交给聚焦按钮的原生激活，不全局强制确认
+    };
+
+    okBtn.onclick = () => cleanup(true);
+    cancelBtn.onclick = () => cleanup(false);
+    window.addEventListener("keydown", onKeyDown);
+
+    // 批量动作默认聚焦「取消」，防误触直接执行
+    setTimeout(() => { cancelBtn.focus(); }, 25);
   });
 }
 
@@ -334,12 +430,14 @@ function showImportPreviewModal(previewData) {
           <button type="button" class="mini ghost" id="prevBulkCatBtn">应用</button>
         </div>
       </div>
+      <div class="preview-impact" id="prevImpactSummary"></div>
       <div class="preview-section-title">导入条目清单 (${items.length} 条)：</div>
       <div class="preview-items-table-wrap">
         <div class="preview-items-list" id="prevItemsList"></div>
       </div>
     `;
 
+    const impactEl = $("prevImpactSummary");
     const statAddedEl = $("prevStatAdded");
     const statOverwriteEl = $("prevStatOverwrite");
     const statSkippedEl = $("prevStatSkipped");
@@ -402,6 +500,7 @@ function showImportPreviewModal(previewData) {
       let overwrite = 0;
       let skipped = 0;
       const activeNewCats = new Set();
+      const involvedCats = new Set();
 
       items.forEach((item) => {
         if (item.isInvalid || item.isDup) {
@@ -429,17 +528,29 @@ function showImportPreviewModal(previewData) {
         }
 
         const cat = item.category;
-        if (cat && !existingCatSet.has(cat)) activeNewCats.add(cat);
+        if (cat) {
+          involvedCats.add(cat);
+          if (!existingCatSet.has(cat)) activeNewCats.add(cat);
+        }
         const parent = item.parent_category;
-        if (parent && !existingCatSet.has(parent)) activeNewCats.add(parent);
+        if (parent) {
+          involvedCats.add(parent);
+          if (!existingCatSet.has(parent)) activeNewCats.add(parent);
+        }
       });
 
       if (Array.isArray(rawCats)) {
         for (const c of rawCats) {
           const cName = String((c && c.name) || "").trim();
-          if (cName && !existingCatSet.has(cName)) activeNewCats.add(cName);
+          if (cName) {
+            involvedCats.add(cName);
+            if (!existingCatSet.has(cName)) activeNewCats.add(cName);
+          }
           const pName = String((c && c.parent) || "").trim();
-          if (pName && !existingCatSet.has(pName)) activeNewCats.add(pName);
+          if (pName) {
+            involvedCats.add(pName);
+            if (!existingCatSet.has(pName)) activeNewCats.add(pName);
+          }
         }
       }
 
@@ -453,6 +564,13 @@ function showImportPreviewModal(previewData) {
       newCatsContainerEl.innerHTML = newCatsArr.length
         ? newCatsArr.map((c) => `<span class="preview-cat-tag new-cat">＋ ${esc(c)}</span>`).join("")
         : '<span class="muted">无（均已存在）</span>';
+
+      // 影响复核摘要：与上方统计格同一套重算口径，置于条目清单上方随勾选实时更新
+      if (impactEl) {
+        impactEl.textContent =
+          `影响复核：新增 ${added} 条 · 将更新 ${overwrite} 条 · 已存在跳过 ${skipped} 条 · 涉及分类 ${involvedCats.size} 个` +
+          (newCatsArr.length ? `（其中将新建：${newCatsArr.join("、")}）` : "");
+      }
 
       const totalActive = added + overwrite;
       okBtn.textContent = totalActive > 0 ? `确认导入 (${totalActive} 条)` : "确认导入";
@@ -1684,6 +1802,12 @@ function updateBulkBar(visibleSites = []) {
       return;
     }
     const ids = Array.from(selectedSiteIds);
+    const ok = await showBulkReview({
+      title: "移动分类",
+      sites: data.sites.filter((s) => selectedSiteIds.has(s.id)),
+      intro: `目标分类：「${targetCat}」`,
+    });
+    if (!ok) return;
     try {
       const res = await api("/api/admin/sites/batch", {
         method: "POST",
@@ -1700,6 +1824,11 @@ function updateBulkBar(visibleSites = []) {
 
   $("bulkPinBtn").onclick = async () => {
     const ids = Array.from(selectedSiteIds);
+    const ok = await showBulkReview({
+      title: "设为置顶",
+      sites: data.sites.filter((s) => selectedSiteIds.has(s.id)),
+    });
+    if (!ok) return;
     try {
       const res = await api("/api/admin/sites/batch", {
         method: "POST",
@@ -1715,6 +1844,11 @@ function updateBulkBar(visibleSites = []) {
 
   $("bulkUnpinBtn").onclick = async () => {
     const ids = Array.from(selectedSiteIds);
+    const ok = await showBulkReview({
+      title: "取消置顶",
+      sites: data.sites.filter((s) => selectedSiteIds.has(s.id)),
+    });
+    if (!ok) return;
     try {
       const res = await api("/api/admin/sites/batch", {
         method: "POST",
@@ -1730,6 +1864,11 @@ function updateBulkBar(visibleSites = []) {
 
   $("bulkPrivBtn").onclick = async () => {
     const ids = Array.from(selectedSiteIds);
+    const ok = await showBulkReview({
+      title: "设为私密",
+      sites: data.sites.filter((s) => selectedSiteIds.has(s.id)),
+    });
+    if (!ok) return;
     try {
       const res = await api("/api/admin/sites/batch", {
         method: "POST",
@@ -1745,6 +1884,11 @@ function updateBulkBar(visibleSites = []) {
 
   $("bulkPubBtn").onclick = async () => {
     const ids = Array.from(selectedSiteIds);
+    const ok = await showBulkReview({
+      title: "设为公开",
+      sites: data.sites.filter((s) => selectedSiteIds.has(s.id)),
+    });
+    if (!ok) return;
     try {
       const res = await api("/api/admin/sites/batch", {
         method: "POST",
@@ -1763,17 +1907,12 @@ function updateBulkBar(visibleSites = []) {
     const count = selectedSites.length;
     if (count === 0) return;
 
-    const top3 = selectedSites.slice(0, 3).map((s) => `「${s.name}」`).join("、");
-    const moreTip = count > 3 ? ` 等共 ${count} 个书签` : "";
-    let confirmMsg = `确定要彻底删除已选中的 ${count} 个书签吗？\n包括：${top3}${moreTip}。\n删除后不可恢复！`;
-    if (count >= 10) {
-      confirmMsg += "\n\n⚠️ 提示：删除条数较多（≥10条），建议操作前先在左侧「导入/导出」卡片导出备份。";
-    }
-
-    const ok = await showConfirm(confirmMsg, "批量删除确认", {
+    const ok = await showBulkReview({
+      title: "批量删除",
+      sites: selectedSites,
+      intro: "删除后不可恢复！",
+      note: count >= 10 ? "⚠️ 提示：删除条数较多（≥10条），建议操作前先在左侧「导入/导出」卡片导出备份。" : "",
       isDanger: true,
-      defaultCancel: true,
-      disableEnter: true,
     });
     if (!ok) return;
 
@@ -2688,7 +2827,8 @@ $("linkCheckBtn").onclick = async () => {
   const errN = bad.filter((x) => x.r.status === "error").length;
   const warnN = bad.length - deadN - errN;
   const head = `<div class="lc-head"><span>失联 ${deadN} 条 · 异常 ${warnN} 条${errN ? ` · 未检 ${errN} 条` : ""}</span><button type="button" class="mini ghost" id="lcCloseBtn">关闭</button></div>`;
-  setLcToolMsg(`巡检完成：共 ${sites.length} 条，存活 ${sites.length - bad.length} 条，失联 ${deadN} 条，异常 ${warnN} 条${errN ? `，未检 ${errN} 条` : ""}。`);
+  const doneMsg = `巡检完成：共 ${sites.length} 条，存活 ${sites.length - bad.length} 条，失联 ${deadN} 条，异常 ${warnN} 条${errN ? `，未检 ${errN} 条` : ""}。`;
+  setLcToolMsg(doneMsg);
   box.dataset.lcAlive = sites.length - bad.length;
   toast("死链巡检完成");
   if (!bad.length) {
@@ -2755,8 +2895,82 @@ $("linkCheckBtn").onclick = async () => {
   }
   const lcClose = $("lcCloseBtn");
   if (lcClose) lcClose.onclick = () => { box.style.display = "none"; box.innerHTML = ""; };
+  // 巡检报告留存：最后一份存到服务端，刷新后数据页仍可回看（只存报告，站点删不删照旧逐条由站长定）
+  try {
+    const toEntry = ({ s, r }) => ({ id: s.id, name: s.name, url: s.url, status: r.status, code: r.code || 0, note: r.note || "" });
+    await api("/api/admin/deadlink-report", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        report: {
+          ts: Date.now(),
+          total: sites.length,
+          alive: sites.length - bad.length,
+          dead: bad.filter((x) => x.r.status === "dead").map(toEntry),
+          suspect: bad.filter((x) => x.r.status !== "dead").map(toEntry),
+        },
+      }),
+    });
+    setLcToolMsg(doneMsg + "报告已留存。");
+  } catch {
+    // 留存失败不影响本轮巡检结果展示
+  }
   btn.disabled = false;
 };
+
+// --- 上次巡检报告（留存回看）：数据页加载时若有留存，渲染带时间的折叠报告，只读不带删除入口 ---
+async function loadSavedDeadlinkReport() {
+  const box = $("linkCheckResult");
+  if (!box) return;
+  let report = null;
+  try {
+    const j = await api("/api/admin/deadlink-report");
+    report = j && j.report;
+  } catch {
+    return;
+  }
+  if (!report || !report.ts) return;
+  const dead = Array.isArray(report.dead) ? report.dead : [];
+  const suspect = Array.isArray(report.suspect) ? report.suspect : [];
+  const errN = suspect.filter((x) => x.status === "error").length;
+  const warnN = suspect.length - errN;
+  const when = new Date(report.ts).toLocaleString("zh-CN", { hour12: false });
+  const badge = (e) =>
+    e.status === "dead"
+      ? '<span class="lc-badge dead">失联</span>'
+      : e.status === "error"
+        ? '<span class="lc-badge warn">未检</span>'
+        : `<span class="lc-badge warn">异常 ${e.code || ""}</span>`;
+  const itemHtml = (e) => `
+      <div class="lc-item">
+        <div class="lc-main">
+          ${badge(e)}
+          <a class="lc-name" href="${esc(e.url)}" target="_blank" rel="noopener">${esc(e.name || "")}</a>
+          <span class="lc-note">${esc(e.note || "")}</span>
+        </div>
+        <div class="lc-url">${esc(e.url)}</div>
+        <div class="lc-actions">
+          <a class="mini ghost lc-open" href="${esc(e.url)}" target="_blank" rel="noopener">打开验证</a>
+        </div>
+      </div>`;
+  const items = dead.concat(suspect);
+  box.innerHTML =
+    `<div class="lc-head"><span>上次巡检报告 · ${esc(when)} · 共 ${report.total || 0} 条，失联 ${dead.length} 条 · 异常 ${warnN} 条${errN ? ` · 未检 ${errN} 条` : ""}</span><button type="button" class="mini ghost" id="lcSavedToggle">展开</button></div>` +
+    `<div id="lcSavedBody" style="display:none">` +
+    (items.length ? items.map(itemHtml).join("") : `<p class="muted" style="margin:0">全部站点都能连上，没有死链。</p>`) +
+    `</div>`;
+  box.style.display = "block";
+  const toggle = $("lcSavedToggle");
+  if (toggle) {
+    toggle.onclick = () => {
+      const body = $("lcSavedBody");
+      if (!body) return;
+      const open = body.style.display !== "none";
+      body.style.display = open ? "none" : "block";
+      toggle.textContent = open ? "展开" : "收起";
+    };
+  }
+}
 
 // --- 导入 / 导出 (HTML / JSON) ---
 $("importBtn").onclick = () => {
@@ -3324,6 +3538,7 @@ function initAdmin() {
 
   load();
   loadConfig();
+  loadSavedDeadlinkReport();
 }
 
 if (document.readyState === "loading") {

@@ -163,8 +163,8 @@ a { color: var(--ochre); }
 .msg.ok::before { content: "✓ "; }
 .msg.err { color: var(--ochre); }
 .msg.err::before { content: "！"; }
-.kid td:first-child { padding-left: 26px; }
-.kid .cname::before { content: "↳ "; color: var(--ochre); font-weight: 700; }
+.kid td:first-child { padding-left: 30px; }
+.kid .cname::before { content: "↳ "; color: var(--muted); font-weight: 400; }
 select.inline { width: auto; padding: 4px 6px; font-size: 13px; }
 .nowrap { white-space: nowrap; }
 
@@ -175,10 +175,10 @@ select.inline { width: auto; padding: 4px 6px; font-size: 13px; }
 .tblwrap-fit { overflow-x: visible; }
 .cattable { min-width: 0; width: 100%; table-layout: fixed; }
 .cattable th:nth-child(1) { width: 118px; }
-.cattable th:nth-child(2) { width: 40px; }
+.cattable th:nth-child(2) { width: 44px; }
 .cattable th:nth-child(3) { width: 98px; }
 .cattable th:nth-child(4) { width: 38px; }
-.cattable th:nth-child(5) { width: 72px; }
+.cattable th:nth-child(5) { width: 64px; }
 .cattable th:nth-child(6) { width: 96px; }
 .cattable td { text-align: center; padding: 4px 6px; }
 .cattable select.inline { padding: 2px 4px; font-size: 12.5px; }
@@ -426,6 +426,39 @@ html.dark-theme .icon-box { background: var(--card); }
   color: var(--ink);
   margin: 0 0 18px;
   word-break: break-all;
+}
+.confirm-list-wrap {
+  max-height: 220px;
+  overflow-y: auto;
+  border: 1px solid var(--border-line);
+  background: var(--card);
+  margin-bottom: 16px;
+  position: relative;
+  z-index: 1;
+}
+.confirm-list-item {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 5px 10px;
+  font-size: 12.5px;
+  line-height: 1.5;
+  border-bottom: 1px dashed var(--border-line);
+}
+.confirm-list-item:last-child {
+  border-bottom: none;
+}
+.confirm-list-name {
+  color: var(--ink);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.confirm-list-domain {
+  color: var(--muted);
+  flex-shrink: 0;
+  white-space: nowrap;
 }
 .confirm-actions {
   display: flex;
@@ -952,6 +985,16 @@ html.dark-theme .preview-stat-num.update, body.dark-theme .preview-stat-num.upda
   font-weight: 700;
   margin: 10px 0 6px;
   color: var(--ink);
+}
+.preview-impact {
+  font-size: 12.5px;
+  line-height: 1.6;
+  color: var(--ink);
+  background: rgba(158, 71, 42, .06);
+  border: 1px solid var(--border-line);
+  border-left: 3px solid var(--ochre);
+  padding: 7px 10px;
+  margin: 10px 0 2px;
 }
 .preview-cat-tags {
   display: flex;
@@ -1524,8 +1567,13 @@ body.tab-sites .grid-layout [data-tab-pane="tab-sites"],body.tab-edit .grid-layo
 
 /* ===== 后台细修二轮：分类/用户表列宽、整行悬停、分类小结（2026-11-06） ===== */
 .cattable.cat-tbl th:nth-child(1){width:auto}
-.cattable.cat-tbl th:nth-child(6){width:136px}
+.cattable.cat-tbl th:nth-child(6){width:108px}
 .cattable.cat-tbl th:nth-child(1),.cattable.cat-tbl td.cname{text-align:left}
+/* 第三批：分类层级呈现与控件成组对齐——父行站名保持粗体、子行回归常规字重拉开层级；计数/排序/操作三列居中、组内钮间距均匀 */
+.cattable.cat-tbl tbody tr:not(.kid) .cname-text{font-weight:700}
+.cattable.cat-tbl tr.kid .cname-text{font-weight:400}
+.cattable.cat-tbl .cat-col-count,.cattable.cat-tbl .cat-col-sort,.cattable.cat-tbl .cat-col-act{text-align:center}
+.cattable.cat-tbl .cat-col-sort .mini,.cattable.cat-tbl .cat-col-act .mini{margin:0 2px}
 #userTable th:nth-child(1){width:46px}
 #userTable th:nth-child(2){width:auto}
 #userTable th:nth-child(3){width:88px}
