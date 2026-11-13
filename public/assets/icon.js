@@ -30,11 +30,34 @@
     }
   }
 
+
+  // 代理取图失败过的域名记进 sessionStorage：同一会话再渲染到它时直接用首字牌，
+  // 不再为注定 404 的域名反复发 4 秒级的慢请求（新会话会重试，给站点恢复留口）
+  const DEAD_ICON_KEY = "rixin-icon-dead";
+  let deadIconSet = null;
+  function deadIcons() {
+    if (deadIconSet) return deadIconSet;
+    try { deadIconSet = new Set(JSON.parse(sessionStorage.getItem(DEAD_ICON_KEY) || "[]")); }
+    catch { deadIconSet = new Set(); }
+    return deadIconSet;
+  }
+  function markDeadIcon(host) {
+    if (!host) return;
+    const set = deadIcons();
+    if (set.has(host)) return;
+    set.add(host);
+    try { sessionStorage.setItem(DEAD_ICON_KEY, JSON.stringify([...set])); } catch {}
+  }
+
   function iconErr(img) {
     if (!img.dataset.r && img.dataset.remote) {
       img.dataset.r = "1";
       img.src = img.dataset.remote;
     } else {
+      try {
+        const u = new URL(img.dataset.remote || img.src, location.origin);
+        markDeadIcon(u.searchParams.get("domain") || "");
+      } catch {}
       const p = img.parentNode;
       if (p) {
         p.classList.add("is-fallback");
@@ -53,12 +76,12 @@
     let dataRemote = "";
 
     if (site.icon) {
-      src = "/icons/" + encodeURI(site.icon) + "?v=20261030";
+      src = "/icons/" + encodeURI(site.icon) + "?v=20261114";
       dataRemote = remote;
     } else if (host && LOCAL_ICON_DOMAINS.has(host)) {
-      src = "/icons/" + host + ".png?v=20261030";
+      src = "/icons/" + host + ".png?v=20261114";
       dataRemote = remote;
-    } else if (remote) {
+    } else if (remote && !deadIcons().has(host)) {
       src = remote;
       dataRemote = "";
     }

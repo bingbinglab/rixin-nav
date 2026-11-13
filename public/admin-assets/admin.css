@@ -1484,6 +1484,11 @@ html.dark-theme .dup-warn {
   .searchbar input { padding-right: 46px; }
   .cat-priv-label { min-height: 36px; }
   .cattable .cat-col-sort button, .cattable .cat-col-act button { min-height: 36px !important; }
+  /* 触屏热区统一提升（2026-11-14）：通用钮与表单控件 40 起；密集表格内的行内小钮守 36，保住行密度 */
+  button, .btn { min-height: 40px; }
+  input:not([type="checkbox"]):not([type="radio"]), select, textarea { min-height: 40px; }
+  input[type="checkbox"], input[type="radio"] { width: 20px; height: 20px; }
+  .sites-tbl .mini, .cattable .mini, #userTable .mini { min-height: 36px; }
 }
 
 /* 死链巡检结果限高与内部滚动 */

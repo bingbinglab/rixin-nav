@@ -3658,3 +3658,18 @@ body.seal-stamping-mode {
     transition-delay: 0s !important;
   }
 }
+
+/* 触屏热区统一提升（2026-11-14）：粗指针设备上把常用可点元素抬到 44px，桌面外观不变 */
+@media (pointer: coarse) {
+  .az-btn { min-height: 44px; min-width: 36px; }
+  .ext-btn { min-height: 44px; }
+  .card-copy-btn { width: 44px; height: 44px; }
+  .clear-btn { width: 44px; height: 44px; }
+  .sidebar-link { min-height: 44px; }
+  .tool-btn, .toggle-view-btn { min-height: 44px; }
+  .admin-seal-btn { min-height: 44px; }
+  .hitokoto-refresh { min-height: 44px; padding: 6px 10px; }
+  .seal-hint-close { width: 44px; height: 44px; }
+  .modal-close, .shortcut-modal-close, .beast-close-btn { min-width: 44px; min-height: 44px; }
+  .back-to-top-btn { min-height: 44px; }
+}
