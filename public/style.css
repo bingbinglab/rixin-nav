@@ -550,7 +550,7 @@ html.dark-theme .add-btn:hover {
 }
 
 .quick-loc-hint {
-  display: inline-flex;
+  display: none;
   align-items: center;
   gap: 6px;
   font-size: 12px;
@@ -559,6 +559,8 @@ html.dark-theme .add-btn:hover {
   flex-shrink: 0;
   line-height: 1;
 }
+/* 定位说明与搜索框占位不再重复：仅在搜索框聚焦时出现 */
+.page:has(.search-input:focus) .quick-loc-hint { display: inline-flex; }
 
 .hint-dot {
   color: var(--ochre);
@@ -594,6 +596,7 @@ html.dark-theme .add-btn:hover {
   font-size: 12px;
   font-weight: 700;
   padding: 2px 5px;
+  min-height: 26px;
   cursor: pointer;
   border-radius: 3px;
   line-height: 1;
@@ -1101,7 +1104,7 @@ html.dark-theme .kw-hit { background: rgba(217, 111, 71, .34); }
 .card-arrow {
   display: inline-block;
   color: var(--muted);
-  font-size: 13px;
+  font-size: 15px;
   margin-left: 6px;
   flex-shrink: 0;
   transition: transform .22s cubic-bezier(0.34, 1.56, 0.64, 1), color .18s ease;
@@ -1178,8 +1181,10 @@ html.dark-theme .kw-hit { background: rgba(217, 111, 71, .34); }
   word-break: break-word;
 }
 
+.card-copy-btn svg { width: 15px; height: 15px; }
+
 .card-host {
-  font-size: 11px;
+  font-size: 12px;
   color: var(--muted);
   margin-top: 4px;
   letter-spacing: .3px;
@@ -1700,12 +1705,13 @@ body:has(.toy-hub-wrap.is-open) .float-top-btn {
     line-height: 1.4 !important;
     white-space: normal !important;
     word-break: break-word !important;
-    display: flex !important;
+    display: none !important;
     align-items: center !important;
     gap: 4px !important;
     color: var(--muted) !important;
     padding: 0 2px !important;
   }
+  .page:has(.search-input:focus) .quick-loc-hint { display: flex !important; }
 
   /* A–Z 字母条专属横向滑轨容器（带右侧微渐变与内嵌导轨） */
   .az-strip-wrap {
@@ -3392,7 +3398,8 @@ body.seal-stamping-mode {
 @media (max-width: 640px) {
   .toy-hub-wrap {
     right: 18px;
-    bottom: calc(20px + env(safe-area-inset-bottom, 0px));
+    /* 上移避开右下角回到顶部钮（bottom 88px 起）与卡片操作区 */
+    bottom: calc(148px + env(safe-area-inset-bottom, 0px));
     width: 48px;
     height: 48px;
     --hub-half: 24px;
@@ -3400,7 +3407,11 @@ body.seal-stamping-mode {
   .toy-hub-btn {
     width: 48px;
     height: 48px;
+    /* 常态降低视觉重量，展开时恢复 */
+    opacity: .82;
+    box-shadow: 2px 2px 0 var(--ink), inset 0 0 0 1.5px var(--ochre);
   }
+  .toy-hub-wrap.is-open .toy-hub-btn { opacity: 1; }
   .hub-label-text {
     font-size: 14px;
   }
